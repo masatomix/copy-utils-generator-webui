@@ -8,6 +8,8 @@ import {
 } from "copy-utils-generator/infrastructure";
 import { GenerateMappingClassUserCase } from "copy-utils-generator/usercase";
 import type { ClassInfo, ClassRepository } from "copy-utils-generator/domain";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 function Gamen2() {
   const [fileName, setFileName] = useState("");
@@ -71,11 +73,15 @@ function Gamen2() {
     URL.revokeObjectURL(url);
   };
 
-  const downloadAll = () => {
+  const downloadAll = async () => {
+    const zip = new JSZip();
+
     for (const [index, code] of generatedCodes.entries()) {
-      console.log(index);
-      downloadCodes(index);
+      zip.file(parseClassName(clazzes[index].className) + ".java", code);
     }
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, "generated-mappings.zip");
   };
 
   return (

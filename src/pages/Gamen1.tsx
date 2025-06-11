@@ -8,6 +8,8 @@ import {
 } from "copy-utils-generator/infrastructure";
 import { GenerateClassUserCase } from "copy-utils-generator/usercase";
 import type { ClassInfo, ClassRepository } from "copy-utils-generator/domain";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 function Gamen1() {
   const [fileName, setFileName] = useState("");
@@ -74,11 +76,15 @@ function Gamen1() {
     URL.revokeObjectURL(url);
   };
 
-  const downloadAll = () => {
+  const downloadAll = async () => {
+    const zip = new JSZip();
+
     for (const [index, code] of generatedCodes.entries()) {
-      console.log(index);
-      downloadCodes(index);
+      zip.file(parseClassName(clazzes[index].className) + ".java", code);
     }
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    saveAs(blob, "generated-classes.zip");
   };
 
   return (
@@ -98,7 +104,8 @@ function Gamen1() {
                   {code}
                 </pre>
                 <button onClick={() => downloadCodes(index)}>
-                  {index} テキストとしてダウンロード ({parseClassName(clazzes[index].className)}.java)
+                  {index} テキストとしてダウンロード (
+                  {parseClassName(clazzes[index].className)}.java)
                 </button>
               </div>
             );
