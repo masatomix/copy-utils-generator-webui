@@ -21,6 +21,9 @@ function Gamen2() {
     if (!files || files.length === 0) return;
     setFileName(files[0].name);
 
+    setGeneratedCodes([]);
+    setClazzes([]);
+
     const reader = new FileReader();
     reader.onload = async () => {
       try {
