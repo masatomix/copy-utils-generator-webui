@@ -1,17 +1,19 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import { AppBar, Toolbar, Button } from "@mui/material";
+import { Routes, Route, Link } from "react-router-dom";
+import { AppBar, Toolbar, Button, Typography, Container } from "@mui/material";
 import Home from "./pages/Home";
 import Gamen1 from "./pages/Gamen1";
 import Gamen2 from "./pages/Gamen2";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppBar position="static">
+    <>
+      <AppBar position="fixed">
         <Toolbar>
-          <Button color="inherit" component={Link} to="/">
-            ホーム
-          </Button>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            <Button color="inherit" component={Link} to="/">
+              Copy Utils Generator
+            </Button>
+          </Typography>
           <Button color="inherit" component={Link} to="/gamen1">
             クラス生成
           </Button>
@@ -21,12 +23,14 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/gamen1" element={<Gamen1 />} />
-        <Route path="/gamen2" element={<Gamen2 />} />
-      </Routes>
-    </BrowserRouter>
+      <Container sx={{ marginTop: 4 }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/gamen1" element={<Gamen1 />} />
+          <Route path="/gamen2" element={<Gamen2 />} />
+        </Routes>
+      </Container>
+    </>
   );
 }
 
