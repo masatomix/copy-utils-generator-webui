@@ -1,0 +1,89 @@
+{{#if (hasPackage className)}}
+package {{parsePackageName className}};
+
+{{/if}}
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.factory.Mappers;
+
+import org.mapstruct.ReportingPolicy;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.DecoratedWith;
+import org.mapstruct.InheritInverseConfiguration;
+
+
+
+@Mapper(componentModel = "spring" , unmappedTargetPolicy = ReportingPolicy.WARN {{#if uses}}, uses = { {{#each uses}}{{{this}}}.class, {{/each}} }{{/if}} )
+{{#if decorator}}
+@org.mapstruct.DecoratedWith({{{decorator}}}.class)
+{{/if}}
+public interface {{{parseClassName className}}} {
+
+  {{#each methods}}
+  
+     /**
+     * source を{{{toClass}}} クラスへ変換する。
+     * @Mapping(source = "param1", target = "param2") などで、プロパティ名の関連付けも可能
+     * @BeanMapping(ignoreByDefault = true)とした場合は、プロパティ名一致による自動変換はおこなわない。
+     * @param source
+     * @return
+     */
+    {{#each fields}}
+    {{!-- まずは ignoreColumn 優先で出力 --}}
+      {{#if ignoreColumn}}
+    @Mapping(target = "{{ignoreColumn}}" , ignore = true)
+      {{else}}
+    {{!-- カスタムのメソッドがあれば指定 --}}
+        {{#if qualifiedByName}}
+    @Mapping(source = "{{fromField}}", target = "{{toField}}" ,qualifiedByName = "{{qualifiedByName}}")
+        {{else}}
+    {{!-- 普通の指定 --}}
+    @Mapping(source = "{{fromField}}", target = "{{toField}}")
+        {{/if}}
+      {{/if}}
+    {{/each}}
+    {{#if ignoreByDefault}}
+    @BeanMapping(ignoreByDefault = true)
+    {{/if}}
+    {{{toClass}}} {{methodName}}({{{fromClass}}} source);
+
+
+    {{#if inverse}}
+    @InheritInverseConfiguration(name = "{{methodName}}")
+    {{{fromClass}}} {{methodName}}Inverse({{{toClass}}} source);
+    {{/if}}
+
+     /**
+     * {{{fromClass}}} source の各プロパティを{{{toClass}}} target へコピーする。
+     * @Mapping(source = "param1", target = "param2") などで、プロパティ名の関連付けも可能
+     * @BeanMapping(ignoreByDefault = true)とした場合は、プロパティ名一致による自動変換はおこなわない。
+     * @param source
+     * @return
+     */
+    {{#each fields}}
+    {{!-- まずは ignoreColumn 優先で出力 --}}
+      {{#if ignoreColumn}}
+    @Mapping(target = "{{ignoreColumn}}" , ignore = true)
+      {{else}}
+    {{!-- カスタムのメソッドがあれば指定 --}}
+        {{#if qualifiedByName}}
+    @Mapping(source = "{{fromField}}", target = "{{toField}}" ,qualifiedByName = "{{qualifiedByName}}")
+        {{else}}
+    {{!-- 普通の指定 --}}
+    @Mapping(source = "{{fromField}}", target = "{{toField}}")
+        {{/if}}
+      {{/if}}
+    {{/each}}
+    {{#if ignoreByDefault}}
+    @BeanMapping(ignoreByDefault = true)
+    {{/if}}
+    void {{methodName}}Update({{{fromClass}}} source, @MappingTarget {{{toClass}}} target);
+
+
+    {{#if inverse}}
+    @InheritInverseConfiguration(name = "{{methodName}}Update")
+    void {{methodName}}UpdateInverse({{{toClass}}} source, @MappingTarget {{{fromClass}}} target);
+    {{/if}}
+  {{/each}}
+}
