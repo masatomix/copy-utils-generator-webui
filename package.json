@@ -10,14 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^7.1.1",
     "buffer": "^6.0.3",
-    "copy-utils-generator": "0.0.11-SNAPSHOT",
+    "copy-utils-generator": "0.0.12-SNAPSHOT",
     "excel-csv-read-write": "0.2.4-SNAPSHOT",
     "handlebars": "^4.7.8",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
     "stream-browserify": "^3.0.0",
     "xlsx": "^0.18.5",
     "xlsx-populate": "^1.21.0"
