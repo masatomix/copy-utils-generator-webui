@@ -45,7 +45,7 @@ function Gamen2() {
     reader.readAsArrayBuffer(file);
   };
 
-  async function generateMappings(arrayBuffer: ArrayBuffer) {
+  const generateMappings = async (arrayBuffer: ArrayBuffer): Promise<void> => {
     class InMemoryRepository implements ClassRepository {
       save(classInfo: ClassInfo, code: string): void {
         setGeneratedCodes((prev) => [...prev, code]);
@@ -57,7 +57,7 @@ function Gamen2() {
     const converter = new ConverterHandlebarsImpl(templateSource);
     const repository = new InMemoryRepository();
     new GenerateMappingClassUserCase(factory, converter, repository).execute();
-  }
+  };
 
   const downloadCode = (index: number) => {
     const classInfo = classInfos[index];

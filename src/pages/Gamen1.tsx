@@ -45,7 +45,7 @@ function Gamen1() {
     reader.readAsArrayBuffer(file);
   };
 
-  async function generateClasses(arrayBuffer: ArrayBuffer) {
+  const generateClasses = async (arrayBuffer: ArrayBuffer): Promise<void> => {
     class InMemoryRepository implements ClassRepository {
       constructor() {}
       save(classInfo: ClassInfo, code: string): void {
@@ -57,8 +57,8 @@ function Gamen1() {
     const factory = new classDefinitionFactoryExceBufferImpl(arrayBuffer);
     const converter = new ClassConverterHandlebarsImpl(templateSource);
     const repository = new InMemoryRepository();
-    await new GenerateClassUserCase(factory, converter, repository).execute();
-  }
+    new GenerateClassUserCase(factory, converter, repository).execute();
+  };
 
   const downloadCode = (index: number) => {
     const classInfo = classInfos[index];
