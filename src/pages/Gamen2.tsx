@@ -14,64 +14,59 @@ import { saveAs } from "file-saver";
 function Gamen2() {
   const [fileName, setFileName] = useState("");
   const [generatedCodes, setGeneratedCodes] = useState<Array<string>>([]);
-  const [clazzes, setClazzes] = useState<Array<ClassInfo>>([]);
+  const [classInfos, setClassInfos] = useState<Array<ClassInfo>>([]);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setFileName(files[0].name);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name);
 
     setGeneratedCodes([]);
-    setClazzes([]);
+    setClassInfos([]);
 
     const reader = new FileReader();
     reader.onload = async () => {
+      const arrayBuffer = reader.result;
+      if (!(arrayBuffer instanceof ArrayBuffer)) {
+        console.error("FileReader result is not an ArrayBuffer");
+        return;
+      }
       try {
-        const arrayBuffer = reader.result;
-        if (!(arrayBuffer instanceof ArrayBuffer)) {
-          console.error("FileReader result is not an ArrayBuffer");
-          return;
-        }
-
         const records = await excelBuffer2json(arrayBuffer);
         console.table(records);
+        await generateMappings(arrayBuffer);
 
-        const factory = new MappingFactoryExcelBufferImpl(arrayBuffer);
-
-        class ReactClassRepository implements ClassRepository {
-          save(classInfo: ClassInfo, code: string): void {
-            setGeneratedCodes((prev) => {
-              return [...prev, code];
-            });
-            setClazzes((prev) => {
-              return [...prev, classInfo];
-            });
-          }
-        }
-
-        new GenerateMappingClassUserCase(
-          factory,
-          new ConverterHandlebarsImpl(templateSource),
-          new ReactClassRepository()
-        )
-          .execute()
-          .catch((error) => console.error(error));
-
-        // workbook 操作
         console.log("読み込み成功", records.length, " 件");
       } catch (error) {
         console.error("読み込み失敗", error);
       }
     };
-    reader.readAsArrayBuffer(files[0]);
+    reader.readAsArrayBuffer(file);
   };
 
-  const downloadCodes = (index: number) => {
+  async function generateMappings(arrayBuffer: ArrayBuffer) {
+    class InMemoryRepository implements ClassRepository {
+      save(classInfo: ClassInfo, code: string): void {
+        setGeneratedCodes((prev) => [...prev, code]);
+        setClassInfos((prev) => [...prev, classInfo]);
+      }
+    }
+
+    const factory = new MappingFactoryExcelBufferImpl(arrayBuffer);
+    const converter = new ConverterHandlebarsImpl(templateSource);
+    const repository = new InMemoryRepository();
+    new GenerateMappingClassUserCase(factory, converter, repository).execute();
+  }
+
+  const downloadCode = (index: number) => {
+    const classInfo = classInfos[index];
+    const className = parseClassName(classInfo.className);
     const blob = new Blob([generatedCodes[index]], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${parseClassName(clazzes[index].className)}.java`;
+    a.download = `${className}.java`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -79,8 +74,9 @@ function Gamen2() {
   const downloadAll = async () => {
     const zip = new JSZip();
 
-    for (const [index, code] of generatedCodes.entries()) {
-      zip.file(parseClassName(clazzes[index].className) + ".java", code);
+    for (const [index, classInfo] of classInfos.entries()) {
+      const className = parseClassName(classInfo.className);
+      zip.file(`${className}.java`, generatedCodes[index]);
     }
 
     const blob = await zip.generateAsync({ type: "blob" });
@@ -96,16 +92,16 @@ function Gamen2() {
       {generatedCodes && generatedCodes.length > 0 && (
         <>
           <h2>生成結果({generatedCodes.length}件)</h2>
-          <button onClick={() => downloadAll()}>全てダウンロード</button>
+          <button onClick={downloadAll}>全てダウンロード</button>
           {generatedCodes.map((code, index) => {
+            const className = parseClassName(classInfos[index].className);
             return (
               <div key={index} style={{ marginBottom: 20 }}>
                 <pre style={{ backgroundColor: "#eee", padding: 12 }}>
                   {code}
                 </pre>
-                <button onClick={() => downloadCodes(index)}>
-                  {index} テキストとしてダウンロード (
-                  {parseClassName(clazzes[index].className)}.java)
+                <button onClick={() => downloadCode(index)}>
+                  {index + 1} 番目のコードをダウンロード ({className}.java)
                 </button>
               </div>
             );
