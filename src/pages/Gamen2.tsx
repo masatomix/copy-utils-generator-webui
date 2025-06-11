@@ -5,6 +5,7 @@ import {
   MappingFactoryExcelBufferImpl,
   ConverterHandlebarsImpl,
   parseClassName,
+  parsePackageName,
 } from "copy-utils-generator/infrastructure";
 import { GenerateMappingClassUserCase } from "copy-utils-generator/usercase";
 import type { ClassInfo, ClassRepository } from "copy-utils-generator/domain";
@@ -84,8 +85,18 @@ function Gamen2() {
     const zip = new JSZip();
 
     for (const [index, classInfo] of classInfos.entries()) {
-      const className = parseClassName(classInfo.className);
-      zip.file(`${className}.java`, generatedCodes[index]);
+      const fqcn = classInfo.className;
+      const className = parseClassName(fqcn);
+      const packageName = parsePackageName(fqcn);
+      const code = generatedCodes[index];
+
+      // パッケージ名をパスに変換（. → /）
+      const packagePath = packageName.replace(/\./g, "/");
+      const filePath = packagePath
+        ? `${packagePath}/${className}.java`
+        : `${className}.java`;
+
+      zip.file(filePath, code);
     }
 
     const blob = await zip.generateAsync({ type: "blob" });
@@ -126,6 +137,10 @@ function Gamen2() {
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
         Mapping Generator Web UI (Demo)
+      </Typography>
+
+      <Typography variant="h6" gutterBottom>
+        mappingdata.xlsx などを指定してください。
       </Typography>
 
       <Button variant="contained" component="label">
