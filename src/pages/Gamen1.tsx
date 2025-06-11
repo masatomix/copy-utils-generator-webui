@@ -10,6 +10,15 @@ import { GenerateClassUserCase } from "copy-utils-generator/usercase";
 import type { ClassInfo, ClassRepository } from "copy-utils-generator/domain";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Typography,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 function Gamen1() {
   const [fileName, setFileName] = useState("");
@@ -84,32 +93,65 @@ function Gamen1() {
     saveAs(blob, "generated-classes.zip");
   };
 
-  return (
-    <div style={{ padding: 16 }}>
-      <h1>copy-utils-generator Web UI (Demo)</h1>
-      <input type="file" accept=".xlsx" onChange={onFileChange} />
-      {fileName && <p>読み込みファイル: {fileName}</p>}
+  const renderCodeAccordion = () =>
+    generatedCodes.map((code, index) => {
+      const className = parseClassName(classInfos[index].className);
+      return (
+        <Accordion key={index}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>
+              {index + 1}: {className}.java
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box
+              component="pre"
+              p={2}
+              sx={{ bgcolor: "#f4f4f4", whiteSpace: "pre-wrap" }}
+            >
+              {code}
+            </Box>
+            <Button
+              variant="outlined"
+              onClick={() => downloadCode(index)}
+              sx={{ mt: 1 }}
+            >
+              このファイルをダウンロード
+            </Button>
+          </AccordionDetails>
+        </Accordion>
+      );
+    });
 
-      {generatedCodes && generatedCodes.length > 0 && (
-        <>
-          <h2>生成結果({generatedCodes.length}件)</h2>
-          <button onClick={downloadAll}>全てダウンロード</button>
-          {generatedCodes.map((code, index) => {
-            const className = parseClassName(classInfos[index].className);
-            return (
-              <div key={index} style={{ marginBottom: 20 }}>
-                <pre style={{ backgroundColor: "#eee", padding: 12 }}>
-                  {code}
-                </pre>
-                <button onClick={() => downloadCode(index)}>
-                  {index + 1} 番目のコードをダウンロード ({className}.java)
-                </button>
-              </div>
-            );
-          })}
-        </>
+  return (
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>
+        Class Generator Web UI (Demo)
+      </Typography>
+
+      <Button variant="contained" component="label">
+        Excelファイルを選択
+        <input type="file" accept=".xlsx" hidden onChange={onFileChange} />
+      </Button>
+
+      {fileName && (
+        <Typography variant="body2" mt={1}>
+          読み込みファイル: {fileName}
+        </Typography>
       )}
-    </div>
+
+      {generatedCodes.length > 0 && (
+        <Box mt={4}>
+          <Typography variant="h6" gutterBottom>
+            生成結果（{generatedCodes.length} 件）
+          </Typography>
+          <Button variant="outlined" onClick={downloadAll} sx={{ mb: 2 }}>
+            全てダウンロード（ZIP）
+          </Button>
+          {renderCodeAccordion()}
+        </Box>
+      )}
+    </Box>
   );
 }
 
