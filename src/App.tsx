@@ -13,10 +13,10 @@ function App() {
             ホーム
           </Button>
           <Button color="inherit" component={Link} to="/gamen1">
-            画面1
+            クラス生成
           </Button>
           <Button color="inherit" component={Link} to="/gamen2">
-            画面2
+            マッピング生成
           </Button>
         </Toolbar>
       </AppBar>
