@@ -18,8 +18,11 @@ import {
   Button,
   Typography,
   Box,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
 function Gamen2() {
   const [fileName, setFileName] = useState("");
@@ -105,12 +108,12 @@ function Gamen2() {
 
   const renderCodeAccordion = () =>
     generatedCodes.map((code, index) => {
-      const className = parseClassName(classInfos[index].className);
+      const fqcn = classInfos[index].className;
       return (
         <Accordion key={index}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>
-              {index + 1}: {className}.java
+              {index + 1}: {fqcn}.java
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -119,6 +122,15 @@ function Gamen2() {
               p={2}
               sx={{ bgcolor: "#f4f4f4", whiteSpace: "pre-wrap" }}
             >
+              <Tooltip title="クリップボードにコピー">
+                <IconButton
+                  size="small"
+                  sx={{ position: "absolute", right: 30 }}
+                  onClick={() => navigator.clipboard.writeText(code)}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
               {code}
             </Box>
             <Button
@@ -148,6 +160,15 @@ function Gamen2() {
         <input type="file" accept=".xlsx" hidden onChange={onFileChange} />
       </Button>
 
+      <Button
+        href={`${import.meta.env.BASE_URL}mappingdata.xlsx`}
+        download
+        size="small"
+        variant="text"
+        sx={{ textTransform: "none", mt: 1 }}
+      >
+        サンプルのダウンロード
+      </Button>
       {fileName && (
         <Typography variant="body2" mt={1}>
           読み込みファイル: {fileName}
