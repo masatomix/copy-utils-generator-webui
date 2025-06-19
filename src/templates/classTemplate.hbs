@@ -6,9 +6,13 @@ package {{parsePackageName className}};
 import lombok.{{#if immutable}}Value{{else}}Data{{/if}};
 import lombok.*;
 
-@{{#if immutable}}Value{{else}}Data @NoArgsConstructor{{/if}}
+{{#if immutable}}@Value{{else}}@Data @NoArgsConstructor{{/if}}
+{{#if AllArgsConstructor}}
 @AllArgsConstructor
+{{/if}}
+{{#if Builder}}
 @Builder
+{{/if}}
 public class {{{parseClassName className}}} {
   {{#each fields}}
   private {{#if ../immutable}}final{{/if}} {{{type}}} {{name}};
