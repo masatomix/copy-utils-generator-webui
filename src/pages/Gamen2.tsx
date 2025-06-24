@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { excelBuffer2json } from "excel-csv-read-write";
 import templateSource from "../templates/template.hbs?raw";
 import {
@@ -29,9 +29,17 @@ function Gamen2() {
   const [generatedCodes, setGeneratedCodes] = useState<Array<string>>([]);
   const [classInfos, setClassInfos] = useState<Array<ClassInfo>>([]);
 
+  // ref を定義
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 同じファイル再選択に対応するため value をリセット
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     setFileName(file.name);
 
@@ -157,7 +165,13 @@ function Gamen2() {
 
       <Button variant="contained" component="label">
         Excelファイルを選択
-        <input type="file" accept=".xlsx" hidden onChange={onFileChange} />
+        <input
+          type="file"
+          accept=".xlsx"
+          hidden
+          onChange={onFileChange}
+          ref={fileInputRef}
+        />
       </Button>
 
       <Button

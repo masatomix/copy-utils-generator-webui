@@ -13,10 +13,9 @@ import {
 
 type Props = {
   data: LongData[];
-  label: string; // "PV" or "PVS"
 };
 
-export const AssigneeLineChart = ({ data, label }: Props) => {
+export const AssigneeLineChart = ({ data }: Props) => {
   const wideMap = new Map<string, Record<string, any>>();
   for (const { assignee, baseDate, value } of data) {
     if (!wideMap.has(baseDate)) {
@@ -25,7 +24,6 @@ export const AssigneeLineChart = ({ data, label }: Props) => {
     wideMap.get(baseDate)![assignee] = value;
   }
   const chartData = Array.from(wideMap.values());
-
   const assignees = Array.from(new Set(data.map((d) => d.assignee))).sort();
 
   return (

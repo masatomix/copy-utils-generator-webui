@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import { Button, Typography, Box, Paper, Stack, Divider } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
@@ -13,9 +13,10 @@ import { AssigneeStatsTable } from "../components/AssigneeStatsTable";
 
 import UploadIcon from "@mui/icons-material/Upload";
 import DownloadIcon from "@mui/icons-material/Download";
-import { ProjectStatsTable } from "../components/ProjectStatsTable";
-import { AssigneeLineChart } from "../components/AssigneePvChart";
 import { AssigneeView } from "../components/AssigneeView";
+import { LongDataByNameTable } from "../components/LongDataByNameTable";
+import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
+import { ProjectStatsTable } from "../components/ProjectStatsTable";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -40,9 +41,17 @@ function Evm() {
     statisticsByProject: [],
   });
 
+  // ref を定義
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // 同じファイル再選択に対応するため value をリセット
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
 
     setState((prev) => ({
       ...prev,
@@ -115,7 +124,13 @@ function Evm() {
             startIcon={<UploadIcon />}
           >
             Excelファイルを選択
-            <input type="file" accept=".xlsm" hidden onChange={onFileChange} />
+            <input
+              type="file"
+              accept=".xlsm"
+              hidden
+              onChange={onFileChange}
+              ref={fileInputRef}
+            />
           </Button>
 
           <Button
@@ -177,9 +192,12 @@ function Evm() {
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
+            TableComponent={LongDataByProjectTable}
             tableData={state.project.pvByProjectLong}
             chartData={state.project.pvsByProjectLong}
-            label="PV累積"
+            label="日々のPV"
+            tableData2={state.project.pvsByProjectLong}
+            label2="PV累積"
           />
         </Paper>
       )}
@@ -192,9 +210,11 @@ function Evm() {
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
+            TableComponent={LongDataByNameTable}
             tableData={state.project.pvByNameLong}
             chartData={state.project.pvsByNameLong}
             label="PV累積"
+            initialTab={1}
           />
         </Paper>
       )}
