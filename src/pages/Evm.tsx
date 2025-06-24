@@ -14,10 +14,8 @@ import { AssigneeStatsTable } from "../components/AssigneeStatsTable";
 import UploadIcon from "@mui/icons-material/Upload";
 import DownloadIcon from "@mui/icons-material/Download";
 import { ProjectStatsTable } from "../components/ProjectStatsTable";
-// export type ProjectInfoCallbacks = {
-//   onWorkbookCreated: React.Dispatch<React.SetStateAction<Workbook | undefined>>;
-//   onPathCreated: React.Dispatch<React.SetStateAction<string>>;
-// };
+import { AssigneeLineChart } from "../components/AssigneePvChart";
+import { AssigneeView } from "../components/AssigneeView";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -168,6 +166,36 @@ function Evm() {
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <AssigneeStatsTable data={state.statisticsByName} />
+        </Paper>
+      )}
+
+      {/* PVs推移グラフ(プロジェクト) */}
+      {state.project && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            プロジェクトのPV累積チャート
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <AssigneeView
+            tableData={state.project.pvByProjectLong}
+            chartData={state.project.pvsByProjectLong}
+            label="PV累積"
+          />
+        </Paper>
+      )}
+
+      {/* PVS推移グラフ(ひとごと) */}
+      {state.project && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            要員ごとのPV累積チャート
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <AssigneeView
+            tableData={state.project.pvByNameLong}
+            chartData={state.project.pvsByNameLong}
+            label="PV累積"
+          />
         </Paper>
       )}
     </Box>
