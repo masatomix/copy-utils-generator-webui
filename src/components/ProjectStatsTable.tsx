@@ -7,13 +7,13 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import type { AssigneeStatistics } from "evmtools-node/domain";
+import type { ProjectStatistics } from "evmtools-node/domain";
 
 type Props = {
-  data: AssigneeStatistics[];
+  data: ProjectStatistics[];
 };
 
-export const AssigneeStatsTable = ({ data }: Props) => {
+export const ProjectStatsTable = ({ data }: Props) => {
   return (
     <TableContainer
       component={Paper}
@@ -22,7 +22,13 @@ export const AssigneeStatsTable = ({ data }: Props) => {
       <Table size="small">
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell sx={{ fontWeight: "bold" }}>担当者</TableCell>
+            <TableCell sx={{ fontWeight: "bold" }}>プロジェクト名</TableCell>
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              開始予定日
+            </TableCell>
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              終了予定日
+            </TableCell>
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
               全体タスク数
             </TableCell>
@@ -54,17 +60,23 @@ export const AssigneeStatsTable = ({ data }: Props) => {
                 backgroundColor: idx % 2 === 0 ? "#fafafa" : "white",
               }}
             >
-              <TableCell>{row.assignee}</TableCell>
-              <TableCell align="right">{row.全体タスク数}</TableCell>
-              <TableCell align="right">{row["全体工数の和(Excel)"]}</TableCell>
-              <TableCell align="right">{row["全体工数の和(計算)"]}</TableCell>
-              <TableCell align="right">{row.全体工数平均}</TableCell>
-              <TableCell align="right">{row.基準日}</TableCell>
+              <TableCell>{row.プロジェクト名 ?? "-"}</TableCell>
+              <TableCell align="right">{row.開始予定日}</TableCell>
+              <TableCell align="right">{row.終了予定日}</TableCell>
+              <TableCell align="right">{row.全体タスク数 ?? "-"}</TableCell>
               <TableCell align="right">
-                {row["基準日終了時PV累積(Excel)"]}
+                {row["全体工数の和(Excel)"] ?? "-"}
               </TableCell>
               <TableCell align="right">
-                {row["基準日終了時PV累積(計算)"]}
+                {row["全体工数の和(計算)"] ?? "-"}
+              </TableCell>
+              <TableCell align="right">{row["全体工数平均"] ?? "-"}</TableCell>
+              <TableCell align="right">{row.基準日}</TableCell>
+              <TableCell align="right">
+                {row["基準日終了時PV累積(Excel)"] ?? "-"}
+              </TableCell>
+              <TableCell align="right">
+                {row["基準日終了時PV累積(計算)"] ?? "-"}
               </TableCell>
             </TableRow>
           ))}

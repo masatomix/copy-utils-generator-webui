@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { saveAs } from "file-saver";
-import { Button, Typography, Box } from "@mui/material";
+import { Button, Typography, Box, Paper, Stack, Divider } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
-import type { AssigneeStatistics, Project } from "evmtools-node/domain";
+import type {
+  AssigneeStatistics,
+  Project,
+  ProjectStatistics,
+} from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
 import { InMemoryRepository } from "../repository/InMemoryRepository";
 import { AssigneeStatsTable } from "../components/AssigneeStatsTable";
 
+import UploadIcon from "@mui/icons-material/Upload";
+import DownloadIcon from "@mui/icons-material/Download";
+import { ProjectStatsTable } from "../components/ProjectStatsTable";
 // export type ProjectInfoCallbacks = {
 //   onWorkbookCreated: React.Dispatch<React.SetStateAction<Workbook | undefined>>;
 //   onPathCreated: React.Dispatch<React.SetStateAction<string>>;
@@ -22,6 +29,7 @@ type State = {
   workbook?: Workbook;
   path: string;
   statisticsByName: AssigneeStatistics[];
+  statisticsByProject: ProjectStatistics[];
 };
 
 function Evm() {
@@ -31,6 +39,7 @@ function Evm() {
     workbook: undefined,
     path: "",
     statisticsByName: [],
+    statisticsByProject: [],
   });
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,50 +95,80 @@ function Evm() {
   };
 
   return (
-    <Box p={3}>
+    <Box p={4}>
       <Typography variant="h4" gutterBottom>
         EVM Generator Web UI (Demo)
       </Typography>
 
-      <Typography gutterBottom>
-        五反田式進捗管理ツール(Ver.7.3).xlsm などを指定してください。
+      <Typography variant="subtitle1" gutterBottom>
+        五反田式進捗管理ツール（Ver.7.3）に対応しています。
       </Typography>
 
-      <Button variant="contained" component="label">
-        Excelファイルを選択
-        <input type="file" accept=".xlsm" hidden onChange={onFileChange} />
-      </Button>
-
-      <Button
-        href={`${import.meta.env.BASE_URL}五反田式進捗管理ツール(Ver.7.3).xlsm`}
-        download
-        size="small"
-        variant="text"
-        sx={{ textTransform: "none", mt: 1 }}
-      >
-        サンプルのダウンロード
-      </Button>
-      {state.fileName && (
-        <Typography variant="body2" mt={1}>
-          読み込みファイル: {state.fileName}
+      {/* ファイル選択セクション */}
+      <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          ファイル読み込み
         </Typography>
+
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<UploadIcon />}
+          >
+            Excelファイルを選択
+            <input type="file" accept=".xlsm" hidden onChange={onFileChange} />
+          </Button>
+
+          <Button
+            href={`${
+              import.meta.env.BASE_URL
+            }五反田式進捗管理ツール(Ver.7.3).xlsm`}
+            download
+            size="small"
+            variant="outlined"
+            sx={{ textTransform: "none" }}
+          >
+            サンプルファイルDL
+          </Button>
+        </Stack>
+
+        {state.fileName && (
+          <Typography variant="body2" mt={2}>
+            選択中のファイル: <strong>{state.fileName}</strong>
+          </Typography>
+        )}
+      </Paper>
+
+      {/* プロジェクト情報 */}
+      {state.statisticsByProject.length > 0 && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            プロジェクト情報
+          </Typography>
+
+          <Divider sx={{ mb: 2 }} />
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            onClick={downloadAll}
+            sx={{ mt: 2 }}
+          >
+            データをダウンロード
+          </Button>
+          <ProjectStatsTable data={state.statisticsByProject} />
+        </Paper>
       )}
 
-      {state.project && state.project.length > 0 && (
-        <Box mt={4}>
-          <Typography gutterBottom>
-            タスク数 {state.project.length} 件
-          </Typography>
-          <Button variant="outlined" onClick={downloadAll} sx={{ mb: 2 }}>
-            概況ダウンロード
-          </Button>
-        </Box>
-      )}
+      {/* 要員統計 */}
       {state.statisticsByName.length > 0 && (
-        <>
-          <Typography gutterBottom>要員ごと統計</Typography>
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            要員ごと統計
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
           <AssigneeStatsTable data={state.statisticsByName} />
-        </>
+        </Paper>
       )}
     </Box>
   );
