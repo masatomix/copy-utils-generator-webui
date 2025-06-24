@@ -15,7 +15,7 @@ export class InMemoryRepository implements ProjectRepository {
     this.callbacks = callbacks;
   }
 
-  save(project: Project): void {
+  async save(project: Project): Promise<void> {
     const projectData = project.printAndGetRawData(20);
 
     const baseDate = project.baseDate;
@@ -140,6 +140,7 @@ export class InMemoryRepository implements ProjectRepository {
       workbook,
       path,
       statisticsByName,
+      statisticsByProject,
     }));
   };
 }
