@@ -3,6 +3,7 @@ import { AppBar, Toolbar, Button, Typography, Container } from "@mui/material";
 import Home from "./pages/Home";
 import Gamen1 from "./pages/Gamen1";
 import Gamen2 from "./pages/Gamen2";
+import Evm from "./pages/Evm";
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
           <Button color="inherit" component={Link} to="/gamen2">
             マッピング生成
           </Button>
+          <Button color="inherit" component={Link} to="/gamen3">
+            EVM
+          </Button>
         </Toolbar>
       </AppBar>
 
@@ -28,6 +32,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/gamen1" element={<Gamen1 />} />
           <Route path="/gamen2" element={<Gamen2 />} />
+          <Route path="/gamen3" element={<Evm />} />
         </Routes>
       </Container>
     </>
