@@ -9,14 +9,14 @@ import type {
 } from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
 import { InMemoryRepository } from "../repository/InMemoryRepository";
-import { AssigneeStatsTable } from "../components/AssigneeStatsTable";
 
 import UploadIcon from "@mui/icons-material/Upload";
 import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
 import { LongDataByNameTable } from "../components/LongDataByNameTable";
 import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
-import { ProjectView } from "../components/ProjectView";
+import { ProjectStatsView } from "../components/ProjectStatsView";
+import { AssigneeStatsView } from "../components/AssigneeStatsView";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -169,7 +169,7 @@ function Evm() {
           >
             データをダウンロード
           </Button>
-          <ProjectView data={state.statisticsByProject} />
+          <ProjectStatsView data={state.statisticsByProject} />
         </Paper>
       )}
 
@@ -180,7 +180,7 @@ function Evm() {
             要員ごと統計
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          <AssigneeStatsTable data={state.statisticsByName} />
+          <AssigneeStatsView data={state.statisticsByName} />
         </Paper>
       )}
 

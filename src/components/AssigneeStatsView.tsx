@@ -1,15 +1,15 @@
 // src/components/AssigneeView.tsx
 import { useState } from "react";
 import { Tabs, Tab, Box } from "@mui/material";
-import type { ProjectStatistics } from "evmtools-node/domain";
-import { ProjectStatsTable } from "./ProjectStatsTable";
+import type { AssigneeStatistics } from "evmtools-node/domain";
+import { AssigneeStatsTable } from "./AssigneeStatsTable";
 
 type Props = {
-  data: ProjectStatistics[];
+  data: AssigneeStatistics[];
   initialTab?: number;
 };
 
-export const ProjectView = ({ data, initialTab = 0 }: Props) => {
+export const AssigneeStatsView = ({ data, initialTab = 0 }: Props) => {
   const [tabIndex, setTabIndex] = useState(initialTab);
 
   return (
@@ -35,8 +35,8 @@ export const ProjectView = ({ data, initialTab = 0 }: Props) => {
         <Tab label="詳細" />
       </Tabs>
       <Box mt={2}>
-        {tabIndex === 0 && <ProjectStatsTable data={data} />}
-        {tabIndex === 1 && <ProjectStatsTable data={data} detail={true} />}
+        {tabIndex === 0 && <AssigneeStatsTable data={data} />}
+        {tabIndex === 1 && <AssigneeStatsTable data={data} detail={true} />}
       </Box>
     </Box>
   );
