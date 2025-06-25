@@ -16,7 +16,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
 import { LongDataByNameTable } from "../components/LongDataByNameTable";
 import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
-import { ProjectStatsTable } from "../components/ProjectStatsTable";
+import { ProjectView } from "../components/ProjectView";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -104,7 +104,7 @@ function Evm() {
   return (
     <Box p={4}>
       <Typography variant="h4" gutterBottom>
-        EVM Generator Web UI (Demo)
+        EVM Tools Web UI (Demo)
       </Typography>
 
       <Typography variant="subtitle1" gutterBottom>
@@ -169,7 +169,7 @@ function Evm() {
           >
             データをダウンロード
           </Button>
-          <ProjectStatsTable data={state.statisticsByProject} />
+          <ProjectView data={state.statisticsByProject} />
         </Paper>
       )}
 
