@@ -9,6 +9,7 @@ import {
   Paper,
 } from "@mui/material";
 import type { LongData } from "evmtools-node/domain";
+import { formatDateWithWeekday } from "../utils/format";
 
 type MergedRow = {
   baseDate: string;
@@ -73,7 +74,7 @@ export const LongDataByProjectTable = ({
                   : "inherit", // 土日だけ薄いグレー
               }}
             >
-              <TableCell>{row.baseDate}</TableCell>
+              <TableCell>{formatDateWithWeekday(row.baseDate)}</TableCell>
               <TableCell align="right">{row.value1}</TableCell>
               <TableCell align="right">{row.value2}</TableCell>
             </TableRow>

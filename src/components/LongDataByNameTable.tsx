@@ -9,6 +9,7 @@ import {
   Paper,
 } from "@mui/material";
 import type { LongData } from "evmtools-node/domain";
+import { formatDateWithWeekday } from "../utils/format";
 
 type Props = {
   data: LongData[];
@@ -49,7 +50,7 @@ export const LongDataByNameTable = ({ data }: Props) => {
                 backgroundColor: isHoliday(date) ? "#f0f0f0" : "inherit", // 土日だけ薄いグレー
               }}
             >
-              <TableCell>{date}</TableCell>
+              <TableCell>{formatDateWithWeekday(date)}</TableCell>
               {assignees.map((assignee) => {
                 const value = valueMap.get(date)?.get(assignee);
                 return (
