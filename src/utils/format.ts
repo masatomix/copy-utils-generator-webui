@@ -24,3 +24,14 @@ export const formatNumberIntl = (
   if (isNaN(num)) return "-";
   return new Intl.NumberFormat("ja-JP", options).format(num);
 };
+
+export const formatDateWithWeekday = (dateString: string): string => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    weekday: "short", // → "(水)"など
+  }).format(date);
+};
