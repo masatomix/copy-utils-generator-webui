@@ -75,6 +75,9 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
               EV
             </TableCell>
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              EV-PV
+            </TableCell>
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
               SPI
             </TableCell>
           </TableRow>
@@ -123,6 +126,17 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
                 })}
               </TableCell>
               <TableCell align="right">
+                {formatNumberIntl(
+                  subtract(
+                    row["基準日終了時EV累積"],
+                    row["基準日終了時PV累積(計算)"]
+                  ),
+                  {
+                    maximumFractionDigits: 3,
+                  }
+                )}
+              </TableCell>
+              <TableCell align="right">
                 {formatNumberIntl(row["基準日終了時SPI"], {
                   maximumFractionDigits: 3,
                 })}
@@ -134,3 +148,13 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
     </TableContainer>
   );
 };
+
+function subtract(
+  a: number | undefined,
+  b: number | undefined
+): number | undefined {
+  if (typeof a !== "number" || typeof b !== "number") {
+    return undefined;
+  }
+  return a - b;
+}
