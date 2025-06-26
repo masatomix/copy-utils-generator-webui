@@ -69,7 +69,9 @@ export const LongDataByProjectTable = ({
             <TableRow
               key={idx}
               sx={{
-                backgroundColor: isHoliday(row.baseDate)
+                backgroundColor: isToday(row.baseDate)
+                  ? "#fff8dc" // 今日: コーンシルク色
+                  : isHoliday(row.baseDate)
                   ? "#f0f0f0"
                   : "inherit", // 土日だけ薄いグレー
               }}
@@ -89,4 +91,14 @@ function isHoliday(dateString: string): boolean {
   const date = new Date(dateString);
   const day = date.getDay(); // 0: 日, 6: 土
   return day === 0 || day === 6;
+}
+
+function isToday(dateString: string): boolean {
+  const today = new Date();
+  const target = new Date(dateString);
+  return (
+    today.getFullYear() === target.getFullYear() &&
+    today.getMonth() === target.getMonth() &&
+    today.getDate() === target.getDate()
+  );
 }
