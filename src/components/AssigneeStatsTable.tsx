@@ -13,7 +13,6 @@ import type { AssigneeStatistics } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
 
 type Order = "asc" | "desc";
-type SortKey = keyof AssigneeStatistics;
 
 type Props = {
   data: AssigneeStatistics[];
@@ -21,62 +20,22 @@ type Props = {
 };
 
 export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
-  const [orderBy, setOrderBy] = useState<SortKey>("assignee");
+  // AssigneeStatistics のキーは string リテラルでなくても良いので
+  // 「assignee」などでソートできるようにするため型は文字列で管理
+  const [orderBy, setOrderBy] = useState<keyof AssigneeStatistics | "assignee">(
+    "assignee"
+  );
   const [order, setOrder] = useState<Order>("asc");
 
-  const columns: { key: SortKey; label: string; isNumeric?: boolean }[] = [
-    { key: "assignee" as SortKey, label: "担当者" },
-    { key: "totalTasksCount" as SortKey, label: "タスク数", isNumeric: true },
-    ...(detail
-      ? [
-          {
-            key: "totalWorkloadExcel" as SortKey,
-            label: "工数合計(Excel)",
-            isNumeric: true,
-          },
-          {
-            key: "totalWorkloadCalculated" as SortKey,
-            label: "工数合計(計算)",
-            isNumeric: true,
-          },
-        ]
-      : [
-          {
-            key: "totalWorkloadCalculated" as SortKey,
-            label: "工数合計",
-            isNumeric: true,
-          },
-        ]),
-    { key: "averageWorkload" as SortKey, label: "工数平均", isNumeric: true },
-    { key: "baseDate" as SortKey, label: "基準日" },
-    ...(detail
-      ? [
-          {
-            key: "totalPvExcel" as SortKey,
-            label: "基準日終了時PV累積(Excel)",
-            isNumeric: true,
-          },
-          {
-            key: "totalPvCalculated" as SortKey,
-            label: "基準日終了時PV累積(計算)",
-            isNumeric: true,
-          },
-        ]
-      : [
-          { key: "totalPvCalculated" as SortKey, label: "PV", isNumeric: true },
-        ]),
-    { key: "totalEv" as SortKey, label: "EV", isNumeric: true },
-    { key: "spi" as SortKey, label: "SPI", isNumeric: true },
-  ];
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: keyof AssigneeStatistics | "assignee") => {
     const isAsc = orderBy === key && order === "asc";
     setOrderBy(key);
     setOrder(isAsc ? "desc" : "asc");
   };
 
   const sortedData = [...data].sort((a, b) => {
-    const aVal = a[orderBy];
-    const bVal = b[orderBy];
+    const aVal = a[orderBy as keyof AssigneeStatistics];
+    const bVal = b[orderBy as keyof AssigneeStatistics];
 
     if (aVal == null) return 1;
     if (bVal == null) return -1;
@@ -98,42 +57,206 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
       <Table size="small">
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            {columns.map(({ key, label, isNumeric }) => (
-              <TableCell
-                key={key as string}
-                align={isNumeric ? "right" : "left"}
-                sortDirection={orderBy === key ? order : false}
-                sx={{ fontWeight: "bold" }}
+            <TableCell sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "assignee"}
+                direction={orderBy === "assignee" ? order : "asc"}
+                onClick={() => handleSort("assignee")}
               >
+                担当者
+              </TableSortLabel>
+            </TableCell>
+
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "totalTasksCount"}
+                direction={orderBy === "totalTasksCount" ? order : "asc"}
+                onClick={() => handleSort("totalTasksCount")}
+              >
+                タスク数
+              </TableSortLabel>
+            </TableCell>
+
+            {detail && (
+              <>
+                <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                  <TableSortLabel
+                    active={orderBy === "totalWorkloadExcel"}
+                    direction={orderBy === "totalWorkloadExcel" ? order : "asc"}
+                    onClick={() => handleSort("totalWorkloadExcel")}
+                  >
+                    工数合計(Excel)
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                  <TableSortLabel
+                    active={orderBy === "totalWorkloadCalculated"}
+                    direction={
+                      orderBy === "totalWorkloadCalculated" ? order : "asc"
+                    }
+                    onClick={() => handleSort("totalWorkloadCalculated")}
+                  >
+                    工数合計(計算)
+                  </TableSortLabel>
+                </TableCell>
+              </>
+            )}
+
+            {!detail && (
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
                 <TableSortLabel
-                  active={orderBy === key}
-                  direction={orderBy === key ? order : "asc"}
-                  onClick={() => handleSort(key)}
+                  active={orderBy === "totalWorkloadCalculated"}
+                  direction={
+                    orderBy === "totalWorkloadCalculated" ? order : "asc"
+                  }
+                  onClick={() => handleSort("totalWorkloadCalculated")}
                 >
-                  {label}
+                  工数合計
                 </TableSortLabel>
               </TableCell>
-            ))}
+            )}
+
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "averageWorkload"}
+                direction={orderBy === "averageWorkload" ? order : "asc"}
+                onClick={() => handleSort("averageWorkload")}
+              >
+                工数平均
+              </TableSortLabel>
+            </TableCell>
+
+            <TableCell sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "baseDate"}
+                direction={orderBy === "baseDate" ? order : "asc"}
+                onClick={() => handleSort("baseDate")}
+              >
+                基準日
+              </TableSortLabel>
+            </TableCell>
+
+            {detail && (
+              <>
+                <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                  <TableSortLabel
+                    active={orderBy === "totalPvExcel"}
+                    direction={orderBy === "totalPvExcel" ? order : "asc"}
+                    onClick={() => handleSort("totalPvExcel")}
+                  >
+                    基準日終了時PV累積(Excel)
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                  <TableSortLabel
+                    active={orderBy === "totalPvCalculated"}
+                    direction={orderBy === "totalPvCalculated" ? order : "asc"}
+                    onClick={() => handleSort("totalPvCalculated")}
+                  >
+                    基準日終了時PV累積(計算)
+                  </TableSortLabel>
+                </TableCell>
+              </>
+            )}
+
+            {!detail && (
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>
+                <TableSortLabel
+                  active={orderBy === "totalPvCalculated"}
+                  direction={orderBy === "totalPvCalculated" ? order : "asc"}
+                  onClick={() => handleSort("totalPvCalculated")}
+                >
+                  PV
+                </TableSortLabel>
+              </TableCell>
+            )}
+
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "totalEv"}
+                direction={orderBy === "totalEv" ? order : "asc"}
+                onClick={() => handleSort("totalEv")}
+              >
+                EV
+              </TableSortLabel>
+            </TableCell>
+
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
+                active={orderBy === "spi"}
+                direction={orderBy === "spi" ? order : "asc"}
+                onClick={() => handleSort("spi")}
+              >
+                SPI
+              </TableSortLabel>
+            </TableCell>
           </TableRow>
         </TableHead>
+
         <TableBody>
           {sortedData.map((row, idx) => (
             <TableRow
               key={idx}
               sx={{ backgroundColor: idx % 2 === 0 ? "#fafafa" : "white" }}
             >
-              {columns.map(({ key, isNumeric }) => (
-                <TableCell
-                  key={key as string}
-                  align={isNumeric ? "right" : "left"}
-                >
-                  {typeof row[key] === "number"
-                    ? formatNumberIntl(row[key] as number, {
-                        maximumFractionDigits: 3,
-                      })
-                    : row[key] ?? "-"}
+              <TableCell>{row.assignee ?? "-"}</TableCell>
+              <TableCell align="right">{row.totalTasksCount ?? "-"}</TableCell>
+
+              {detail && (
+                <>
+                  <TableCell align="right">
+                    {row.totalWorkloadExcel ?? "-"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {row.totalWorkloadCalculated ?? "-"}
+                  </TableCell>
+                </>
+              )}
+
+              {!detail && (
+                <TableCell align="right">
+                  {row.totalWorkloadCalculated ?? "-"}
                 </TableCell>
-              ))}
+              )}
+
+              <TableCell align="right">
+                {formatNumberIntl(row.averageWorkload, {
+                  maximumFractionDigits: 3,
+                })}
+              </TableCell>
+              <TableCell>{row.baseDate ?? "-"}</TableCell>
+
+              {detail && (
+                <>
+                  <TableCell align="right">
+                    {formatNumberIntl(row.totalPvExcel, {
+                      maximumFractionDigits: 3,
+                    })}
+                  </TableCell>
+                  <TableCell align="right">
+                    {formatNumberIntl(row.totalPvCalculated, {
+                      maximumFractionDigits: 3,
+                    })}
+                  </TableCell>
+                </>
+              )}
+
+              {!detail && (
+                <TableCell align="right">
+                  {formatNumberIntl(row.totalPvCalculated, {
+                    maximumFractionDigits: 3,
+                  })}
+                </TableCell>
+              )}
+
+              <TableCell align="right">
+                {formatNumberIntl(row.totalEv, { maximumFractionDigits: 3 })}
+              </TableCell>
+              <TableCell align="right">
+                {formatNumberIntl(row.spi, { maximumFractionDigits: 3 })}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -219,7 +219,7 @@ function Evm() {
 
       {state.taskDiffs.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <TaskDiffTable data={state.taskDiffs.filter((d) => d.hasDiff)} />
+          <TaskDiffTable data={state.taskDiffs} />
         </Paper>
       )}
 

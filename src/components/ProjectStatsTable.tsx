@@ -39,7 +39,6 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   工数合計(Excel)
                 </TableCell>
-
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   工数合計(計算)
                 </TableCell>
@@ -90,54 +89,51 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
                 backgroundColor: idx % 2 === 0 ? "#fafafa" : "white",
               }}
             >
-              <TableCell>{row.プロジェクト名 ?? "-"}</TableCell>
-              <TableCell align="right">{row.開始予定日}</TableCell>
-              <TableCell align="right">{row.終了予定日}</TableCell>
-              <TableCell align="right">{row.全体タスク数 ?? "-"}</TableCell>
+              <TableCell>{row.projectName ?? "-"}</TableCell>
+              <TableCell align="right">{row.startDate}</TableCell>
+              <TableCell align="right">{row.endDate}</TableCell>
+              <TableCell align="right">{row.totalTasksCount ?? "-"}</TableCell>
               {detail && (
                 <TableCell align="right">
-                  {row["全体工数の和(Excel)"] ?? "-"}
+                  {row.totalWorkloadExcel ?? "-"}
                 </TableCell>
               )}
               <TableCell align="right">
-                {row["全体工数の和(計算)"] ?? "-"}
+                {row.totalWorkloadCalculated ?? "-"}
               </TableCell>
               <TableCell align="right">
-                {formatNumberIntl(row["全体工数平均"], {
+                {formatNumberIntl(row.averageWorkload, {
                   maximumFractionDigits: 3,
                 })}
               </TableCell>
-              <TableCell align="right">{row.基準日}</TableCell>
+              <TableCell align="right">{row.baseDate}</TableCell>
               {detail && (
                 <TableCell align="right">
-                  {formatNumberIntl(row["基準日終了時PV累積(Excel)"], {
+                  {formatNumberIntl(row.totalPvExcel, {
                     maximumFractionDigits: 3,
                   })}
                 </TableCell>
               )}
               <TableCell align="right">
-                {formatNumberIntl(row["基準日終了時PV累積(計算)"], {
+                {formatNumberIntl(row.totalPvCalculated, {
                   maximumFractionDigits: 3,
                 })}
               </TableCell>
               <TableCell align="right">
-                {formatNumberIntl(row["基準日終了時EV累積"], {
+                {formatNumberIntl(row.totalEv, {
                   maximumFractionDigits: 3,
                 })}
               </TableCell>
               <TableCell align="right">
                 {formatNumberIntl(
-                  subtract(
-                    row["基準日終了時EV累積"],
-                    row["基準日終了時PV累積(計算)"]
-                  ),
+                  subtract(row.totalEv, row.totalPvCalculated),
                   {
                     maximumFractionDigits: 3,
                   }
                 )}
               </TableCell>
               <TableCell align="right">
-                {formatNumberIntl(row["基準日終了時SPI"], {
+                {formatNumberIntl(row.spi, {
                   maximumFractionDigits: 3,
                 })}
               </TableCell>
