@@ -2,10 +2,12 @@ import { useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import { Button, Typography, Box, Paper, Stack, Divider } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
-import type {
-  AssigneeStatistics,
-  Project,
-  ProjectStatistics,
+import {
+  ProjectService,
+  type AssigneeStatistics,
+  type Project,
+  type ProjectStatistics,
+  type TaskDiff,
 } from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
 import { InMemoryRepository } from "../repository/InMemoryRepository";
@@ -17,6 +19,7 @@ import { LongDataByNameTable } from "../components/LongDataByNameTable";
 import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
 import { ProjectStatsView } from "../components/ProjectStatsView";
 import { AssigneeStatsView } from "../components/AssigneeStatsView";
+import { TaskDiffTable } from "../components/TaskDiffTable";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -29,6 +32,8 @@ type State = {
   path: string;
   statisticsByName: AssigneeStatistics[];
   statisticsByProject: ProjectStatistics[];
+  prevProject?: Project; // ← 前回のデータ
+  taskDiffs: TaskDiff[]; // ← 差分結果
 };
 
 function Evm() {
@@ -39,6 +44,8 @@ function Evm() {
     path: "",
     statisticsByName: [],
     statisticsByProject: [],
+    prevProject: undefined, // ← 前回のデータ
+    taskDiffs: [], // ← 差分結果
   });
 
   // ref を定義
@@ -80,6 +87,42 @@ function Evm() {
         console.log("読み込み成功", project.length, " 件");
       } catch (error) {
         console.error("読み込み失敗", error);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const onPrevFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const arrayBuffer = reader.result;
+      if (!(arrayBuffer instanceof ArrayBuffer)) return;
+
+      try {
+        const projectName = getFilenameWithoutExtension(file.name);
+        const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
+        const prevProject = await creator.createProject();
+
+        setState((s) => {
+          const taskDiffs =
+            s.project && prevProject
+              ? new ProjectService().calculateProjectDiffs(
+                  s.project,
+                  prevProject
+                )
+              : [];
+
+          return { ...s, prevProject, taskDiffs };
+        });
+      } catch (error) {
+        console.error("prev読み込み失敗", error);
       }
     };
     reader.readAsArrayBuffer(file);
@@ -144,6 +187,25 @@ function Evm() {
           >
             サンプルファイルDL
           </Button>
+
+          {state.project && (
+            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+              <Button
+                variant="contained"
+                component="label"
+                startIcon={<UploadIcon />}
+              >
+                前回ファイルを選択
+                <input
+                  type="file"
+                  accept=".xlsm"
+                  hidden
+                  onChange={onPrevFileChange}
+                  ref={fileInputRef}
+                />
+              </Button>
+            </Stack>
+          )}
         </Stack>
 
         {state.fileName && (
@@ -152,6 +214,12 @@ function Evm() {
           </Typography>
         )}
       </Paper>
+
+      {state.taskDiffs.length > 0 && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <TaskDiffTable data={state.taskDiffs.filter((d) => d.hasDiff)} />
+        </Paper>
+      )}
 
       {/* プロジェクト情報 */}
       {state.statisticsByProject.length > 0 && (
