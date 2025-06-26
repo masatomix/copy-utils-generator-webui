@@ -63,6 +63,8 @@ function Evm() {
     setState((prev) => ({
       ...prev,
       fileName: file.name,
+      prevProject: undefined, // ← 前回プロジェクトを削除
+      taskDiffs: [], // ← 差分もリセット（あれば）
     }));
 
     const reader = new FileReader();

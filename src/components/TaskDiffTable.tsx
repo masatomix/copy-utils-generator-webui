@@ -6,6 +6,7 @@ import {
   TableBody,
 } from "@mui/material";
 import type { TaskDiff } from "evmtools-node/domain";
+import { formatNumberIntl } from "../utils/format";
 
 export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => (
   <Table size="small">
@@ -28,10 +29,26 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => (
             <TableCell>{diff.id}</TableCell>
             <TableCell>{diff.name}</TableCell>
             <TableCell>{diff.assignee}</TableCell>
-            <TableCell>{diff.deltaProgressRate ?? "-"}</TableCell>
-            <TableCell>{diff.deltaPV ?? "-"}</TableCell>
-            <TableCell>{diff.deltaEV ?? "-"}</TableCell>
-            <TableCell>{diff.deltaSPI ?? "-"}</TableCell>
+            <TableCell>
+              {formatNumberIntl(diff.deltaProgressRate, {
+                maximumFractionDigits: 3,
+              })}
+            </TableCell>
+            <TableCell>
+              {formatNumberIntl(diff.deltaPV, {
+                maximumFractionDigits: 3,
+              })}
+            </TableCell>
+            <TableCell>
+              {formatNumberIntl(diff.deltaEV, {
+                maximumFractionDigits: 3,
+              })}
+            </TableCell>
+            <TableCell>
+              {formatNumberIntl(diff.deltaSPI, {
+                maximumFractionDigits: 3,
+              })}
+            </TableCell>
           </TableRow>
         ))}
     </TableBody>
