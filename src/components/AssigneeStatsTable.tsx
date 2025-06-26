@@ -25,56 +25,49 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
   const [order, setOrder] = useState<Order>("asc");
 
   const columns: { key: SortKey; label: string; isNumeric?: boolean }[] = [
-    { key: "assignee", label: "担当者" },
-    { key: "全体タスク数", label: "タスク数", isNumeric: true },
+    { key: "assignee" as SortKey, label: "担当者" },
+    { key: "totalTasksCount" as SortKey, label: "タスク数", isNumeric: true },
     ...(detail
       ? [
           {
-            key: "全体工数の和(Excel)",
+            key: "totalWorkloadExcel" as SortKey,
             label: "工数合計(Excel)",
             isNumeric: true,
           },
           {
-            key: "全体工数の和(計算)",
+            key: "totalWorkloadCalculated" as SortKey,
             label: "工数合計(計算)",
-            isNumeric: true,
-          },
-        ]
-      : [{ key: "全体工数の和(計算)", label: "工数合計", isNumeric: true }]),
-    { key: "全体工数平均", label: "工数平均", isNumeric: true },
-    { key: "基準日", label: "基準日" },
-    ...(detail
-      ? [
-          {
-            key: "基準日終了時PV累積(Excel)",
-            label: "基準日終了時PV累積(Excel)",
-            isNumeric: true,
-          },
-          {
-            key: "基準日終了時PV累積(計算)",
-            label: "基準日終了時PV累積(計算)",
             isNumeric: true,
           },
         ]
       : [
           {
-            key: "基準日終了時PV累積(計算)",
-            label: "PV",
+            key: "totalWorkloadCalculated" as SortKey,
+            label: "工数合計",
             isNumeric: true,
           },
         ]),
-    {
-      key: "基準日終了時EV累積",
-      label: "EV",
-      isNumeric: true,
-    },
-    {
-      key: "基準日終了時SPI",
-      label: "SPI",
-      isNumeric: true,
-    },
+    { key: "averageWorkload" as SortKey, label: "工数平均", isNumeric: true },
+    { key: "baseDate" as SortKey, label: "基準日" },
+    ...(detail
+      ? [
+          {
+            key: "totalPvExcel" as SortKey,
+            label: "基準日終了時PV累積(Excel)",
+            isNumeric: true,
+          },
+          {
+            key: "totalPvCalculated" as SortKey,
+            label: "基準日終了時PV累積(計算)",
+            isNumeric: true,
+          },
+        ]
+      : [
+          { key: "totalPvCalculated" as SortKey, label: "PV", isNumeric: true },
+        ]),
+    { key: "totalEv" as SortKey, label: "EV", isNumeric: true },
+    { key: "spi" as SortKey, label: "SPI", isNumeric: true },
   ];
-
   const handleSort = (key: SortKey) => {
     const isAsc = orderBy === key && order === "asc";
     setOrderBy(key);
@@ -127,9 +120,7 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
           {sortedData.map((row, idx) => (
             <TableRow
               key={idx}
-              sx={{
-                backgroundColor: idx % 2 === 0 ? "#fafafa" : "white",
-              }}
+              sx={{ backgroundColor: idx % 2 === 0 ? "#fafafa" : "white" }}
             >
               {columns.map(({ key, isNumeric }) => (
                 <TableCell
@@ -140,7 +131,7 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
                     ? formatNumberIntl(row[key] as number, {
                         maximumFractionDigits: 3,
                       })
-                    : row[key]}
+                    : row[key] ?? "-"}
                 </TableCell>
               ))}
             </TableRow>
