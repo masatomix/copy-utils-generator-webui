@@ -5,6 +5,8 @@ import {
   TableCell,
   TableBody,
   TableSortLabel,
+  Button,
+  Box,
 } from "@mui/material";
 import { useState } from "react";
 import type { TaskDiff } from "evmtools-node/domain";
@@ -23,8 +25,9 @@ type SortKey = keyof Pick<
 >;
 
 export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
-  const [orderBy, setOrderBy] = useState<SortKey>("assignee"); // ✅ デフォルトは assignee
+  const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
+  const [showFullName, setShowFullName] = useState<boolean>(true);
 
   const handleSort = (key: SortKey) => {
     if (orderBy === key) {
@@ -35,8 +38,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
     }
   };
 
-  const filtered = data.filter((d) => d.hasDiff); // ✅ 差分があるタスクのみ
-  // const filtered = data;
+  const filtered = data.filter((d) => d.hasDiff);
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -54,59 +56,75 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
   });
 
   return (
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          {[
-            { key: "id", label: "ID" },
-            { key: "fullName", label: "タスク名" },
-            { key: "assignee", label: "担当者" },
-            { key: "deltaProgressRate", label: "進捗率Δ" },
-            { key: "deltaPV", label: "PVΔ" },
-            { key: "deltaEV", label: "EVΔ" },
-            { key: "finished", label: "完了" },
-          ].map(({ key, label }) => (
-            <TableCell key={key}>
-              <TableSortLabel
-                active={orderBy === key}
-                direction={orderBy === key ? order : "asc"}
-                onClick={() => handleSort(key as SortKey)}
-              >
-                {label}
-              </TableSortLabel>
-            </TableCell>
-          ))}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {sortedData.map((diff) => (
-          <TableRow
-            key={diff.id}
-            sx={diff.finished ? { backgroundColor: "#f0f0f0" } : undefined}
-          >
-            <TableCell>{diff.id}</TableCell>
-            <TableCell>{diff.fullName}</TableCell>
-            <TableCell>{diff.assignee}</TableCell>
-            <TableCell>
-              {formatNumberIntl(diff.deltaProgressRate, {
-                style: "percent",
-                maximumFractionDigits: 1,
-              })}
-            </TableCell>
-            <TableCell>
-              {formatNumberIntl(diff.deltaPV, {
-                maximumFractionDigits: 3,
-              })}
-            </TableCell>
-            <TableCell>
-              {formatNumberIntl(diff.deltaEV, {
-                maximumFractionDigits: 3,
-              })}
-            </TableCell>
-            <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
+    <>
+      {/* 控えめに右上表示 */}
+      <Box display="flex" justifyContent="flex-end" mb={1}>
+        <Button
+          size="small"
+          variant="text"
+          onClick={() => setShowFullName((prev) => !prev)}
+        >
+          {showFullName ? "タスク名省略表示" : "タスク名詳細表示"}
+        </Button>
+      </Box>
+
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            {[
+              { key: "id", label: "ID" },
+              {
+                key: showFullName ? "fullName" : "name",
+                label: showFullName ? "タスク名（詳細）" : "タスク名（簡略）",
+              },
+              { key: "assignee", label: "担当者" },
+              { key: "deltaProgressRate", label: "進捗率Δ" },
+              { key: "deltaPV", label: "PVΔ" },
+              { key: "deltaEV", label: "EVΔ" },
+              { key: "finished", label: "完了" },
+            ].map(({ key, label }) => (
+              <TableCell key={key}>
+                <TableSortLabel
+                  active={orderBy === key}
+                  direction={orderBy === key ? order : "asc"}
+                  onClick={() => handleSort(key as SortKey)}
+                >
+                  {label}
+                </TableSortLabel>
+              </TableCell>
+            ))}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHead>
+        <TableBody>
+          {sortedData.map((diff) => (
+            <TableRow
+              key={diff.id}
+              sx={diff.finished ? { backgroundColor: "#f0f0f0" } : undefined}
+            >
+              <TableCell>{diff.id}</TableCell>
+              <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
+              <TableCell>{diff.assignee}</TableCell>
+              <TableCell>
+                {formatNumberIntl(diff.deltaProgressRate, {
+                  style: "percent",
+                  maximumFractionDigits: 1,
+                })}
+              </TableCell>
+              <TableCell>
+                {formatNumberIntl(diff.deltaPV, {
+                  maximumFractionDigits: 3,
+                })}
+              </TableCell>
+              <TableCell>
+                {formatNumberIntl(diff.deltaEV, {
+                  maximumFractionDigits: 3,
+                })}
+              </TableCell>
+              <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
   );
 };
