@@ -4,8 +4,10 @@ import { Button, Typography, Box, Paper, Stack, Divider } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   ProjectService,
+  type AssigneeDiff,
   type AssigneeStatistics,
   type Project,
+  type ProjectDiff,
   type ProjectStatistics,
   type TaskDiff,
 } from "evmtools-node/domain";
@@ -34,6 +36,8 @@ type State = {
   statisticsByProject: ProjectStatistics[];
   prevProject?: Project; // ← 前回のデータ
   taskDiffs: TaskDiff[]; // ← 差分結果
+  projectDiffs: ProjectDiff[]; //
+  assigneeDiffs: AssigneeDiff[]; //
 };
 
 function Evm() {
@@ -46,10 +50,13 @@ function Evm() {
     statisticsByProject: [],
     prevProject: undefined, // ← 前回のデータ
     taskDiffs: [], // ← 差分結果
+    projectDiffs: [], // ← 差分結果
+    assigneeDiffs: [], // ← 差分結果
   });
 
   // ref を定義
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const prevFileInputRef = useRef<HTMLInputElement>(null);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,6 +72,8 @@ function Evm() {
       fileName: file.name,
       prevProject: undefined, // ← 前回プロジェクトを削除
       taskDiffs: [], // ← 差分もリセット（あれば）
+      projectDiffs: [], // ← 差分結果
+      assigneeDiffs: [], // ← 差分結果
     }));
 
     const reader = new FileReader();
@@ -112,16 +121,30 @@ function Evm() {
         const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
         const prevProject = await creator.createProject();
 
-        setState((s) => {
-          const taskDiffs =
-            s.project && prevProject
-              ? new ProjectService().calculateProjectDiffs(
-                  s.project,
-                  prevProject
-                )
-              : [];
+        function calculateDiffs(
+          project: Project | undefined,
+          prev: Project | undefined,
+          service: ProjectService
+        ) {
+          if (!project || !prev)
+            return { taskDiffs: [], projectDiffs: [], assigneeDiffs: [] };
 
-          return { ...s, prevProject, taskDiffs };
+          return {
+            taskDiffs: service.calculateTaskDiffs(project, prev),
+            projectDiffs: service.calculateProjectDiffs(project, prev),
+            assigneeDiffs: service.calculateAssigneeDiffs(project, prev),
+          };
+        }
+
+        setState((s) => {
+          const projectSevice = new ProjectService();
+          const {
+            taskDiffs, //
+            projectDiffs, //
+            assigneeDiffs, //
+          } = calculateDiffs(s.project, prevProject, projectSevice);
+
+          return { ...s, prevProject, taskDiffs, projectDiffs, assigneeDiffs };
         });
       } catch (error) {
         console.error("prev読み込み失敗", error);
@@ -146,8 +169,35 @@ function Evm() {
     }
   };
 
+  const FileSelectButton = ({
+    label,
+    onChange,
+    accept = ".xlsm",
+    icon,
+    fileInputRef,
+  }: {
+    label: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    accept?: string;
+    icon: React.ReactNode;
+    fileInputRef: React.RefObject<HTMLInputElement | null>;
+  }) => {
+    return (
+      <Button variant="contained" component="label" startIcon={icon}>
+        {label}
+        <input
+          type="file"
+          accept={accept}
+          hidden
+          onChange={onChange}
+          ref={fileInputRef}
+        />
+      </Button>
+    );
+  };
+
   return (
-    <Box p={4}>
+    <Box p={4} width="100%">
       <Typography variant="h4" gutterBottom>
         EVM Tools Web UI (Demo)
       </Typography>
@@ -163,21 +213,12 @@ function Evm() {
         </Typography>
 
         <Stack direction="row" spacing={2} alignItems="center">
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<UploadIcon />}
-          >
-            Excelファイルを選択
-            <input
-              type="file"
-              accept=".xlsm"
-              hidden
-              onChange={onFileChange}
-              ref={fileInputRef}
-            />
-          </Button>
-
+          <FileSelectButton
+            label="Excelファイルを選択"
+            icon={<UploadIcon />}
+            onChange={onFileChange}
+            fileInputRef={fileInputRef}
+          />
           <Button
             href={`${
               import.meta.env.BASE_URL
@@ -189,23 +230,14 @@ function Evm() {
           >
             サンプルファイルDL
           </Button>
-
           {state.project && (
             <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-              <Button
-                variant="contained"
-                component="label"
-                startIcon={<UploadIcon />}
-              >
-                前回ファイルを選択
-                <input
-                  type="file"
-                  accept=".xlsm"
-                  hidden
-                  onChange={onPrevFileChange}
-                  ref={fileInputRef}
-                />
-              </Button>
+              <FileSelectButton
+                label="前回ファイルを選択"
+                icon={<UploadIcon />}
+                onChange={onPrevFileChange}
+                fileInputRef={prevFileInputRef}
+              />
             </Stack>
           )}
         </Stack>

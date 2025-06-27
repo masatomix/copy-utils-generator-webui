@@ -59,7 +59,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
         <TableRow>
           {[
             { key: "id", label: "ID" },
-            { key: "name", label: "タスク名" },
+            { key: "fullName", label: "タスク名" },
             { key: "assignee", label: "担当者" },
             { key: "deltaProgressRate", label: "進捗率Δ" },
             { key: "deltaPV", label: "PVΔ" },
@@ -82,7 +82,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
         {sortedData.map((diff) => (
           <TableRow key={diff.id}>
             <TableCell>{diff.id}</TableCell>
-            <TableCell>{diff.name}</TableCell>
+            <TableCell>{diff.fullName}</TableCell>
             <TableCell>{diff.assignee}</TableCell>
             <TableCell>
               {formatNumberIntl(diff.deltaProgressRate, {
