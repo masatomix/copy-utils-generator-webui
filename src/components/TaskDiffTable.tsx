@@ -19,7 +19,7 @@ type SortKey = keyof Pick<
   | "deltaProgressRate"
   | "deltaPV"
   | "deltaEV"
-  | "deltaSPI"
+  | "finished"
 >;
 
 export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
@@ -64,7 +64,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
             { key: "deltaProgressRate", label: "進捗率Δ" },
             { key: "deltaPV", label: "PVΔ" },
             { key: "deltaEV", label: "EVΔ" },
-            { key: "deltaSPI", label: "SPIΔ" },
+            { key: "finished", label: "完了" },
           ].map(({ key, label }) => (
             <TableCell key={key}>
               <TableSortLabel
@@ -80,13 +80,17 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
       </TableHead>
       <TableBody>
         {sortedData.map((diff) => (
-          <TableRow key={diff.id}>
+          <TableRow
+            key={diff.id}
+            sx={diff.finished ? { backgroundColor: "#f0f0f0" } : undefined}
+          >
             <TableCell>{diff.id}</TableCell>
             <TableCell>{diff.fullName}</TableCell>
             <TableCell>{diff.assignee}</TableCell>
             <TableCell>
               {formatNumberIntl(diff.deltaProgressRate, {
-                maximumFractionDigits: 3,
+                style: "percent",
+                maximumFractionDigits: 1,
               })}
             </TableCell>
             <TableCell>
@@ -99,11 +103,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
                 maximumFractionDigits: 3,
               })}
             </TableCell>
-            <TableCell>
-              {formatNumberIntl(diff.deltaSPI, {
-                maximumFractionDigits: 3,
-              })}
-            </TableCell>
+            <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
           </TableRow>
         ))}
       </TableBody>
