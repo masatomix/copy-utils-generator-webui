@@ -185,6 +185,16 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
 
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
               <TableSortLabel
+                // active={orderBy === "totalEv"}
+                // direction={orderBy === "totalEv" ? order : "asc"}
+                // onClick={() => handleSort("totalEv")}
+              >
+                EV-PV
+              </TableSortLabel>
+            </TableCell>
+
+            <TableCell align="right" sx={{ fontWeight: "bold" }}>
+              <TableSortLabel
                 active={orderBy === "spi"}
                 direction={orderBy === "spi" ? order : "asc"}
                 onClick={() => handleSort("spi")}
@@ -254,6 +264,15 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
               <TableCell align="right">
                 {formatNumberIntl(row.totalEv, { maximumFractionDigits: 3 })}
               </TableCell>
+
+              <TableCell align="right">
+                {formatNumberIntl(
+                  subtract(row.totalEv, row.totalPvCalculated),
+                  {
+                    maximumFractionDigits: 3,
+                  }
+                )}
+              </TableCell>
               <TableCell align="right">
                 {formatNumberIntl(row.spi, { maximumFractionDigits: 3 })}
               </TableCell>
@@ -264,3 +283,13 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
     </TableContainer>
   );
 };
+
+function subtract(
+  a: number | undefined,
+  b: number | undefined
+): number | undefined {
+  if (typeof a !== "number" || typeof b !== "number") {
+    return undefined;
+  }
+  return a - b;
+}
