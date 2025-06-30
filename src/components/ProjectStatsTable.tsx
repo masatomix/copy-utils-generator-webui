@@ -6,8 +6,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Stack,
-  Typography,
 } from "@mui/material";
 import type { ProjectStatistics } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
@@ -41,7 +39,7 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
               <>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   工数合計(Excel)
-                  <HelpPopover title="Excel上の固定工数の合計値" content="" />
+                  <HelpPopover title="Excel上の予定工数の合計値" content="" />
                 </TableCell>
 
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>

@@ -34,8 +34,8 @@ export const AssigneeView = ({
   return (
     <Box>
       <Tabs value={tabIndex} onChange={(_, newValue) => setTabIndex(newValue)}>
-        <Tab label="PVグラフ" />
-        <Tab label="日ごとの素データ" />
+        <Tab label="グラフ" />
+        <Tab label="数値データ" />
       </Tabs>
       <Box mt={2}>
         {tabIndex === 0 && <AssigneeLineChart data={chartData} />}

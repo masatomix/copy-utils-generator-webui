@@ -329,10 +329,10 @@ function Evm() {
 Excelファイル内のファイル名から取得したプロジェクトの名前です。
 
 開始予定日
-最も早いタスクの「開始予定日」です。プロジェクトの開始日を示します。
+最も早いタスクの「開始予定日」です。
 
 終了予定日
-最も遅いタスクの「終了予定日」です。プロジェクトの終了日を示します。
+最も遅いタスクの「終了予定日」です。
 
 タスク数
 プロジェクト内に登録されているタスクの総数です。
@@ -348,8 +348,9 @@ Excelファイル内のファイル名から取得したプロジェクトの名
 Excelファイルから取得した基準日です。
 
 PV（Planned Value）
-基準日終了時点での予定工数の合計です。
-タスクごとにExcelの「稼働予定日数」と「予定工数」から1日あたりの工数を算出。さらに、Excelファイル上のプロットをみながら、プロットされた日付<=基準日 のプロット数をかけています。
+基準日終了時点での予定工数の合計(1日あたりの工数 x 経過した日数)です。
+「1日あたりの工数」は、タスクごとにExcelの「稼働予定日数」と「予定工数」から算出。
+「基準日時点の経過日数」は、Excelファイル上のプロットをみながら、プロットの日付<=基準日 の個数で算出。
 (親タスクの工数は二重計上となるため除外)
 
 EV（Earned Value）
@@ -402,30 +403,8 @@ SPI（Schedule Performance Index）
                 タスク数
                 プロジェクト全体で、担当者に割り当てられているタスクの総数です。
                 
-                工数合計
-                PVから計算された、プロジェクト全体の工数合計です。
-                
-                工数平均
-                1タスクあたりの平均工数です。
-                = 工数合計 ÷ タスク数 で算出されます。
-                
-                基準日
-                Excelファイル上の基準日です。
-                
-                PV
-                計算によるPVの累積です。。
-                
-                EV
-                実際の進捗に基づいた出来高（Earned Value）です。
-                
-                EV-PV
-                進捗のずれを示します。
-                = EV - PV。
-                正なら前倒し、負なら遅れを意味します。
-                
-                SPI
-                進捗効率の指標（Schedule Performance Index）です。
-                = EV ÷ PV。1.0以上なら計画通り、1.0未満は遅れを示します。
+                工数合計、工数平均、PV、EV、EV-PV、SPI
+                計算方法は、プロジェクト情報の定義とおなじ。ひとごとで計算。
               `}
             />
           </Stack>
@@ -437,9 +416,16 @@ SPI（Schedule Performance Index）
       {/* PVs推移グラフ(プロジェクト) */}
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            プロジェクトのPV累積チャート
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6" gutterBottom>
+              プロジェクトのPV累積グラフ
+            </Typography>
+            <HelpPopover
+              title="このグラフについて"
+              content="プロジェクト全体の日々のPVを確認できます。毎日の工数が適切かを確認するのに活用してください。"
+            />
+          </Stack>
+
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
             TableComponent={LongDataByProjectTable}
@@ -456,10 +442,10 @@ SPI（Schedule Performance Index）
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">要員ごとのPV累積チャート</Typography>
+            <Typography variant="h6">要員ごとのPV累積グラフ</Typography>
             <HelpPopover
-              title="このチャートについて"
-              content="要員ごとにどれだけ作業が進んでいるかをPVの累積で可視化します。進捗分析に使えます。"
+              title="このグラフについて"
+              content="要員ごとの日々のPVを確認できます。毎日の工数が適切かを確認するのに活用してください。"
             />
           </Stack>
           <Divider sx={{ mb: 2 }} />
