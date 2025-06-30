@@ -1,6 +1,19 @@
 import { useRef, useState } from "react";
 import { saveAs } from "file-saver";
-import { Button, Typography, Box, Paper, Stack, Divider } from "@mui/material";
+import {
+  Button,
+  Typography,
+  Box,
+  Paper,
+  Stack,
+  Divider,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Tooltip,
+  IconButton,
+  Popover,
+} from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   ProjectService,
@@ -22,6 +35,9 @@ import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
 import { ProjectStatsView } from "../components/ProjectStatsView";
 import { AssigneeStatsView } from "../components/AssigneeStatsView";
 import { TaskDiffTable } from "../components/TaskDiffTable";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import React from "react";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -198,19 +214,59 @@ function Evm() {
 
   return (
     <Box p={4} width="100%">
-      <Typography variant="h4" gutterBottom>
-        EVM Tools Web UI (Demo)
-      </Typography>
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">EVM Tools Web UI (Demo)</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="body1" gutterBottom>
+            このツールは、五反田式進捗管理ツール（Ver.7.3）に対応した Excel
+            ファイルを読み込み、
+            プロジェクトの進捗状況や要員別の作業量を可視化する Web
+            アプリケーションです。
+          </Typography>
+          <Typography variant="subtitle1">主な機能:</Typography>
+          <ul>
+            <li>Excel ファイルからプロジェクト情報の読み込み</li>
+            <li>PV（作業量）の集計・グラフ表示（プロジェクト・要員単位）</li>
+            <li>
+              前回ファイルとの比較による差分表示（タスク、プロジェクト、要員）
+            </li>
+            <li>統計情報の表示とダウンロード</li>
+          </ul>
 
-      <Typography variant="subtitle1" gutterBottom>
-        五反田式進捗管理ツール（Ver.7.3）に対応しています。
-      </Typography>
-
+          <Typography variant="subtitle1" sx={{ mt: 2 }}>
+            使い方:
+          </Typography>
+          <ol>
+            <li>
+              「Excelファイルを選択」ボタンから対象ファイルを読み込みます。
+            </li>
+            <li>
+              （任意）前回データと比較したい場合は、「前回ファイルを選択」ボタンから比較対象のファイルを選択します。
+            </li>
+            <li>読み込んだデータがページ下部に表示されます。</li>
+            <li>
+              必要に応じて「データをダウンロード」ボタンからExcel形式で保存できます。
+            </li>
+          </ol>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            ※ 本ツールはローカルで完結するため、データはアップロードされません。
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
       {/* ファイル選択セクション */}
       <Paper variant="outlined" sx={{ p: 3, mt: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          ファイル読み込み
-        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="h6" gutterBottom>
+            ファイル読み込み
+          </Typography>
+          <HelpPopover
+            title="Excelファイルを選択"
+            content={`五反田式進捗管理ツール形式の xlsmファイルを選択してください。
+              サンプルファイルDLでは、サンプルファイルをダウンロードできます。`}
+          />
+        </Stack>
 
         <Stack direction="row" spacing={2} alignItems="center">
           <FileSelectButton
@@ -231,12 +287,16 @@ function Evm() {
             サンプルファイルDL
           </Button>
           {state.project && (
-            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+            <Stack direction="row" spacing={1} alignItems="center">
               <FileSelectButton
                 label="前回ファイルを選択"
                 icon={<UploadIcon />}
                 onChange={onPrevFileChange}
                 fileInputRef={prevFileInputRef}
+              />
+              <HelpPopover
+                title="前回ファイルを選択"
+                content="差分を比較したい前回のExcelファイルを選択してください。タスクごとの変化が表示されます。"
               />
             </Stack>
           )}
@@ -258,19 +318,68 @@ function Evm() {
       {/* プロジェクト情報 */}
       {state.statisticsByProject.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            プロジェクト情報
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6">プロジェクト情報</Typography>
+            <HelpPopover
+              title="このセクションについて"
+              content={`このセクションでは、プロジェクト全体の統計情報を表示します。
+
+項目説明:
+
+プロジェクト名
+Excelファイル内のシート名などから取得したプロジェクトの名前です。
+
+開始予定日
+最も早いタスクの「開始予定日」です。プロジェクトの開始見込みを示します。
+
+終了予定日
+最も遅いタスクの「終了予定日」です。プロジェクトの終了見込みを示します。
+
+タスク数
+プロジェクト内に登録されているタスクの総数です。
+
+工数合計
+すべてのタスクに割り当てられた工数（予定工数）の合計です。人日単位です。
+
+工数平均
+タスク1件あたりの平均工数です（＝工数合計 ÷ タスク数）。
+
+基準日
+Excelファイルから取得した基準日です。
+
+PV（Planned Value）
+基準日終了時点での予定工数の合計です。\n計画通りに進んでいればこの工数に達しているはず、という基準値です。
+
+EV（Earned Value）
+基準日終了時点のEVの合計です。つまり「どれだけ完了しているか」を示す値です。
+
+EV-PV
+EVとPVの差（＝EV − PV）です。プラスなら予定より進捗が早く、マイナスなら遅れています。
+
+SPI（Schedule Performance Index）
+スケジュール効率指数。EV ÷ PV で算出されます。\n1.0以上なら順調、1.0未満なら遅れを示します。
+
+
+                `}
+            />
+          </Stack>
 
           <Divider sx={{ mb: 2 }} />
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={downloadAll}
-            sx={{ mt: 2 }}
-          >
-            データをダウンロード
-          </Button>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Button
+              variant="contained"
+              startIcon={<DownloadIcon />}
+              onClick={downloadAll}
+              sx={{ mt: 2 }}
+            >
+              データをダウンロード
+            </Button>
+            <HelpPopover
+              title="データをダウンロード"
+              content="Excel形式で素データをダウンロードできます。"
+            />
+          </Stack>
           <ProjectStatsView data={state.statisticsByProject} />
         </Paper>
       )}
@@ -278,9 +387,47 @@ function Evm() {
       {/* 要員統計 */}
       {state.statisticsByName.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            要員ごと統計
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6">要員ごと統計</Typography>
+            <HelpPopover
+              title="要員ごと統計"
+              content={`このセクションでは、担当者ごとの統計情報を表示します。
+
+                項目説明:
+
+                担当者
+                タスクの担当者名です。
+                
+                タスク数
+                プロジェクト全体で、担当者に割り当てられているタスクの総数です。
+                
+                工数合計
+                PVから計算された、プロジェクト全体の工数合計です。
+                
+                工数平均
+                1タスクあたりの平均工数です。
+                = 工数合計 ÷ タスク数 で算出されます。
+                
+                基準日
+                Excelファイル上の基準日です。
+                
+                PV
+                計算によるPVの累積です。。
+                
+                EV
+                実際の進捗に基づいた出来高（Earned Value）です。
+                
+                EV-PV
+                進捗のずれを示します。
+                = EV - PV。
+                正なら前倒し、負なら遅れを意味します。
+                
+                SPI
+                進捗効率の指標（Schedule Performance Index）です。
+                = EV ÷ PV。1.0以上なら計画通り、1.0未満は遅れを示します。
+              `}
+            />
+          </Stack>
           <Divider sx={{ mb: 2 }} />
           <AssigneeStatsView data={state.statisticsByName} />
         </Paper>
@@ -307,9 +454,13 @@ function Evm() {
       {/* PVS推移グラフ(ひとごと) */}
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            要員ごとのPV累積チャート
-          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6">要員ごとのPV累積チャート</Typography>
+            <HelpPopover
+              title="このチャートについて"
+              content="要員ごとにどれだけ作業が進んでいるかをPVの累積で可視化します。進捗分析に使えます。"
+            />
+          </Stack>
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
             TableComponent={LongDataByNameTable}
@@ -323,5 +474,60 @@ function Evm() {
     </Box>
   );
 }
+
+// const HelpIcon = ({ message }: { message: string }) => (
+//   <Tooltip title={message} arrow>
+//     <IconButton size="small">
+//       <HelpOutlineIcon fontSize="small" />
+//     </IconButton>
+//   </Tooltip>
+// );
+
+export const HelpPopover = ({
+  title,
+  content,
+}: {
+  title: string;
+  content: string;
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <IconButton size="small" onClick={handleClick}>
+        <HelpOutlineIcon fontSize="small" />
+      </IconButton>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+      >
+        <Typography
+          sx={{
+            p: 2,
+            maxWidth: 500,
+            whiteSpace: "pre-line", // 改行を反映させる
+          }}
+        >
+          <strong>{title}</strong>
+          <br />
+          {content}
+        </Typography>
+      </Popover>
+    </>
+  );
+};
 
 export default Evm;

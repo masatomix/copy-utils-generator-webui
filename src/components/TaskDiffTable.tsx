@@ -7,10 +7,14 @@ import {
   TableSortLabel,
   Button,
   Box,
+  Typography,
+  Stack,
+  Divider,
 } from "@mui/material";
 import { useState } from "react";
 import type { TaskDiff } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
+import { HelpPopover } from "../pages/Evm";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -57,8 +61,26 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
 
   return (
     <>
-      {/* 控えめに右上表示 */}
-      <Box display="flex" justifyContent="flex-end" mb={1}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="h6" gutterBottom>
+            タスクの差分
+          </Typography>
+          <HelpPopover
+            title="タスク差分"
+            content={`現在のデータと前回のデータについて、ID同じタスクを比較し、その変化を表示しています。
+              進捗率、PV、EVに変更があったタスクを表示。
+              完了タスクはグレー表示。
+
+2025/06/30時点: 消えたデータと、新規追加されたデータが表示されていないのでご注意。`}
+          />
+        </Stack>
+
         <Button
           size="small"
           variant="text"
@@ -66,7 +88,8 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
         >
           {showFullName ? "タスク名省略表示" : "タスク名詳細表示"}
         </Button>
-      </Box>
+      </Stack>
+      <Divider sx={{ mb: 2 }} />
 
       <Table size="small">
         <TableHead>
