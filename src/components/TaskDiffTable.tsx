@@ -100,9 +100,9 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
                 label: showFullName ? "タスク名（詳細）" : "タスク名（簡略）",
               },
               { key: "assignee", label: "担当者" },
-              { key: "deltaProgressRate", label: "進捗率Δ" },
-              { key: "deltaPV", label: "PVΔ" },
-              { key: "deltaEV", label: "EVΔ" },
+              { key: "deltaProgressRate", label: "進捗率差分" },
+              { key: "deltaPV", label: "PV差分" },
+              { key: "deltaEV", label: "EV差分" },
               { key: "finished", label: "完了" },
             ].map(({ key, label }) => (
               <TableCell key={key}>

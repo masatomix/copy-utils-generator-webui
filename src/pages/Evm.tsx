@@ -367,21 +367,14 @@ SPI（Schedule Performance Index）
           </Stack>
 
           <Divider sx={{ mb: 2 }} />
-
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button
-              variant="contained"
-              startIcon={<DownloadIcon />}
-              onClick={downloadAll}
-              sx={{ mt: 2 }}
-            >
-              データをダウンロード
-            </Button>
-            <HelpPopover
-              title="データをダウンロード"
-              content="Excel形式で素データをダウンロードできます。"
-            />
-          </Stack>
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            onClick={downloadAll}
+            sx={{ mt: 2 }}
+          >
+            データをダウンロード
+          </Button>
           <ProjectStatsView data={state.statisticsByProject} />
         </Paper>
       )}
