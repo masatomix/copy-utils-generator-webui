@@ -6,9 +6,12 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
 import type { ProjectStatistics } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
+import { HelpPopover } from "../pages/Evm";
 
 type Props = {
   data: ProjectStatistics[];
@@ -38,9 +41,15 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
               <>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   工数合計(Excel)
+                  <HelpPopover title="Excel上の固定工数の合計値" content="" />
                 </TableCell>
+
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   工数合計(計算)
+                  <HelpPopover
+                    title="メインタブの工数合計とおなじ"
+                    content=""
+                  />
                 </TableCell>
               </>
             )}
@@ -59,9 +68,11 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
               <>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
                   基準日終了時PV累積(Excel)
+                  <HelpPopover title="Excelファイル上のPVの合計値" content="" />
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: "bold" }}>
-                  基準日終了時PV累積(計算)
+                  基準日終了時PV累積(計算){" "}
+                  <HelpPopover title="メインタブのPVとおなじ" content="" />
                 </TableCell>
               </>
             )}
