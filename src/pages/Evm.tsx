@@ -213,7 +213,7 @@ function Evm() {
 
   return (
     <Box p={4} width="100%">
-      <Accordion defaultExpanded>
+      <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6">EVM Tools Web UI (Demo)</Typography>
         </AccordionSummary>
