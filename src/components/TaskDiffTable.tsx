@@ -9,6 +9,8 @@ import {
   Typography,
   Stack,
   Divider,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { useState } from "react";
 import type { TaskDiff } from "evmtools-node/domain";
@@ -31,6 +33,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
   const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
   const [showFullName, setShowFullName] = useState<boolean>(true);
+  const [showActualValues, setShowActualValues] = useState<boolean>(false);
 
   const handleSort = (key: SortKey) => {
     if (orderBy === key) {
@@ -80,13 +83,27 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
           />
         </Stack>
 
-        <Button
-          size="small"
-          variant="text"
-          onClick={() => setShowFullName((prev) => !prev)}
-        >
-          {showFullName ? "タスク名省略表示" : "タスク名詳細表示"}
-        </Button>
+        {/* ✅ ボタン群：右上に2ボタン */}
+        <Stack direction="row" spacing={1}>
+          <Button
+            size="small"
+            variant="text"
+            onClick={() => setShowFullName((prev) => !prev)}
+          >
+            {showFullName ? "タスク名省略表示" : "タスク名詳細表示"}
+          </Button>
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={showActualValues}
+                onChange={(e) => setShowActualValues(e.target.checked)}
+              />
+            }
+            label="実数値も表示する"
+          />
+        </Stack>
       </Stack>
       <Divider sx={{ mb: 2 }} />
 
@@ -131,17 +148,55 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
                   style: "percent",
                   maximumFractionDigits: 1,
                 })}
+                {showActualValues && (
+                  <>
+                    &nbsp;(
+                    {formatNumberIntl(diff.prevProgressRate, {
+                      style: "percent",
+                      maximumFractionDigits: 1,
+                    })}
+                    &nbsp;→&nbsp;
+                    {formatNumberIntl(diff.currentProgressRate, {
+                      style: "percent",
+                      maximumFractionDigits: 1,
+                    })}
+                    )
+                  </>
+                )}
               </TableCell>
               <TableCell>
-                {formatNumberIntl(diff.deltaPV, {
-                  maximumFractionDigits: 3,
-                })}
+                {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+                {showActualValues && (
+                  <>
+                    &nbsp;(
+                    {formatNumberIntl(diff.prevPV, {
+                      maximumFractionDigits: 3,
+                    })}
+                    &nbsp;→&nbsp;
+                    {formatNumberIntl(diff.currentPV, {
+                      maximumFractionDigits: 3,
+                    })}
+                    )
+                  </>
+                )}
               </TableCell>
               <TableCell>
-                {formatNumberIntl(diff.deltaEV, {
-                  maximumFractionDigits: 3,
-                })}
+                {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
+                {showActualValues && (
+                  <>
+                    &nbsp;(
+                    {formatNumberIntl(diff.prevEV, {
+                      maximumFractionDigits: 3,
+                    })}
+                    &nbsp;→&nbsp;
+                    {formatNumberIntl(diff.currentEV, {
+                      maximumFractionDigits: 3,
+                    })}
+                    )
+                  </>
+                )}
               </TableCell>
+
               <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
             </TableRow>
           ))}
