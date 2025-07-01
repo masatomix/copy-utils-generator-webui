@@ -16,6 +16,7 @@ import { useState } from "react";
 import type { TaskDiff } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
 import { HelpPopover } from "../pages/Evm";
+import { ShowDiffTag } from "./ShowDiffTag";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -144,59 +145,31 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
               <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
               <TableCell>{diff.assignee}</TableCell>
               <TableCell>
-                {formatNumberIntl(diff.deltaProgressRate, {
-                  style: "percent",
-                  maximumFractionDigits: 1,
-                })}
-                {showActualValues && (
-                  <>
-                    &nbsp;(
-                    {formatNumberIntl(diff.prevProgressRate, {
-                      style: "percent",
-                      maximumFractionDigits: 1,
-                    })}
-                    &nbsp;→&nbsp;
-                    {formatNumberIntl(diff.currentProgressRate, {
-                      style: "percent",
-                      maximumFractionDigits: 1,
-                    })}
-                    )
-                  </>
-                )}
+                {formatPercentPoint(diff.deltaProgressRate)}
+                <ShowDiffTag
+                  current={diff.currentProgressRate}
+                  prev={diff.prevProgressRate}
+                  show={showActualValues}
+                  style="percent"
+                  maximumFractionDigits={1}
+                />
               </TableCell>
               <TableCell>
                 {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                {showActualValues && (
-                  <>
-                    &nbsp;(
-                    {formatNumberIntl(diff.prevPV, {
-                      maximumFractionDigits: 3,
-                    })}
-                    &nbsp;→&nbsp;
-                    {formatNumberIntl(diff.currentPV, {
-                      maximumFractionDigits: 3,
-                    })}
-                    )
-                  </>
-                )}
+                <ShowDiffTag
+                  current={diff.currentPV}
+                  prev={diff.prevPV}
+                  show={showActualValues}
+                />
               </TableCell>
               <TableCell>
                 {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
-                {showActualValues && (
-                  <>
-                    &nbsp;(
-                    {formatNumberIntl(diff.prevEV, {
-                      maximumFractionDigits: 3,
-                    })}
-                    &nbsp;→&nbsp;
-                    {formatNumberIntl(diff.currentEV, {
-                      maximumFractionDigits: 3,
-                    })}
-                    )
-                  </>
-                )}
+                <ShowDiffTag
+                  current={diff.currentEV}
+                  prev={diff.prevEV}
+                  show={showActualValues}
+                />
               </TableCell>
-
               <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
             </TableRow>
           ))}
@@ -205,3 +178,17 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
     </>
   );
 };
+
+function formatPercentPoint(
+  value: number | undefined | null,
+  maximumFractionDigits = 1
+): string | undefined {
+  if (value == null) return "-";
+
+  const formatted = formatNumberIntl(value * 100, {
+    style: "decimal",
+    maximumFractionDigits,
+  });
+
+  return `${formatted}pt`;
+}
