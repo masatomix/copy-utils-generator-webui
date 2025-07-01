@@ -13,10 +13,11 @@ import {
   Checkbox,
 } from "@mui/material";
 import { useState } from "react";
-import type { TaskDiff } from "evmtools-node/domain";
+import { Project, type DiffType, type TaskDiff } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
 import { HelpPopover } from "../pages/Evm";
 import { ShowDiffTag } from "./ShowDiffTag";
+import { dateStr } from "evmtools-node/common";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -28,9 +29,18 @@ type SortKey = keyof Pick<
   | "deltaPV"
   | "deltaEV"
   | "finished"
+  | "diffType"
 >;
 
-export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
+export const TaskDiffTable = ({
+  data,
+  current,
+  prev,
+}: {
+  data: TaskDiff[];
+  current: Project;
+  prev: Project;
+}) => {
   const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
   const [showFullName, setShowFullName] = useState<boolean>(true);
@@ -78,10 +88,17 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
             title="タスク差分"
             content={`現在のデータと前回のデータについて、ID同じタスクを比較し、その変化を表示しています。
               進捗率、PV、EVに変更があったタスクを表示。
-              完了タスクはグレー表示。
-
-2025/06/30時点: 消えたデータと、新規追加されたデータが表示されていないのでご注意。`}
+              完了タスクはグレー表示。`}
           />
+          (
+          <Typography component="span" fontWeight="bold" color="primary">
+            今: {dateStr(current.baseDate)}
+          </Typography>
+          ／
+          <Typography component="span" fontWeight="bold" color="secondary">
+            前: {dateStr(prev.baseDate)}
+          </Typography>
+          ）
         </Stack>
 
         {/* ✅ ボタン群：右上に2ボタン */}
@@ -122,6 +139,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
               { key: "deltaPV", label: "PV差分" },
               { key: "deltaEV", label: "EV差分" },
               { key: "finished", label: "完了" },
+              { key: "diffType", label: "変更種別" },
             ].map(({ key, label }) => (
               <TableCell key={key}>
                 <TableSortLabel
@@ -171,6 +189,7 @@ export const TaskDiffTable = ({ data }: { data: TaskDiff[] }) => {
                 />
               </TableCell>
               <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
+              <TableCell>{formatDiffType(diff.diffType)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -191,4 +210,19 @@ function formatPercentPoint(
   });
 
   return `${formatted}pt`;
+}
+
+function formatDiffType(diffType: DiffType): string {
+  switch (diffType) {
+    case "modified":
+      return "変更";
+    case "added":
+      return "追加";
+    case "removed":
+      return "削除";
+    case "none":
+      return "変化なし";
+    default:
+      return diffType;
+  }
 }
