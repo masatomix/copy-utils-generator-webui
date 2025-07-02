@@ -52,9 +52,11 @@ export const TaskDiffTable = ({
   const [showFullName, setShowFullName] = useState<boolean>(true);
   const [showActualValues, setShowActualValues] = useState<boolean>(false);
   const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
+  const [alwaysShowOverdue, setAlwaysShowOverdue] = useState<boolean>(true);
 
   // 設定メニュー状態
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
   const open = Boolean(anchorEl);
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -80,7 +82,11 @@ export const TaskDiffTable = ({
     setSelectedDiff(null);
   };
 
-  const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
+  // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
+  const filtered = data.filter((d) =>
+    filterOnlyDiff ? d.hasDiff || (alwaysShowOverdue && d.isOverdueAt) : true
+  ); // filterOnlyDiff が true でも、alwaysShowOverdue が true であれば isOverdueAt な行は表示されます。
+
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -112,9 +118,9 @@ export const TaskDiffTable = ({
           </Typography>
           <HelpPopover
             title="タスク差分"
-            content={`現在のデータと前回のデータについて、ID同じタスクを比較し、その変化を表示しています。
-              進捗率、PV、EVに変更があったタスクを表示。
-              完了タスクはグレー表示。`}
+            content={`現在のデータと前回のデータについて、IDが同じタスクを比較し、進捗率、PV、EVに変更があったタスクを表示します。
+              完了タスクはグレー表示、完了期限を過ぎたタスクは変更がなくても赤背景で常に表示します。
+              `}
           />
         </Stack>
 
@@ -155,14 +161,29 @@ export const TaskDiffTable = ({
             </ListItemIcon>
             <ListItemText primary="差分のあるタスクのみ表示" />
           </MenuItem>
+          <MenuItem onClick={() => setAlwaysShowOverdue((prev) => !prev)}>
+            <ListItemIcon>
+              <Checkbox
+                edge="start"
+                checked={alwaysShowOverdue}
+                tabIndex={-1}
+                disableRipple
+              />
+            </ListItemIcon>
+            <ListItemText primary="期限切れタスクは常に表示" />
+          </MenuItem>
         </Menu>
       </Stack>
 
       <Typography gutterBottom>
-        進捗率、PV、EVに変更があったタスクを表示します。行をクリックすると、新旧のデータの詳細が確認できます。
+        進捗率、PV、EVに変更があったタスクを表示します。完了期限を過ぎたタスク(予定終了日
+        ≤ 基準日)は変更がなくても赤背景で常に表示します。
       </Typography>
       <Typography gutterBottom>
-        (セルが赤いタスクは完了予定日を過ぎたタスクです)
+        行をクリックすると、新旧のデータの詳細が確認できます。
+      </Typography>
+      <Typography gutterBottom>
+        右上の歯車で、表示内容を制御できます。
       </Typography>
       {/* 基準日表示 */}
       <Typography variant="body2" mb={2}>
