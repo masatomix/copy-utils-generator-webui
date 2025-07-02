@@ -5,19 +5,26 @@ import {
   TableCell,
   TableBody,
   TableSortLabel,
-  Button,
   Typography,
   Stack,
   Divider,
-  FormControlLabel,
   Checkbox,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
+import SettingsIcon from "@mui/icons-material/Settings";
+
 import { useState } from "react";
 import { Project, type DiffType, type TaskDiff } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
 import { HelpPopover } from "../pages/Evm";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
+
+
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -47,6 +54,18 @@ export const TaskDiffTable = ({
   const [showActualValues, setShowActualValues] = useState<boolean>(false);
   const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
 
+  
+
+  // 設定メニュー状態
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleSort = (key: SortKey) => {
     if (orderBy === key) {
       setOrder(order === "asc" ? "desc" : "asc");
@@ -55,7 +74,7 @@ export const TaskDiffTable = ({
       setOrder("asc");
     }
   };
-  
+
   const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
@@ -75,11 +94,12 @@ export const TaskDiffTable = ({
 
   return (
     <>
+      {/* タイトルと設定 */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        mb={2}
+        mb={1}
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="h6" gutterBottom>
@@ -91,50 +111,53 @@ export const TaskDiffTable = ({
               進捗率、PV、EVに変更があったタスクを表示。
               完了タスクはグレー表示。`}
           />
-          (
-          <Typography component="span" fontWeight="bold" color="primary">
-            基準日: {dateStr(current.baseDate)}
-          </Typography>
-          ／
-          <Typography component="span" fontWeight="bold" color="secondary">
-            比較対象の基準日: {dateStr(prev.baseDate)}
-          </Typography>
-          ）
         </Stack>
 
-        {/* ✅ ボタン群：右上に2ボタン */}
-        <Stack direction="row" spacing={1}>
-          <Button
-            size="small"
-            variant="text"
-            onClick={() => setShowFullName((prev) => !prev)}
-          >
-            {showFullName ? "タスク名省略表示" : "タスク名詳細表示"}
-          </Button>
-
-          <FormControlLabel
-            control={
+        <IconButton onClick={handleMenuOpen} size="small">
+          <SettingsIcon />
+        </IconButton>
+        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+          <MenuItem onClick={() => setShowFullName((prev) => !prev)}>
+            <ListItemIcon>
               <Checkbox
-                size="small"
+                edge="start"
+                checked={showFullName}
+                tabIndex={-1}
+                disableRipple
+              />
+            </ListItemIcon>
+            <ListItemText primary="タスク名詳細表示" />
+          </MenuItem>
+          <MenuItem onClick={() => setShowActualValues((prev) => !prev)}>
+            <ListItemIcon>
+              <Checkbox
+                edge="start"
                 checked={showActualValues}
-                onChange={(e) => setShowActualValues(e.target.checked)}
+                tabIndex={-1}
+                disableRipple
               />
-            }
-            label="実数値も表示する"
-          />
-
-          <FormControlLabel
-            control={
+            </ListItemIcon>
+            <ListItemText primary="実数値も表示" />
+          </MenuItem>
+          <MenuItem onClick={() => setFilterOnlyDiff((prev) => !prev)}>
+            <ListItemIcon>
               <Checkbox
-                size="small"
+                edge="start"
                 checked={filterOnlyDiff}
-                onChange={(e) => setFilterOnlyDiff(e.target.checked)}
+                tabIndex={-1}
+                disableRipple
               />
-            }
-            label="差分のあるタスクのみ表示"
-          />
-        </Stack>
+            </ListItemIcon>
+            <ListItemText primary="差分のあるタスクのみ表示" />
+          </MenuItem>
+        </Menu>
       </Stack>
+
+      {/* 基準日表示 */}
+      <Typography variant="body2" mb={2}>
+        <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
+        <strong>比較対象:</strong> {dateStr(prev.baseDate)}
+      </Typography>
       <Divider sx={{ mb: 2 }} />
 
       <Table size="small">
