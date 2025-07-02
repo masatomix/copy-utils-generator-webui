@@ -51,16 +51,22 @@ export const TaskDiffDialog = ({
                 selectedDiff.currentTask?.name ?? "-",
                 selectedDiff.prevTask?.name ?? "-",
               ],
-              //   [
-              //     "詳細名",
-              //     selectedDiff.currentTask?.fullName ?? "-",
-              //     selectedDiff.prevTask?.fullName ?? "-",
-              //   ],
               [
                 "担当者",
                 selectedDiff.currentTask?.assignee ?? "-",
                 selectedDiff.prevTask?.assignee ?? "-",
               ],
+
+              [
+                "予定工数",
+                formatNumberIntl(selectedDiff.currentTask?.workload, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
+                formatNumberIntl(selectedDiff.prevTask?.workload, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
+              ],
+
               [
                 "開始日",
                 dateStr(selectedDiff.currentTask?.startDate),
@@ -73,18 +79,32 @@ export const TaskDiffDialog = ({
               ],
               [
                 "PV",
-                formatNumberIntl(selectedDiff.currentTask?.pv) ?? "-",
-                formatNumberIntl(selectedDiff.prevTask?.pv) ?? "-",
+                formatNumberIntl(selectedDiff.currentTask?.pv, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
+                formatNumberIntl(selectedDiff.prevTask?.pv, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
               ],
               [
                 "EV",
-                formatNumberIntl(selectedDiff.currentTask?.ev) ?? "-",
-                formatNumberIntl(selectedDiff.prevTask?.ev) ?? "-",
+                formatNumberIntl(selectedDiff.currentTask?.ev, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
+                formatNumberIntl(selectedDiff.prevTask?.ev, {
+                  maximumFractionDigits: 3,
+                }) ?? "-",
               ],
               [
                 "進捗率",
-                formatPercentPoint(selectedDiff.currentTask?.progressRate),
-                formatPercentPoint(selectedDiff.prevTask?.progressRate),
+                formatNumberIntl(selectedDiff.currentTask?.progressRate, {
+                  style: "percent",
+                  maximumFractionDigits: 1,
+                }),
+                formatNumberIntl(selectedDiff.prevTask?.progressRate, {
+                  style: "percent",
+                  maximumFractionDigits: 1,
+                }),
               ],
               [
                 "遅延日数",
@@ -113,15 +133,3 @@ export const TaskDiffDialog = ({
     </Dialog>
   );
 };
-
-function formatPercentPoint(
-  value: number | undefined | null,
-  maximumFractionDigits = 1
-): string | undefined {
-  if (value == null) return "-";
-  const formatted = formatNumberIntl(value * 100, {
-    style: "decimal",
-    maximumFractionDigits,
-  });
-  return `${formatted}pt`;
-}
