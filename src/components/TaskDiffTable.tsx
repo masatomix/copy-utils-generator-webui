@@ -23,8 +23,7 @@ import { formatNumberIntl } from "../utils/format";
 import { HelpPopover } from "../pages/Evm";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
-
-
+import { TaskDiffDialog } from "./TaskDiffDialog";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -54,8 +53,6 @@ export const TaskDiffTable = ({
   const [showActualValues, setShowActualValues] = useState<boolean>(false);
   const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
 
-  
-
   // 設定メニュー状態
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -73,6 +70,14 @@ export const TaskDiffTable = ({
       setOrderBy(key);
       setOrder("asc");
     }
+  };
+
+  const [selectedDiff, setSelectedDiff] = useState<TaskDiff | null>(null);
+  const handleRowClick = (diff: TaskDiff) => {
+    setSelectedDiff(diff);
+  };
+  const handleDialogClose = () => {
+    setSelectedDiff(null);
   };
 
   const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
@@ -192,7 +197,11 @@ export const TaskDiffTable = ({
           {sortedData.map((diff) => (
             <TableRow
               key={diff.id}
-              sx={diff.finished ? { backgroundColor: "#f0f0f0" } : undefined}
+              sx={{
+                backgroundColor: diff.finished ? "#f0f0f0" : undefined,
+                cursor: "pointer",
+              }}
+              onClick={() => handleRowClick(diff)}
             >
               <TableCell>{diff.id}</TableCell>
               <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
@@ -229,6 +238,13 @@ export const TaskDiffTable = ({
           ))}
         </TableBody>
       </Table>
+
+      {/* ダイアログ */}
+      <TaskDiffDialog
+        open={!!selectedDiff}
+        onClose={handleDialogClose}
+        selectedDiff={selectedDiff}
+      />
     </>
   );
 };
@@ -238,12 +254,10 @@ function formatPercentPoint(
   maximumFractionDigits = 1
 ): string | undefined {
   if (value == null) return "-";
-
   const formatted = formatNumberIntl(value * 100, {
     style: "decimal",
     maximumFractionDigits,
   });
-
   return `${formatted}pt`;
 }
 
