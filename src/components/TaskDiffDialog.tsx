@@ -36,12 +36,21 @@ export const TaskDiffDialog = ({
     ["名称", currentTask?.name, prevTask?.name],
     ["担当者", currentTask?.assignee, prevTask?.assignee],
     [
-      "予定工数",
+      "予定工数(MD)",
       formatNumberIntl(currentTask?.workload, { maximumFractionDigits: 3 }),
       formatNumberIntl(prevTask?.workload, { maximumFractionDigits: 3 }),
     ],
     [
-      "一日あたり工数",
+      "稼働予定日数(日)",
+      formatNumberIntl(currentTask?.scheduledWorkDays, {
+        maximumFractionDigits: 0,
+      }),
+      formatNumberIntl(prevTask?.scheduledWorkDays, {
+        maximumFractionDigits: 0,
+      }),
+    ],
+    [
+      "一日あたり工数(MD)",
       formatNumberIntl(currentTask?.workloadPerDay, {
         maximumFractionDigits: 3,
       }),
@@ -62,7 +71,7 @@ export const TaskDiffDialog = ({
       )}`,
     ],
     [
-      "進捗率",
+      "進捗率(%)",
       formatNumberIntl(currentTask?.progressRate, {
         style: "percent",
         maximumFractionDigits: 1,
@@ -73,26 +82,17 @@ export const TaskDiffDialog = ({
       }),
     ],
     [
-      "稼働予定日数",
-      formatNumberIntl(currentTask?.scheduledWorkDays, {
-        maximumFractionDigits: 0,
-      }),
-      formatNumberIntl(prevTask?.scheduledWorkDays, {
-        maximumFractionDigits: 0,
-      }),
-    ],
-    [
-      "PV",
+      "PV(MD)",
       formatNumberIntl(currentTask?.pv, { maximumFractionDigits: 3 }),
       formatNumberIntl(prevTask?.pv, { maximumFractionDigits: 3 }),
     ],
     [
-      "EV",
+      "EV(MD)",
       formatNumberIntl(currentTask?.ev, { maximumFractionDigits: 3 }),
       formatNumberIntl(prevTask?.ev, { maximumFractionDigits: 3 }),
     ],
     [
-      "SPI",
+      "SPI (EV/PV)",
       formatNumberIntl(currentTask?.spi, { maximumFractionDigits: 3 }),
       formatNumberIntl(prevTask?.spi, { maximumFractionDigits: 3 }),
     ],
