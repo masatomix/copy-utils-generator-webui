@@ -158,6 +158,9 @@ export const TaskDiffTable = ({
         </Menu>
       </Stack>
 
+      <Typography gutterBottom>
+        進捗率、PV、EVに変更があったタスクを表示します。行をクリックすると、新旧のデータの詳細が確認できます。
+      </Typography>
       {/* 基準日表示 */}
       <Typography variant="body2" mb={2}>
         <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}

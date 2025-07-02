@@ -1,4 +1,3 @@
-// components/TaskDiffDialog.tsx
 import {
   Dialog,
   DialogTitle,
@@ -26,10 +25,89 @@ export const TaskDiffDialog = ({
 }) => {
   if (!selectedDiff) return null;
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>タスク詳細</DialogTitle>
+  const { currentTask, prevTask } = selectedDiff;
 
+  const rows: [
+    string,
+    string | number | null | undefined,
+    string | number | null | undefined
+  ][] = [
+    ["ID", currentTask?.id, prevTask?.id],
+    ["名称", currentTask?.name, prevTask?.name],
+    ["担当者", currentTask?.assignee, prevTask?.assignee],
+    [
+      "予定工数",
+      formatNumberIntl(currentTask?.workload, { maximumFractionDigits: 3 }),
+      formatNumberIntl(prevTask?.workload, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "一日あたり工数",
+      formatNumberIntl(currentTask?.workloadPerDay, {
+        maximumFractionDigits: 3,
+      }),
+      formatNumberIntl(prevTask?.workloadPerDay, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "予定開始日～終了日",
+      `${dateStr(currentTask?.startDate)} ～ ${dateStr(currentTask?.endDate)}`,
+      `${dateStr(prevTask?.startDate)} ～ ${dateStr(prevTask?.endDate)}`,
+    ],
+    [
+      "実績開始日～終了日",
+      `${dateStr(currentTask?.actualStartDate)} ～ ${dateStr(
+        currentTask?.actualEndDate
+      )}`,
+      `${dateStr(prevTask?.actualStartDate)} ～ ${dateStr(
+        prevTask?.actualEndDate
+      )}`,
+    ],
+    [
+      "進捗率",
+      formatNumberIntl(currentTask?.progressRate, {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }),
+      formatNumberIntl(prevTask?.progressRate, {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }),
+    ],
+    [
+      "稼働予定日数",
+      formatNumberIntl(currentTask?.scheduledWorkDays, {
+        maximumFractionDigits: 0,
+      }),
+      formatNumberIntl(prevTask?.scheduledWorkDays, {
+        maximumFractionDigits: 0,
+      }),
+    ],
+    [
+      "PV",
+      formatNumberIntl(currentTask?.pv, { maximumFractionDigits: 3 }),
+      formatNumberIntl(prevTask?.pv, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "EV",
+      formatNumberIntl(currentTask?.ev, { maximumFractionDigits: 3 }),
+      formatNumberIntl(prevTask?.ev, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "SPI",
+      formatNumberIntl(currentTask?.spi, { maximumFractionDigits: 3 }),
+      formatNumberIntl(prevTask?.spi, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "予定進捗日",
+      dateStr(currentTask?.expectedProgressDate),
+      dateStr(prevTask?.expectedProgressDate),
+    ],
+    ["遅延日数", currentTask?.delayDays, prevTask?.delayDays],
+    ["備考", currentTask?.remarks, prevTask?.remarks],
+  ];
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>タスク詳細</DialogTitle>
       <DialogContent dividers>
         <Table size="small">
           <TableHead>
@@ -40,84 +118,8 @@ export const TaskDiffDialog = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {[
-              [
-                "ID",
-                selectedDiff.currentTask?.id ?? "-",
-                selectedDiff.prevTask?.id ?? "-",
-              ],
-              [
-                "簡略名",
-                selectedDiff.currentTask?.name ?? "-",
-                selectedDiff.prevTask?.name ?? "-",
-              ],
-              [
-                "担当者",
-                selectedDiff.currentTask?.assignee ?? "-",
-                selectedDiff.prevTask?.assignee ?? "-",
-              ],
-
-              [
-                "予定工数",
-                formatNumberIntl(selectedDiff.currentTask?.workload, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-                formatNumberIntl(selectedDiff.prevTask?.workload, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-              ],
-
-              [
-                "開始日",
-                dateStr(selectedDiff.currentTask?.startDate),
-                dateStr(selectedDiff.prevTask?.startDate),
-              ],
-              [
-                "終了日",
-                dateStr(selectedDiff.currentTask?.endDate),
-                dateStr(selectedDiff.prevTask?.endDate),
-              ],
-              [
-                "PV",
-                formatNumberIntl(selectedDiff.currentTask?.pv, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-                formatNumberIntl(selectedDiff.prevTask?.pv, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-              ],
-              [
-                "EV",
-                formatNumberIntl(selectedDiff.currentTask?.ev, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-                formatNumberIntl(selectedDiff.prevTask?.ev, {
-                  maximumFractionDigits: 3,
-                }) ?? "-",
-              ],
-              [
-                "進捗率",
-                formatNumberIntl(selectedDiff.currentTask?.progressRate, {
-                  style: "percent",
-                  maximumFractionDigits: 1,
-                }),
-                formatNumberIntl(selectedDiff.prevTask?.progressRate, {
-                  style: "percent",
-                  maximumFractionDigits: 1,
-                }),
-              ],
-              [
-                "遅延日数",
-                selectedDiff.currentTask?.delayDays ?? "-",
-                selectedDiff.prevTask?.delayDays ?? "-",
-              ],
-              [
-                "備考",
-                selectedDiff.currentTask?.remarks ?? "-",
-                selectedDiff.prevTask?.remarks ?? "-",
-              ],
-            ].map(([label, current, prev]) => (
-              <TableRow key={label as string}>
+            {rows.map(([label, current, prev]) => (
+              <TableRow key={label}>
                 <TableCell>{label}</TableCell>
                 <TableCell>{current ?? "-"}</TableCell>
                 <TableCell>{prev ?? "-"}</TableCell>
@@ -126,7 +128,6 @@ export const TaskDiffDialog = ({
           </TableBody>
         </Table>
       </DialogContent>
-
       <DialogActions>
         <Button onClick={onClose}>閉じる</Button>
       </DialogActions>
