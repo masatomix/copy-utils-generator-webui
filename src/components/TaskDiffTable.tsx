@@ -108,7 +108,7 @@ export const TaskDiffTable = ({
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="h6" gutterBottom>
-            タスクの差分
+            タスクの差分(β版)
           </Typography>
           <HelpPopover
             title="タスク差分"
@@ -161,6 +161,9 @@ export const TaskDiffTable = ({
       <Typography gutterBottom>
         進捗率、PV、EVに変更があったタスクを表示します。行をクリックすると、新旧のデータの詳細が確認できます。
       </Typography>
+      <Typography gutterBottom>
+        (セルが赤いタスクは完了予定日を過ぎたタスクです)
+      </Typography>
       {/* 基準日表示 */}
       <Typography variant="body2" mb={2}>
         <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
@@ -183,6 +186,7 @@ export const TaskDiffTable = ({
               { key: "deltaEV", label: "EV差分" },
               { key: "finished", label: "完了" },
               { key: "diffType", label: "変更種別" },
+              // { key: "isOverdueAt", label: "期限切れ" },
             ].map(({ key, label }) => (
               <TableCell key={key}>
                 <TableSortLabel
@@ -201,7 +205,11 @@ export const TaskDiffTable = ({
             <TableRow
               key={diff.id}
               sx={{
-                backgroundColor: diff.finished ? "#f0f0f0" : undefined,
+                backgroundColor: diff.finished
+                  ? "#f0f0f0"
+                  : diff.isOverdueAt
+                  ? "#ffebee"
+                  : undefined,
                 cursor: "pointer",
               }}
               onClick={() => handleRowClick(diff)}
@@ -237,6 +245,7 @@ export const TaskDiffTable = ({
               </TableCell>
               <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
               <TableCell>{formatDiffType(diff.diffType)}</TableCell>
+              {/* <TableCell>{diff.isOverdueAt ? "期限切れ" : ""}</TableCell> */}
             </TableRow>
           ))}
         </TableBody>
