@@ -45,6 +45,7 @@ export const TaskDiffTable = ({
   const [order, setOrder] = useState<Order>("asc");
   const [showFullName, setShowFullName] = useState<boolean>(true);
   const [showActualValues, setShowActualValues] = useState<boolean>(false);
+  const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
 
   const handleSort = (key: SortKey) => {
     if (orderBy === key) {
@@ -54,8 +55,8 @@ export const TaskDiffTable = ({
       setOrder("asc");
     }
   };
-
-  const filtered = data.filter((d) => d.hasDiff);
+  
+  const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
     const bValue = b[orderBy];
@@ -92,11 +93,11 @@ export const TaskDiffTable = ({
           />
           (
           <Typography component="span" fontWeight="bold" color="primary">
-            今: {dateStr(current.baseDate)}
+            基準日: {dateStr(current.baseDate)}
           </Typography>
           ／
           <Typography component="span" fontWeight="bold" color="secondary">
-            前: {dateStr(prev.baseDate)}
+            比較対象の基準日: {dateStr(prev.baseDate)}
           </Typography>
           ）
         </Stack>
@@ -120,6 +121,17 @@ export const TaskDiffTable = ({
               />
             }
             label="実数値も表示する"
+          />
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={filterOnlyDiff}
+                onChange={(e) => setFilterOnlyDiff(e.target.checked)}
+              />
+            }
+            label="差分のあるタスクのみ表示"
           />
         </Stack>
       </Stack>
