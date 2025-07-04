@@ -37,6 +37,7 @@ import { TaskDiffTable } from "../components/TaskDiffTable";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
+import { TaskDiffTabs } from "../components/TaskDiffTabs";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -51,8 +52,8 @@ type State = {
   statisticsByProject: ProjectStatistics[];
   prevProject?: Project; // ← 前回のデータ
   taskDiffs: TaskDiff[]; // ← 差分結果
-  projectDiffs: ProjectDiff[]; //
-  assigneeDiffs: AssigneeDiff[]; //
+  // projectDiffs: ProjectDiff[]; //
+  // assigneeDiffs: AssigneeDiff[]; //
 };
 
 function Evm() {
@@ -65,8 +66,8 @@ function Evm() {
     statisticsByProject: [],
     prevProject: undefined, // ← 前回のデータ
     taskDiffs: [], // ← 差分結果
-    projectDiffs: [], // ← 差分結果
-    assigneeDiffs: [], // ← 差分結果
+    // projectDiffs: [], // ← 差分結果
+    // assigneeDiffs: [], // ← 差分結果
   });
 
   // ref を定義
@@ -87,8 +88,8 @@ function Evm() {
       fileName: file.name,
       prevProject: undefined, // ← 前回プロジェクトを削除
       taskDiffs: [], // ← 差分もリセット（あれば）
-      projectDiffs: [], // ← 差分結果
-      assigneeDiffs: [], // ← 差分結果
+      // projectDiffs: [], // ← 差分結果
+      // assigneeDiffs: [], // ← 差分結果
     }));
 
     const reader = new FileReader();
@@ -141,13 +142,12 @@ function Evm() {
           prev: Project | undefined,
           service: ProjectService
         ) {
-          if (!project || !prev)
-            return { taskDiffs: [], projectDiffs: [], assigneeDiffs: [] };
+          if (!project || !prev) return { taskDiffs: [] };
 
           return {
             taskDiffs: service.calculateTaskDiffs(project, prev),
-            projectDiffs: service.calculateProjectDiffs(project, prev),
-            assigneeDiffs: service.calculateAssigneeDiffs(project, prev),
+            // projectDiffs: service.calculateProjectDiffs(project, prev),
+            // assigneeDiffs: service.calculateAssigneeDiffs(project, prev),
           };
         }
 
@@ -155,11 +155,15 @@ function Evm() {
           const projectSevice = new ProjectService();
           const {
             taskDiffs, //
-            projectDiffs, //
-            assigneeDiffs, //
+            // projectDiffs, //
+            // assigneeDiffs, //
           } = calculateDiffs(s.project, prevProject, projectSevice);
 
-          return { ...s, prevProject, taskDiffs, projectDiffs, assigneeDiffs };
+          return {
+            ...s,
+            prevProject,
+            taskDiffs /*projectDiffs, assigneeDiffs*/,
+          };
         });
       } catch (error) {
         console.error("prev読み込み失敗", error);
@@ -310,7 +314,10 @@ function Evm() {
 
       {state.taskDiffs.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <TaskDiffTable
+          <Typography variant="h6" gutterBottom>
+            タスクの差分(β版)
+          </Typography>
+          <TaskDiffTabs
             data={state.taskDiffs}
             current={state.project!}
             prev={state.prevProject!}

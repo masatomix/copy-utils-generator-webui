@@ -20,7 +20,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { useState } from "react";
 import { Project, type DiffType, type TaskDiff } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
-import { HelpPopover } from "../pages/Evm";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
@@ -112,21 +111,6 @@ export const TaskDiffTable = ({
         alignItems="center"
         mb={1}
       >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography variant="h6" gutterBottom>
-            タスクの差分(β版)
-          </Typography>
-          <HelpPopover
-            title="タスク差分"
-            content={`現在のデータと前回のデータについて、IDが同じタスクを比較し、進捗率、PV、EVに変更があったタスクを表示します。
-              完了タスクはグレー表示、完了期限を過ぎたタスクは変更がなくても赤背景で常に表示します。
-              `}
-          />
-        </Stack>
-
-        <IconButton onClick={handleMenuOpen} size="small">
-          <SettingsIcon />
-        </IconButton>
         <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
           <MenuItem onClick={() => setShowFullName((prev) => !prev)}>
             <ListItemIcon>
@@ -174,22 +158,39 @@ export const TaskDiffTable = ({
           </MenuItem>
         </Menu>
       </Stack>
+      <Stack spacing={1} mb={2}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Stack>
+            <Typography gutterBottom>
+              進捗率、PV、EVに変更があったタスクを表示します。完了期限を過ぎたタスク(予定終了日
+              ≤ 基準日)は変更がなくても赤背景で常に表示します。
+            </Typography>
+            <Typography gutterBottom>
+              行をクリックすると、新旧のデータの詳細が確認できます。
+            </Typography>
+            <Typography gutterBottom>
+              右上の歯車で、表示内容を制御できます。
+            </Typography>
+            <Typography variant="body2" mt={1}>
+              <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
+              <strong>比較対象:</strong> {dateStr(prev.baseDate)}
+            </Typography>
+          </Stack>
 
-      <Typography gutterBottom>
-        進捗率、PV、EVに変更があったタスクを表示します。完了期限を過ぎたタスク(予定終了日
-        ≤ 基準日)は変更がなくても赤背景で常に表示します。
-      </Typography>
-      <Typography gutterBottom>
-        行をクリックすると、新旧のデータの詳細が確認できます。
-      </Typography>
-      <Typography gutterBottom>
-        右上の歯車で、表示内容を制御できます。
-      </Typography>
-      {/* 基準日表示 */}
-      <Typography variant="body2" mb={2}>
-        <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
-        <strong>比較対象:</strong> {dateStr(prev.baseDate)}
-      </Typography>
+          {/* 歯車ボタン */}
+          <IconButton
+            onClick={handleMenuOpen}
+            size="small"
+            sx={{ alignSelf: "flex-start" }}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </Stack>
+      </Stack>
       <Divider sx={{ mb: 2 }} />
 
       <Table size="small">
