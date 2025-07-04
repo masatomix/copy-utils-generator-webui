@@ -23,6 +23,7 @@ import { formatNumberIntl } from "../utils/format";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
+import type { TaskDiffTableSetting } from "./TaskDiffTabs";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -41,17 +42,26 @@ export const TaskDiffTable = ({
   data,
   current,
   prev,
+  setting,
+  onSettingChange,
 }: {
   data: TaskDiff[];
   current: Project;
   prev: Project;
+  setting: TaskDiffTableSetting;
+  onSettingChange: (newSetting: TaskDiffTableSetting) => void;
 }) => {
+  const { showFullName, showActualValues, filterOnlyDiff, alwaysShowOverdue } =
+    setting;
+  const updateSetting = (key: keyof TaskDiffTableSetting) => {
+    onSettingChange({ ...setting, [key]: !setting[key] });
+  };
   const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
-  const [showFullName, setShowFullName] = useState<boolean>(true);
-  const [showActualValues, setShowActualValues] = useState<boolean>(false);
-  const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
-  const [alwaysShowOverdue, setAlwaysShowOverdue] = useState<boolean>(true);
+  // const [showFullName, setShowFullName] = useState<boolean>(true);
+  // const [showActualValues, setShowActualValues] = useState<boolean>(false);
+  // const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
+  // const [alwaysShowOverdue, setAlwaysShowOverdue] = useState<boolean>(true);
 
   // 設定メニュー状態
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -112,7 +122,7 @@ export const TaskDiffTable = ({
         mb={1}
       >
         <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-          <MenuItem onClick={() => setShowFullName((prev) => !prev)}>
+          <MenuItem onClick={() => updateSetting("showFullName")}>
             <ListItemIcon>
               <Checkbox
                 edge="start"
@@ -123,7 +133,7 @@ export const TaskDiffTable = ({
             </ListItemIcon>
             <ListItemText primary="タスク名詳細表示" />
           </MenuItem>
-          <MenuItem onClick={() => setShowActualValues((prev) => !prev)}>
+          <MenuItem onClick={() => updateSetting("showActualValues")}>
             <ListItemIcon>
               <Checkbox
                 edge="start"
@@ -134,7 +144,7 @@ export const TaskDiffTable = ({
             </ListItemIcon>
             <ListItemText primary="実数値も表示" />
           </MenuItem>
-          <MenuItem onClick={() => setFilterOnlyDiff((prev) => !prev)}>
+          <MenuItem onClick={() => updateSetting("filterOnlyDiff")}>
             <ListItemIcon>
               <Checkbox
                 edge="start"
@@ -145,7 +155,7 @@ export const TaskDiffTable = ({
             </ListItemIcon>
             <ListItemText primary="差分のあるタスクのみ表示" />
           </MenuItem>
-          <MenuItem onClick={() => setAlwaysShowOverdue((prev) => !prev)}>
+          <MenuItem onClick={() => updateSetting("alwaysShowOverdue")}>
             <ListItemIcon>
               <Checkbox
                 edge="start"

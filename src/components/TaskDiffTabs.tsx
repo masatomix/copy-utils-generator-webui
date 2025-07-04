@@ -11,8 +11,21 @@ type Props = {
   prev: Project;
 };
 
+export type TaskDiffTableSetting = {
+  showFullName: boolean;
+  showActualValues: boolean;
+  filterOnlyDiff: boolean;
+  alwaysShowOverdue: boolean;
+};
+
 export const TaskDiffTabs = ({ data, current, prev }: Props) => {
   const [tabIndex, setTabIndex] = useState(0);
+  const [taskDiffSetting, setTaskDiffSetting] = useState<TaskDiffTableSetting>({
+    showFullName: true,
+    showActualValues: false,
+    filterOnlyDiff: true,
+    alwaysShowOverdue: true,
+  });
 
   return (
     <Box>
@@ -27,7 +40,13 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
       </Tabs>
 
       {tabIndex === 0 && (
-        <TaskDiffTable data={data} current={current} prev={prev} />
+        <TaskDiffTable
+          data={data}
+          current={current}
+          prev={prev}
+          setting={taskDiffSetting}
+          onSettingChange={setTaskDiffSetting}
+        />
       )}
       {tabIndex === 1 && (
         <AssigneeDiffTable data={data} current={current} prev={prev} />

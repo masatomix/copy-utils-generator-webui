@@ -16,10 +16,8 @@ import {
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   ProjectService,
-  type AssigneeDiff,
   type AssigneeStatistics,
   type Project,
-  type ProjectDiff,
   type ProjectStatistics,
   type TaskDiff,
 } from "evmtools-node/domain";
@@ -33,7 +31,6 @@ import { LongDataByNameTable } from "../components/LongDataByNameTable";
 import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
 import { ProjectStatsView } from "../components/ProjectStatsView";
 import { AssigneeStatsView } from "../components/AssigneeStatsView";
-import { TaskDiffTable } from "../components/TaskDiffTable";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
