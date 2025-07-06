@@ -13,6 +13,7 @@ import {
 import { type TaskDiff, Project, ProjectService } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
 import { dateStr } from "evmtools-node/common";
+import { ShowDiffTag } from "./ShowDiffTag";
 
 export const AssigneeDiffTable = ({
   data,
@@ -53,12 +54,8 @@ export const AssigneeDiffTable = ({
           <TableHead>
             <TableRow>
               <TableCell>担当</TableCell>
-              <TableCell>PV (今)</TableCell>
-              <TableCell>PV (前)</TableCell>
-              <TableCell>差分</TableCell>
-              <TableCell>EV (今)</TableCell>
-              <TableCell>EV (前)</TableCell>
-              <TableCell>差分</TableCell>
+              <TableCell>作業予定タスクのPV合計</TableCell>
+              <TableCell>進捗したタスクのEV合計</TableCell>
               <TableCell>変更</TableCell>
               <TableCell>追加</TableCell>
               <TableCell>削除</TableCell>
@@ -68,12 +65,22 @@ export const AssigneeDiffTable = ({
             {grouped.map((diff) => (
               <TableRow key={diff.assignee}>
                 <TableCell>{diff.assignee}</TableCell>
-                <TableCell>{formatNumberIntl(diff.currentPV)}</TableCell>
-                <TableCell>{formatNumberIntl(diff.prevPV)}</TableCell>
-                <TableCell>{formatNumberIntl(diff.deltaPV)}</TableCell>
-                <TableCell>{formatNumberIntl(diff.currentEV)}</TableCell>
-                <TableCell>{formatNumberIntl(diff.prevEV)}</TableCell>
-                <TableCell>{formatNumberIntl(diff.deltaEV)}</TableCell>
+                <TableCell>
+                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+                  <ShowDiffTag
+                    current={diff.currentPV}
+                    prev={diff.prevPV}
+                    show={true}
+                  />
+                </TableCell>
+                <TableCell>
+                  {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
+                  <ShowDiffTag
+                    current={diff.currentEV}
+                    prev={diff.prevEV}
+                    show={true}
+                  />
+                </TableCell>
                 <TableCell>{diff.modifiedCount}</TableCell>
                 <TableCell>{diff.addedCount}</TableCell>
                 <TableCell>{diff.removedCount}</TableCell>
