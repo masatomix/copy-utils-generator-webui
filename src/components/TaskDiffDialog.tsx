@@ -18,10 +18,16 @@ export const TaskDiffDialog = ({
   open,
   onClose,
   selectedDiff,
+  selectedIndex,
+  onSelectIndex,
+  diffListLength,
 }: {
   open: boolean;
   onClose: () => void;
   selectedDiff: TaskDiff | null;
+  selectedIndex: number;
+  onSelectIndex: (index: number) => void;
+  diffListLength: number;
 }) => {
   if (!selectedDiff) return null;
 
@@ -105,6 +111,20 @@ export const TaskDiffDialog = ({
     ["備考", currentTask?.remarks, prevTask?.remarks],
   ];
 
+  // 前ボタンを押したら、親からもらった onSelectIndexをつかって1減らす
+  const handlePrev = () => {
+    if (selectedIndex > 0) {
+      onSelectIndex(selectedIndex - 1);
+    }
+  };
+
+  // 次ボタンを押したら、親からもらった onSelectIndexをつかって1増やす
+  const handleNext = () => {
+    if (selectedIndex < diffListLength - 1) {
+      onSelectIndex(selectedIndex + 1);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>タスク詳細</DialogTitle>
@@ -129,6 +149,16 @@ export const TaskDiffDialog = ({
         </Table>
       </DialogContent>
       <DialogActions>
+        {" "}
+        <Button onClick={handlePrev} disabled={selectedIndex === 0}>
+          前の行
+        </Button>
+        <Button
+          onClick={handleNext}
+          disabled={selectedIndex >= diffListLength - 1}
+        >
+          次の行
+        </Button>
         <Button onClick={onClose}>閉じる</Button>
       </DialogActions>
     </Dialog>

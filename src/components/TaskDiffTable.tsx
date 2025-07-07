@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Project, type TaskDiff } from "evmtools-node/domain";
 import {
   formatDiffType,
@@ -88,14 +88,6 @@ export const TaskDiffTable = ({
     }
   };
 
-  const [selectedDiff, setSelectedDiff] = useState<TaskDiff | null>(null);
-  const handleRowClick = (diff: TaskDiff) => {
-    setSelectedDiff(diff);
-  };
-  const handleDialogClose = () => {
-    setSelectedDiff(null);
-  };
-
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
   // filterOnlyDiff が true でも、alwaysShowOverdue が true であれば isOverdueAt な行は表示されます。
   const filtered = data.filter((d) =>
@@ -117,6 +109,26 @@ export const TaskDiffTable = ({
       ? String(aValue).localeCompare(String(bValue))
       : String(bValue).localeCompare(String(aValue));
   });
+
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedDiff, setSelectedDiff] = useState<TaskDiff | null>(null);
+
+  // 行クリックで、indexとその行のデータをセットする
+  const handleRowClick = (diff: TaskDiff, index: number) => {
+    setSelectedIndex(index);
+    setSelectedDiff(diff);
+  };
+  // 閉じるで、Indexと、選択データを初期化
+  const handleDialogClose = () => {
+    setSelectedIndex(-1);
+    setSelectedDiff(null);
+  };
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && selectedIndex < sortedData.length) {
+      setSelectedDiff(sortedData[selectedIndex]);
+    }
+  }, [selectedIndex, sortedData]);
 
   return (
     <>
@@ -194,7 +206,6 @@ export const TaskDiffTable = ({
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
               <strong>比較対象:</strong> {dateStr(prev.baseDate)}{" "}
-              {" "}
               <strong>(処理対象 {filtered.length} 件)</strong>
             </Typography>
           </Stack>
@@ -244,7 +255,7 @@ export const TaskDiffTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {sortedData.map((diff) => (
+          {sortedData.map((diff, index) => (
             <TableRow
               key={diff.id}
               sx={{
@@ -255,7 +266,7 @@ export const TaskDiffTable = ({
                   : undefined,
                 cursor: "pointer",
               }}
-              onClick={() => handleRowClick(diff)}
+              onClick={() => handleRowClick(diff, index)}
             >
               <TableCell>{diff.id}</TableCell>
               <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
@@ -299,6 +310,9 @@ export const TaskDiffTable = ({
         open={!!selectedDiff}
         onClose={handleDialogClose}
         selectedDiff={selectedDiff}
+        selectedIndex={selectedIndex}
+        onSelectIndex={setSelectedIndex}
+        diffListLength={sortedData.length}
       />
     </>
   );
