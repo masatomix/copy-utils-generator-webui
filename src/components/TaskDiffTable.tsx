@@ -18,8 +18,12 @@ import {
 import SettingsIcon from "@mui/icons-material/Settings";
 
 import { useState } from "react";
-import { Project,  type TaskDiff } from "evmtools-node/domain";
-import { formatDiffType, formatFinished, formatNumberIntl } from "../utils/format";
+import { Project, type TaskDiff } from "evmtools-node/domain";
+import {
+  formatDiffType,
+  formatFinished,
+  formatNumberIntl,
+} from "../utils/format";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
@@ -189,7 +193,9 @@ export const TaskDiffTable = ({
             </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
-              <strong>比較対象:</strong> {dateStr(prev.baseDate)}
+              <strong>比較対象:</strong> {dateStr(prev.baseDate)}{" "}
+              {" "}
+              <strong>(処理対象 {filtered.length} 件)</strong>
             </Typography>
           </Stack>
 
@@ -309,4 +315,3 @@ function formatPercentPoint(
   });
   return `${formatted}pt`;
 }
-

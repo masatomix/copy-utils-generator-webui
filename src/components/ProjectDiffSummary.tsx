@@ -24,9 +24,8 @@ export const ProjectDiffSummary = ({
   current: Project;
   prev: Project;
 }) => {
-  const grouped = new ProjectService().calculateProjectDiffs(
-    data.filter((d) => d.hasDiff)
-  );
+  const filtered = data.filter((d) => d.hasDiff);
+  const grouped = new ProjectService().calculateProjectDiffs(filtered);
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -50,7 +49,8 @@ export const ProjectDiffSummary = ({
             </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
-              <strong>比較対象:</strong> {dateStr(prev.baseDate)}
+              <strong>比較対象:</strong> {dateStr(prev.baseDate)}{" "}
+              <strong>(処理対象 {filtered.length} 件)</strong>
             </Typography>
           </Stack>
         </Stack>
