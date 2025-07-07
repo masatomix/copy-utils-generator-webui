@@ -40,6 +40,14 @@ export const ProjectDiffSummary = ({
             <Typography gutterBottom>
               進捗率、PV、EVに変更があったタスクのプロジェクト単位での集計値です。
             </Typography>
+            <Typography gutterBottom>
+              <strong>作業予定タスクのPV合計:</strong>
+              プロジェクト全体で予定していたタスクたちの「基準日の」PV合計。カッコ内はそのタスクたちの「比較対象日までの累積PV→基準日までの累積PV」を表示
+            </Typography>
+            <Typography gutterBottom>
+              <strong>進捗したタスクのEV合計:</strong>
+              プロジェクト全体で基準日に進捗したタスク達のEV合計。カッコ内はそのタスクたちの「比較対象日までの累積EV→基準日までの累積EV」を表示
+            </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
               <strong>比較対象:</strong> {dateStr(prev.baseDate)}

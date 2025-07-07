@@ -14,6 +14,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  TextField,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -58,6 +60,8 @@ export const TaskDiffTable = ({
   };
   const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
+  const [filterText, setFilterText] = useState<string>("");
+
   // const [showFullName, setShowFullName] = useState<boolean>(true);
   // const [showActualValues, setShowActualValues] = useState<boolean>(false);
   // const [filterOnlyDiff, setFilterOnlyDiff] = useState<boolean>(true);
@@ -92,9 +96,23 @@ export const TaskDiffTable = ({
   };
 
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
-  const filtered = data.filter((d) =>
-    filterOnlyDiff ? d.hasDiff || (alwaysShowOverdue && d.isOverdueAt) : true
-  ); // filterOnlyDiff が true でも、alwaysShowOverdue が true であれば isOverdueAt な行は表示されます。
+  // filterOnlyDiff が true でも、alwaysShowOverdue が true であれば isOverdueAt な行は表示されます。
+  const filtered = data
+    .filter((d) =>
+      filterOnlyDiff ? d.hasDiff || (alwaysShowOverdue && d.isOverdueAt) : true
+    )
+    .filter((d) => {
+      const keyword = filterText.toLowerCase();
+      return (
+        d.name?.toLowerCase().includes(keyword) ||
+        d.fullName?.toLowerCase().includes(keyword) ||
+        d.assignee?.toLowerCase().includes(keyword) ||
+        // (!isNaN(Number(filterText)) && d.id === Number(filterText))
+        String(d.id).includes(keyword) ||
+        formatDiffType(d.diffType).toLowerCase() === keyword ||
+        formatFinished(d.finished).toLowerCase() === keyword
+      );
+    });
 
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
@@ -183,7 +201,7 @@ export const TaskDiffTable = ({
               行をクリックすると、新旧のデータの詳細が確認できます。
             </Typography>
             <Typography gutterBottom>
-              右上の歯車で、表示内容を制御できます。
+              右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
             </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
@@ -191,14 +209,36 @@ export const TaskDiffTable = ({
             </Typography>
           </Stack>
 
-          {/* 歯車ボタン */}
-          <IconButton
-            onClick={handleMenuOpen}
-            size="small"
-            sx={{ alignSelf: "flex-start" }}
-          >
-            <SettingsIcon />
-          </IconButton>
+          {/* 右上の設定ボタンとフィルタ */}
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Tooltip
+              title={
+                <span>
+                  ・ID、タスク名、担当者名、の部分一致でフィルタできます。
+                  <br />
+                  ・完了区分(完了/未完了)、変更種別（例:
+                  変更、追加）などもつかえます。
+                </span>
+              }
+            >
+              <TextField
+                size="small"
+                label="フィルタ"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                variant="outlined"
+              />
+            </Tooltip>
+
+            {/* 歯車ボタン */}
+            <IconButton
+              onClick={handleMenuOpen}
+              size="small"
+              sx={{ alignSelf: "flex-start" }}
+            >
+              <SettingsIcon />
+            </IconButton>
+          </Stack>
         </Stack>
       </Stack>
       <Divider sx={{ mb: 2 }} />
@@ -275,7 +315,7 @@ export const TaskDiffTable = ({
                   show={showActualValues}
                 />
               </TableCell>
-              <TableCell>{diff.finished ? "完了" : "未完了"}</TableCell>
+              <TableCell>{formatFinished(diff.finished)}</TableCell>
               <TableCell>{formatDiffType(diff.diffType)}</TableCell>
               {/* <TableCell>{diff.isOverdueAt ? "期限切れ" : ""}</TableCell> */}
             </TableRow>
@@ -318,4 +358,8 @@ function formatDiffType(diffType: DiffType): string {
     default:
       return diffType;
   }
+}
+
+function formatFinished(finished: boolean): string {
+  return finished ? "完了" : "未完了";
 }
