@@ -110,7 +110,7 @@ export const TaskDiffTable = ({
       : String(bValue).localeCompare(String(aValue));
   });
 
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [selectedDiff, setSelectedDiff] = useState<TaskDiff | null>(null);
 
   // 行クリックで、indexとその行のデータをセットする
