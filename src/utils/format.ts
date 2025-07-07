@@ -1,3 +1,5 @@
+import type { DiffType } from "evmtools-node/domain";
+
 export const formatPercentIntl = (
   value: number | string | null | undefined,
   options: Intl.NumberFormatOptions = {
@@ -35,3 +37,21 @@ export const formatDateWithWeekday = (dateString: string): string => {
     weekday: "short", // → "(水)"など
   }).format(date);
 };
+
+export const formatDiffType = (diffType: DiffType): string => {
+  switch (diffType) {
+    case "modified":
+      return "変更";
+    case "added":
+      return "追加";
+    case "removed":
+      return "削除";
+    case "none":
+      return "変化なし";
+    default:
+      return diffType;
+  }
+};
+
+export const formatFinished = (finished: boolean): string =>
+  finished ? "完了" : "未完了";
