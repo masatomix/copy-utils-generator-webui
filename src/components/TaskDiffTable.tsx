@@ -14,14 +14,12 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
-  TextField,
-  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 import { useState } from "react";
-import { Project, type DiffType, type TaskDiff } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
+import { Project,  type TaskDiff } from "evmtools-node/domain";
+import { formatDiffType, formatFinished, formatNumberIntl } from "../utils/format";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
@@ -60,7 +58,6 @@ export const TaskDiffTable = ({
   };
   const [orderBy, setOrderBy] = useState<SortKey>("assignee");
   const [order, setOrder] = useState<Order>("asc");
-  const [filterText, setFilterText] = useState<string>("");
 
   // const [showFullName, setShowFullName] = useState<boolean>(true);
   // const [showActualValues, setShowActualValues] = useState<boolean>(false);
@@ -97,22 +94,9 @@ export const TaskDiffTable = ({
 
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
   // filterOnlyDiff が true でも、alwaysShowOverdue が true であれば isOverdueAt な行は表示されます。
-  const filtered = data
-    .filter((d) =>
-      filterOnlyDiff ? d.hasDiff || (alwaysShowOverdue && d.isOverdueAt) : true
-    )
-    .filter((d) => {
-      const keyword = filterText.toLowerCase();
-      return (
-        d.name?.toLowerCase().includes(keyword) ||
-        d.fullName?.toLowerCase().includes(keyword) ||
-        d.assignee?.toLowerCase().includes(keyword) ||
-        // (!isNaN(Number(filterText)) && d.id === Number(filterText))
-        String(d.id).includes(keyword) ||
-        formatDiffType(d.diffType).toLowerCase() === keyword ||
-        formatFinished(d.finished).toLowerCase() === keyword
-      );
-    });
+  const filtered = data.filter((d) =>
+    filterOnlyDiff ? d.hasDiff || (alwaysShowOverdue && d.isOverdueAt) : true
+  );
 
   const sortedData = [...filtered].sort((a, b) => {
     const aValue = a[orderBy];
@@ -211,25 +195,6 @@ export const TaskDiffTable = ({
 
           {/* 右上の設定ボタンとフィルタ */}
           <Stack direction="row" spacing={2} alignItems="center">
-            <Tooltip
-              title={
-                <span>
-                  ・ID、タスク名、担当者名、の部分一致でフィルタできます。
-                  <br />
-                  ・完了区分(完了/未完了)、変更種別（例:
-                  変更、追加）などもつかえます。
-                </span>
-              }
-            >
-              <TextField
-                size="small"
-                label="フィルタ"
-                value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
-                variant="outlined"
-              />
-            </Tooltip>
-
             {/* 歯車ボタン */}
             <IconButton
               onClick={handleMenuOpen}
@@ -345,21 +310,3 @@ function formatPercentPoint(
   return `${formatted}pt`;
 }
 
-function formatDiffType(diffType: DiffType): string {
-  switch (diffType) {
-    case "modified":
-      return "変更";
-    case "added":
-      return "追加";
-    case "removed":
-      return "削除";
-    case "none":
-      return "変化なし";
-    default:
-      return diffType;
-  }
-}
-
-function formatFinished(finished: boolean): string {
-  return finished ? "完了" : "未完了";
-}

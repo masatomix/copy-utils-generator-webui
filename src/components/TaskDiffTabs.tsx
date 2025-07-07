@@ -1,19 +1,19 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Tabs,
   Tab,
   Box,
   Tooltip,
   TextField,
-  Stack,
   InputAdornment,
   IconButton,
 } from "@mui/material";
 import { Project, type TaskDiff } from "evmtools-node/domain";
-import { formatDiffType, formatFinished, TaskDiffTable } from "./TaskDiffTable";
+import { TaskDiffTable } from "./TaskDiffTable";
 import { AssigneeDiffTable } from "./AssigneeDiffTable";
 import { ProjectDiffSummary } from "./ProjectDiffSummary";
 import ClearIcon from "@mui/icons-material/Clear";
+import { formatDiffType, formatFinished } from "../utils/format";
 
 type Props = {
   data: TaskDiff[];
@@ -40,18 +40,22 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
   const [filterText, setFilterText] = useState<string>("");
 
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
-  const filtered = data.filter((d) => {
+
+  const filtered = useMemo(() => {
+    if (!filterText) return data;
     const keyword = filterText.toLowerCase();
-    return (
-      d.name?.toLowerCase().includes(keyword) ||
-      d.fullName?.toLowerCase().includes(keyword) ||
-      d.assignee?.toLowerCase().includes(keyword) ||
-      // (!isNaN(Number(filterText)) && d.id === Number(filterText))
-      String(d.id).includes(keyword) ||
-      formatDiffType(d.diffType).toLowerCase() === keyword ||
-      formatFinished(d.finished).toLowerCase() === keyword
-    );
-  });
+    return data.filter((d) => {
+      return (
+        d.name?.toLowerCase().includes(keyword) ||
+        d.fullName?.toLowerCase().includes(keyword) ||
+        d.assignee?.toLowerCase().includes(keyword) ||
+        // (!isNaN(Number(filterText)) && d.id === Number(filterText))
+        String(d.id).includes(keyword) ||
+        formatDiffType(d.diffType).toLowerCase() === keyword ||
+        formatFinished(d.finished).toLowerCase() === keyword
+      );
+    });
+  }, [data, filterText]);
 
   return (
     <Box>
