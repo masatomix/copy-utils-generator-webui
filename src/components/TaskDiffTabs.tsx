@@ -1,9 +1,19 @@
 import { useState } from "react";
-import { Tabs, Tab, Box } from "@mui/material";
+import {
+  Tabs,
+  Tab,
+  Box,
+  Tooltip,
+  TextField,
+  Stack,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 import { Project, type TaskDiff } from "evmtools-node/domain";
-import { TaskDiffTable } from "./TaskDiffTable";
+import { formatDiffType, formatFinished, TaskDiffTable } from "./TaskDiffTable";
 import { AssigneeDiffTable } from "./AssigneeDiffTable";
 import { ProjectDiffSummary } from "./ProjectDiffSummary";
+import ClearIcon from "@mui/icons-material/Clear";
 
 type Props = {
   data: TaskDiff[];
@@ -27,21 +37,76 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
     alwaysShowOverdue: true,
   });
 
+  const [filterText, setFilterText] = useState<string>("");
+
+  // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
+  const filtered = data.filter((d) => {
+    const keyword = filterText.toLowerCase();
+    return (
+      d.name?.toLowerCase().includes(keyword) ||
+      d.fullName?.toLowerCase().includes(keyword) ||
+      d.assignee?.toLowerCase().includes(keyword) ||
+      // (!isNaN(Number(filterText)) && d.id === Number(filterText))
+      String(d.id).includes(keyword) ||
+      formatDiffType(d.diffType).toLowerCase() === keyword ||
+      formatFinished(d.finished).toLowerCase() === keyword
+    );
+  });
+
   return (
     <Box>
-      <Tabs
-        value={tabIndex}
-        onChange={(_, idx) => setTabIndex(idx)}
-        sx={{ mb: 2 }}
+      {/* タブとフィルタを横並びに配置 */}
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={2}
       >
-        <Tab label="個別タスク" />
-        <Tab label="担当ごと" />
-        <Tab label="プロジェクト単位" />
-      </Tabs>
+        <Tabs value={tabIndex} onChange={(_, idx) => setTabIndex(idx)}>
+          <Tab label="個別タスク" />
+          <Tab label="担当ごと" />
+          <Tab label="プロジェクト単位" />
+        </Tabs>
+
+        <Tooltip
+          title={
+            <span>
+              ・ID、タスク名、担当者名、の部分一致でフィルタできます。
+              <br />
+              ・完了区分(完了/未完了)、変更種別（例:
+              変更、追加）などもつかえます。
+            </span>
+          }
+          placement="top"
+        >
+          <TextField
+            size="small"
+            label="フィルタ"
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            variant="outlined"
+            sx={{ minWidth: 200 }}
+            InputProps={{
+              endAdornment: filterText ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setFilterText("")}
+                    aria-label="clear filter"
+                    edge="end"
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            }}
+          />
+        </Tooltip>
+      </Box>
 
       {tabIndex === 0 && (
         <TaskDiffTable
-          data={data}
+          data={filtered}
           current={current}
           prev={prev}
           setting={taskDiffSetting}
@@ -49,10 +114,10 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
         />
       )}
       {tabIndex === 1 && (
-        <AssigneeDiffTable data={data} current={current} prev={prev} />
+        <AssigneeDiffTable data={filtered} current={current} prev={prev} />
       )}
       {tabIndex === 2 && (
-        <ProjectDiffSummary data={data} current={current} prev={prev} />
+        <ProjectDiffSummary data={filtered} current={current} prev={prev} />
       )}
     </Box>
   );
