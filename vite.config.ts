@@ -1,16 +1,16 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill";
-// import { nodePolyfills } from "vite-plugin-node-polyfills";
+import { NodeModulesPolyfillPlugin } from "@esbuild-plugins/node-modules-polyfill";
+import rollupNodePolyFill from "rollup-plugin-polyfill-node";
 
 export default defineConfig({
   base: "/copy-utils-generator-webui/",
   plugins: [
     react(),
-    // nodePolyfills()
   ],
   define: {
-    "process.env": {},
+    "process.env": {}, // 空にしてもいいが、dotenvなどと併用時は要注意
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -19,9 +19,10 @@ export default defineConfig({
       },
       plugins: [
         NodeGlobalsPolyfillPlugin({
-          buffer: true,
           process: true,
+          buffer: true,
         }),
+        NodeModulesPolyfillPlugin(),
       ],
     },
   },
@@ -31,7 +32,14 @@ export default defineConfig({
       stream: "stream-browserify",
       path: "path-browserify",
       process: "process/browser",
-      buffer: "buffer/",
+      buffer: "buffer",
+    },
+  },
+  build: {
+    rollupOptions: {
+      plugins: [
+        rollupNodePolyFill() // ← ここが必要！
+      ],
     },
   },
 });
