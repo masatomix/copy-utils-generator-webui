@@ -38,7 +38,11 @@ export const formatDateWithWeekday = (dateString: string): string => {
   }).format(date);
 };
 
-export const formatDiffType = (diffType: DiffType): string => {
+export const formatDiffType = (
+  diffType: DiffType | undefined | null
+): string => {
+  if (diffType == null) return "-";
+
   switch (diffType) {
     case "modified":
       return "変更";
@@ -53,5 +57,53 @@ export const formatDiffType = (diffType: DiffType): string => {
   }
 };
 
-export const formatFinished = (finished: boolean): string =>
-  finished ? "完了" : "未完了";
+export const formatFinished = (finished: boolean | undefined | null): string =>
+  finished == null ? "-" : finished ? "完了" : "未完了";
+
+export const formatIsOverdueAt = (
+  isOverdueAt: boolean | undefined | null
+): string => (isOverdueAt == null ? "-" : isOverdueAt ? "期限切れ" : "期限前");
+
+/**
+ * baseDate(基準日) に比べて targetDate(おもに期限) が何日後かを計算して返す
+ * base 2025/07/19 target 2025/07/18 => -1
+ * @param baseDate
+ * @param targetDate
+ * @param locale
+ * @returns
+ */
+export const formatRelativeDaysNumber = (
+  baseDate: Date | string | null | undefined,
+  targetDate: Date | string | null | undefined
+): number | null => {
+  if (!baseDate || !targetDate) return null;
+
+  const base = new Date(baseDate);
+  const target = new Date(targetDate);
+
+  const diffMs = target.getTime() - base.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
+/**
+ * baseDate(基準日) に比べて targetDate(おもに期限) が何日後かを計算して返す
+ * (文字列で)
+ * base 2025/07/19 target 2025/07/18 => -1
+ * @param baseDate
+ * @param targetDate
+ * @param locale
+ * @returns
+ */
+export const formatRelativeDays = (
+  baseDate: Date | string | null | undefined,
+  targetDate: Date | string | null | undefined,
+  locale: string = "ja"
+): string | null => {
+  const diffDays = formatRelativeDaysNumber(baseDate, targetDate);
+  if (diffDays == null) return null;
+
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  return rtf.format(diffDays, "day"); // "in 3 days" → "3日後"
+};

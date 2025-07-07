@@ -11,7 +11,12 @@ import {
   Button,
 } from "@mui/material";
 import type { TaskDiff } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
+import {
+  formatFinished,
+  formatIsOverdueAt,
+  formatNumberIntl,
+  formatRelativeDays,
+} from "../utils/format";
 import { dateStr } from "evmtools-node/common";
 
 export const TaskDiffDialog = ({
@@ -63,6 +68,11 @@ export const TaskDiffDialog = ({
       formatNumberIntl(prevTask?.workloadPerDay, { maximumFractionDigits: 3 }),
     ],
     [
+      "基準日",
+      `${dateStr(selectedDiff.currentBaseDate)}`,
+      `${dateStr(selectedDiff.prevBaseDate)}`,
+    ],
+    [
       "予定開始日～終了日",
       `${dateStr(currentTask?.startDate)} ～ ${dateStr(currentTask?.endDate)}`,
       `${dateStr(prevTask?.startDate)} ～ ${dateStr(prevTask?.endDate)}`,
@@ -109,6 +119,21 @@ export const TaskDiffDialog = ({
     ],
     ["遅延日数", currentTask?.delayDays, prevTask?.delayDays],
     ["備考", currentTask?.remarks, prevTask?.remarks],
+    [
+      "未完了/完了",
+      formatFinished(currentTask?.finished),
+      formatFinished(prevTask?.finished),
+    ],
+    [
+      "期限切れ?",
+      `${formatIsOverdueAt(
+        currentTask?.isOverdueAt(selectedDiff.currentBaseDate!)
+      )}(${formatRelativeDays(
+        selectedDiff.currentBaseDate,
+        currentTask?.endDate
+      )})`,
+      formatIsOverdueAt(prevTask?.isOverdueAt(selectedDiff.prevBaseDate!)),
+    ],
   ];
 
   // 前ボタンを押したら、親からもらった onSelectIndexをつかって1減らす
@@ -138,13 +163,34 @@ export const TaskDiffDialog = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map(([label, current, prev]) => (
-              <TableRow key={label}>
-                <TableCell>{label}</TableCell>
-                <TableCell>{current ?? "-"}</TableCell>
-                <TableCell>{prev ?? "-"}</TableCell>
-              </TableRow>
-            ))}
+            {rows.map(([label, current, prev]) => {
+              // 背景色を定義
+              const currentBgColor =
+                currentTask && currentTask.finished
+                  ? "#f0f0f0"
+                  : currentTask?.isOverdueAt?.(selectedDiff.currentBaseDate!)
+                  ? "#ffebee"
+                  : undefined;
+
+              const prevBgColor =
+                prevTask && prevTask.finished
+                  ? "#f0f0f0"
+                  : prevTask?.isOverdueAt?.(selectedDiff.prevBaseDate!)
+                  ? "#ffebee"
+                  : undefined;
+
+              return (
+                <TableRow key={label}>
+                  <TableCell>{label}</TableCell>
+                  <TableCell sx={{ backgroundColor: currentBgColor }}>
+                    {current ?? "-"}
+                  </TableCell>
+                  <TableCell sx={{ backgroundColor: prevBgColor }}>
+                    {prev ?? "-"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </DialogContent>

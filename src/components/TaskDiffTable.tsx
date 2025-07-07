@@ -118,7 +118,7 @@ export const TaskDiffTable = ({
       : null;
 
   // 行クリックで、indexとその行のデータをセットする
-  const handleRowClick = (diff: TaskDiff, index: number) => {
+  const handleRowClick = (index: number) => {
     setSelectedIndex(index);
   };
   // 閉じるで、Indexと、選択データを初期化
@@ -262,7 +262,7 @@ export const TaskDiffTable = ({
                   : undefined,
                 cursor: "pointer",
               }}
-              onClick={() => handleRowClick(diff, index)}
+              onClick={() => handleRowClick(index)}
             >
               <TableCell>{diff.id}</TableCell>
               <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
