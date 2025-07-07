@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Project, type TaskDiff } from "evmtools-node/domain";
 import {
   formatDiffType,
@@ -111,24 +111,20 @@ export const TaskDiffTable = ({
   });
 
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
-  const [selectedDiff, setSelectedDiff] = useState<TaskDiff | null>(null);
+
+  const selectedDiff =
+    selectedIndex >= 0 && selectedIndex < sortedData.length
+      ? sortedData[selectedIndex]
+      : null;
 
   // 行クリックで、indexとその行のデータをセットする
   const handleRowClick = (diff: TaskDiff, index: number) => {
     setSelectedIndex(index);
-    setSelectedDiff(diff);
   };
   // 閉じるで、Indexと、選択データを初期化
   const handleDialogClose = () => {
     setSelectedIndex(-1);
-    setSelectedDiff(null);
   };
-
-  useEffect(() => {
-    if (selectedIndex >= 0 && selectedIndex < sortedData.length) {
-      setSelectedDiff(sortedData[selectedIndex]);
-    }
-  }, [selectedIndex, sortedData]);
 
   return (
     <>
