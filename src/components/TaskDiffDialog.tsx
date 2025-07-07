@@ -15,9 +15,8 @@ import {
   formatFinished,
   formatIsOverdueAt,
   formatNumberIntl,
-  formatRelativeDays,
 } from "../utils/format";
-import { dateStr } from "evmtools-node/common";
+import { dateStr, formatRelativeDays } from "evmtools-node/common";
 
 export const TaskDiffDialog = ({
   open,
@@ -37,6 +36,19 @@ export const TaskDiffDialog = ({
   if (!selectedDiff) return null;
 
   const { currentTask, prevTask } = selectedDiff;
+
+  const prevDate = formatRelativeDays(
+    selectedDiff.prevBaseDate,
+    prevTask?.endDate
+  );
+  const prevDaysStrOverdueAt = prevDate ? `(${prevDate})` : "";
+
+  const currentDate = formatRelativeDays(
+    selectedDiff.currentBaseDate,
+    currentTask?.endDate
+  );
+
+  const currentDaysStrOverdueAt = currentDate ? `(${currentDate})` : "";
 
   const rows: [
     string,
@@ -128,11 +140,10 @@ export const TaskDiffDialog = ({
       "期限切れ?",
       `${formatIsOverdueAt(
         currentTask?.isOverdueAt(selectedDiff.currentBaseDate!)
-      )}(${formatRelativeDays(
-        selectedDiff.currentBaseDate,
-        currentTask?.endDate
-      )})`,
-      formatIsOverdueAt(prevTask?.isOverdueAt(selectedDiff.prevBaseDate!)),
+      )}${currentDaysStrOverdueAt}`,
+      `${formatIsOverdueAt(
+        prevTask?.isOverdueAt(selectedDiff.prevBaseDate!)
+      )}${prevDaysStrOverdueAt}`,
     ],
   ];
 

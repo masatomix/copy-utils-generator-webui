@@ -16,7 +16,7 @@
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
     "copy-utils-generator": "^0.0.13",
-    "evmtools-node": "file:../evmtools/evmtools-node-0.0.4-SNAPSHOT.tgz",
+    "evmtools-node": "file:../evmtools/evmtools-node-0.0.5-SNAPSHOT.tgz",
     "excel-csv-read-write": "^0.2.4",
     "file-saver": "^2.0.5",
     "handlebars": "^4.7.8",
