@@ -236,7 +236,7 @@ export const TaskDiffTable = ({
               { key: "deltaEV", label: "EV差分" },
               { key: "finished", label: "完了" },
               { key: "diffType", label: "変更種別" },
-              // { key: "isOverdueAt", label: "期限切れ" },
+              { key: "daysStrOverdueAt", label: "期限超過日数" },
             ].map(({ key, label }) => (
               <TableCell key={key}>
                 <TableSortLabel
@@ -295,7 +295,9 @@ export const TaskDiffTable = ({
               </TableCell>
               <TableCell>{formatFinished(diff.finished)}</TableCell>
               <TableCell>{formatDiffType(diff.diffType)}</TableCell>
-              {/* <TableCell>{diff.isOverdueAt ? "期限切れ" : ""}</TableCell> */}
+              <TableCell>
+                {!diff.finished ? diff.daysStrOverdueAt : ""}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
