@@ -57,8 +57,20 @@ export const LongDataByNameTable = ({ data }: Props) => {
               <TableCell>{formatDateWithWeekday(date)}</TableCell>
               {assignees.map((assignee) => {
                 const value = valueMap.get(date)?.get(assignee);
+                const backgroundColor =
+                  value === undefined
+                    ? undefined
+                    : value > 1.0
+                    ? "#ffdddd"
+                    : value < 0.8 && value !== 0
+                    ? "#eef6ff"
+                    : undefined;
                 return (
-                  <TableCell key={assignee} align="right">
+                  <TableCell
+                    key={assignee}
+                    align="right"
+                    sx={{ backgroundColor }}
+                  >
                     {value !== undefined ? value : "-"}
                   </TableCell>
                 );

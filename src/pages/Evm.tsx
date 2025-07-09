@@ -446,7 +446,9 @@ SPI（Schedule Performance Index）
             <Typography variant="h6">要員ごとのPV累積グラフ</Typography>
             <HelpPopover
               title="このグラフについて"
-              content="要員ごとの日々のPVを確認できます。毎日の工数が適切かを確認するのに活用してください。"
+              content="要員ごとの日々のPVを確認できます。毎日の工数が適切かを確認するのに活用してください。
+            
+              0 < PV < 0.8 の場合はセルを青く(タスク不足？)、PV > 1.0 の場合はセルを赤く(タスク過多？)しています。"
             />
           </Stack>
           <Divider sx={{ mb: 2 }} />
