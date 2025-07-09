@@ -10,7 +10,7 @@ import {
   TableBody,
   Button,
 } from "@mui/material";
-import type { TaskDiff } from "evmtools-node/domain";
+import type { TaskDiff, TaskRow } from "evmtools-node/domain";
 import {
   formatFinished,
   formatIsOverdueAt,
@@ -37,18 +37,38 @@ export const TaskDiffDialog = ({
 
   const { currentTask, prevTask } = selectedDiff;
 
-  const prevDate = formatRelativeDays(
-    selectedDiff.prevBaseDate,
-    prevTask?.endDate
-  );
-  const prevDaysStrOverdueAt = prevDate ? `(${prevDate})` : "";
+  const daysStrOverdueAt = (baseDate?: Date, taskRow?: TaskRow): string => {
+    if (taskRow == null) return "-"; // taskRowがなければそもそも抜ける
+    // 完了、未完了(期限切れ)、未完了(期限まだ)
+    const isOverdueAtStr = formatIsOverdueAt(
+      taskRow.isOverdueAt(baseDate!),
+      taskRow.finished
+    );
 
-  const currentDate = formatRelativeDays(
-    selectedDiff.currentBaseDate,
-    currentTask?.endDate
-  );
+    const relativeDay = formatRelativeDays(baseDate, taskRow.endDate); // 日付を計算して文字列で返す
+    const relativeDayStr = taskRow.finished
+      ? "" // そもそも完了していたら、(データ基準日から終了日付がどれくらい過ぎているかだしても仕方がないので) 空文字で返す
+      : relativeDay
+      ? `(${relativeDay})`
+      : ""; // データがあればカッコを付ける
 
-  const currentDaysStrOverdueAt = currentDate ? `(${currentDate})` : "";
+    return isOverdueAtStr + relativeDayStr;
+  };
+
+  const fromToStrTmp = (startDate?: Date, endDate?: Date): string => {
+    if (startDate == null && endDate == null) {
+      return "-"; // taskRowがなければそもそも抜ける
+    }
+    return `${dateStr(startDate)} ～ ${dateStr(endDate)}`;
+  };
+
+  const fromToStrPV = (taskRow?: TaskRow): string =>
+    !taskRow ? "-" : fromToStrTmp(taskRow.startDate, taskRow.endDate);
+
+  const fromToStrEV = (taskRow?: TaskRow): string =>
+    !taskRow
+      ? "-"
+      : fromToStrTmp(taskRow.actualStartDate, taskRow.actualEndDate);
 
   const rows: [
     string,
@@ -84,20 +104,8 @@ export const TaskDiffDialog = ({
       `${dateStr(selectedDiff.currentBaseDate)}`,
       `${dateStr(selectedDiff.prevBaseDate)}`,
     ],
-    [
-      "予定開始日～終了日",
-      `${dateStr(currentTask?.startDate)} ～ ${dateStr(currentTask?.endDate)}`,
-      `${dateStr(prevTask?.startDate)} ～ ${dateStr(prevTask?.endDate)}`,
-    ],
-    [
-      "実績開始日～終了日",
-      `${dateStr(currentTask?.actualStartDate)} ～ ${dateStr(
-        currentTask?.actualEndDate
-      )}`,
-      `${dateStr(prevTask?.actualStartDate)} ～ ${dateStr(
-        prevTask?.actualEndDate
-      )}`,
-    ],
+    ["予定開始日～終了日", fromToStrPV(currentTask), fromToStrPV(prevTask)],
+    ["実績開始日～終了日", fromToStrEV(currentTask), fromToStrEV(prevTask)],
     [
       "進捗率(%)",
       formatNumberIntl(currentTask?.progressRate, {
@@ -138,12 +146,8 @@ export const TaskDiffDialog = ({
     ],
     [
       "期限切れ?",
-      `${formatIsOverdueAt(
-        currentTask?.isOverdueAt(selectedDiff.currentBaseDate!)
-      )}${currentDaysStrOverdueAt}`,
-      `${formatIsOverdueAt(
-        prevTask?.isOverdueAt(selectedDiff.prevBaseDate!)
-      )}${prevDaysStrOverdueAt}`,
+      daysStrOverdueAt(selectedDiff.currentBaseDate, currentTask),
+      daysStrOverdueAt(selectedDiff.prevBaseDate, prevTask),
     ],
   ];
 

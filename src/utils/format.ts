@@ -61,5 +61,6 @@ export const formatFinished = (finished: boolean | undefined | null): string =>
   finished == null ? "-" : finished ? "完了" : "未完了";
 
 export const formatIsOverdueAt = (
-  isOverdueAt: boolean | undefined | null
-): string => (isOverdueAt == null ? "-" : isOverdueAt ? "期限切れ" : "期限前(or完了)");
+  isOverdueAt: boolean,
+  taskIsFinished: boolean
+): string => (taskIsFinished ? "完了" : isOverdueAt ? "期限切れ" : "まだ期限前");
