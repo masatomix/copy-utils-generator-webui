@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { saveAs } from "file-saver";
 import {
   Button,
@@ -27,7 +27,6 @@ import { InMemoryRepository } from "../repository/InMemoryRepository";
 import UploadIcon from "@mui/icons-material/Upload";
 import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
-import { LongDataByNameTable } from "../components/LongDataByNameTable";
 import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
 import { ProjectStatsView } from "../components/ProjectStatsView";
 import { AssigneeStatsView } from "../components/AssigneeStatsView";
@@ -35,6 +34,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
 import { TaskDiffTabs } from "../components/TaskDiffTabs";
+import { createLongDataTableWithProject } from "../components/LongDataByNameTableWrapper";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -211,6 +211,10 @@ function Evm() {
       </Button>
     );
   };
+
+  const TableWithProject = useMemo(() => {
+    return state.project ? createLongDataTableWithProject(state.project) : null;
+  }, [state.project]);
 
   return (
     <Box p={4} width="100%">
@@ -453,7 +457,7 @@ SPI（Schedule Performance Index）
           </Stack>
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
-            TableComponent={LongDataByNameTable}
+            TableComponent={TableWithProject!}
             tableData={state.project.pvByNameLong}
             chartData={state.project.pvsByNameLong}
             label="PV累積"
