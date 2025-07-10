@@ -1,4 +1,3 @@
-// src/components/PvsLongTable.tsx
 import {
   Table,
   TableBody,
@@ -14,11 +13,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import type { LongData, Project, TaskRow } from "evmtools-node/domain";
-import {
-  formatDateWithWeekday,
-  formatFinished,
-  formatNumberIntl,
-} from "../utils/format";
+import { formatDateWithWeekday, formatNumberIntl } from "../utils/format";
 import { useState } from "react";
 import { dateStr } from "evmtools-node/common";
 
@@ -28,8 +23,12 @@ type Props = {
 };
 
 export const LongDataByNameTable = ({ data, project }: Props) => {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedAssignee, setSelectedAssignee] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedAssignee, setSelectedAssignee] = useState<string | undefined>(
+    undefined
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // 1. 要員一覧（列ヘッダ）を一意に抽出
@@ -47,23 +46,21 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
 
   const handleCellClick = (date: string, assignee?: string) => {
     setSelectedDate(date);
-    if (assignee != null) {
-      setSelectedAssignee(assignee);
-    }
+    setSelectedAssignee(assignee);
     setDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    setSelectedDate(null);
-    setSelectedAssignee(null);
+    setSelectedDate(undefined);
+    setSelectedAssignee(undefined);
   };
 
   const taskRows: TaskRow[] = selectedDate
     ? project.getTaskRows(
         new Date(selectedDate),
         new Date(selectedDate),
-        selectedAssignee ?? undefined
+        selectedAssignee
       )
     : [];
 
@@ -151,7 +148,7 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
           {selectedDate
             ? `${formatDateWithWeekday(selectedDate)} の${
                 selectedAssignee ? ` ${selectedAssignee} の` : ""
-              }PV`
+              }タスク`
             : "稼働情報"}
         </DialogTitle>
         <DialogContent dividers>
@@ -160,13 +157,18 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
-                  <TableCell>タスク名</TableCell>
-                  <TableCell>assignee</TableCell>
-                  <TableCell>開始日</TableCell>
-                  <TableCell>終了日</TableCell>
+                  <TableCell sx={{ minWidth: 100 }}>タスク名</TableCell>
+                  <TableCell sx={{ minWidth: 30 }}>担当者</TableCell>
+                  <TableCell>工数(MD)</TableCell>
+                  <TableCell>日数(日)</TableCell>
+                  <TableCell align="right">本日のPV</TableCell>
+                  <TableCell>予定開始日</TableCell>
+                  <TableCell>予定終了日</TableCell>
                   <TableCell>進捗率(%)</TableCell>
-                  <TableCell align="right">PV</TableCell>
-                  <TableCell align="right">未完了/完了</TableCell>
+                  <TableCell align="right" sx={{ minWidth: 100 }}>
+                    PV/EV/SPI
+                  </TableCell>
+                  {/* <TableCell align="right">未完了/完了</TableCell> */}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -184,6 +186,24 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
                     <TableCell>{task.id}</TableCell>
                     <TableCell>{task.name}</TableCell>
                     <TableCell>{task.assignee}</TableCell>
+
+                    <TableCell align="right">
+                      {formatNumberIntl(task.workload, {
+                        maximumFractionDigits: 3,
+                      })}
+                    </TableCell>
+                    <TableCell align="right">
+                      {formatNumberIntl(task.scheduledWorkDays, {
+                        maximumFractionDigits: 0,
+                      })}
+                    </TableCell>
+
+                    <TableCell align="right">
+                      {formatNumberIntl(
+                        task.calculatePV(new Date(selectedDate!)),
+                        { maximumFractionDigits: 3 }
+                      )}
+                    </TableCell>
                     <TableCell>{dateStr(task.startDate)}</TableCell>
                     <TableCell>{dateStr(task.endDate)}</TableCell>
                     <TableCell align="right">
@@ -192,14 +212,16 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
                         maximumFractionDigits: 1,
                       })}
                     </TableCell>
+
                     <TableCell align="right">
-                      {formatNumberIntl(
-                        task.calculatePV(new Date(selectedDate!)),
-                        { maximumFractionDigits: 3 }
-                      )}
+                      {formatNumberIntl(task.pv, { maximumFractionDigits: 2 })}{" "}
+                      /{" "}
+                      {formatNumberIntl(task.ev, { maximumFractionDigits: 2 })}{" "}
+                      /{" "}
+                      {formatNumberIntl(task.spi, { maximumFractionDigits: 2 })}
                     </TableCell>
 
-                    <TableCell>{formatFinished(task.finished)}</TableCell>
+                    {/* <TableCell>{formatFinished(task.finished)}</TableCell> */}
                   </TableRow>
                 ))}
               </TableBody>
