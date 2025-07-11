@@ -54,6 +54,7 @@ public interface {{{parseClassName className}}} {
     {{{fromClass}}} {{methodName}}Inverse({{{toClass}}} source);
     {{/if}}
 
+    {{#if updateMethod}}
      /**
      * {{{fromClass}}} source の各プロパティを{{{toClass}}} target へコピーする。
      * @Mapping(source = "param1", target = "param2") などで、プロパティ名の関連付けも可能
@@ -84,6 +85,7 @@ public interface {{{parseClassName className}}} {
     {{#if inverse}}
     @InheritInverseConfiguration(name = "{{methodName}}Update")
     void {{methodName}}UpdateInverse({{{toClass}}} source, @MappingTarget {{{fromClass}}} target);
+    {{/if}}
     {{/if}}
   {{/each}}
 }
