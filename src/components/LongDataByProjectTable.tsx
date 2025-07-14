@@ -8,8 +8,10 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import type { LongData, Project } from "evmtools-node/domain";
+import type { LongData, Project, TaskRow } from "evmtools-node/domain";
 import { formatDateWithWeekday } from "../utils/format";
+import { useState } from "react";
+import { TaskDialog } from "./TaskDialog";
 
 type MergedRow = {
   baseDate: string;
@@ -56,36 +58,86 @@ export const LongDataByProjectTable = ({
   );
   // ココまで
 
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(
+    undefined
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [showFullTaskName, setShowFullTaskName] = useState(false);
+  const toggleTaskNameDisplay = () => {
+    setShowFullTaskName((prev) => !prev);
+  };
+
+  const handleCellClick = (date: string, assignee?: string) => {
+    setSelectedDate(date);
+    setDialogOpen(true);
+    setShowFullTaskName(false);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setSelectedDate(undefined);
+    setShowFullTaskName(false);
+  };
+
+  const taskRows: TaskRow[] = selectedDate
+    ? project.getTaskRows(new Date(selectedDate), new Date(selectedDate))
+    : [];
+
   return (
-    <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
-      <Table stickyHeader size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>日付</TableCell>
-            <TableCell align="right">{label}</TableCell>
-            <TableCell align="right">{label2}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {result.map((row, idx) => (
-            <TableRow
-              key={idx}
-              sx={{
-                backgroundColor: isToday(row.baseDate)
-                  ? "#fff8dc" // 今日: コーンシルク色
-                  : isHoliday(row.baseDate)
-                  ? "#f0f0f0"
-                  : "inherit", // 土日だけ薄いグレー
-              }}
-            >
-              <TableCell>{formatDateWithWeekday(row.baseDate)}</TableCell>
-              <TableCell align="right">{row.value1}</TableCell>
-              <TableCell align="right">{row.value2}</TableCell>
+    <>
+      <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>日付</TableCell>
+              <TableCell align="right">{label}</TableCell>
+              <TableCell align="right">{label2}</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {result.map((row, idx) => (
+              <TableRow
+                key={idx}
+                sx={{
+                  backgroundColor: isToday(row.baseDate)
+                    ? "#fff8dc" // 今日: コーンシルク色
+                    : isHoliday(row.baseDate)
+                    ? "#f0f0f0"
+                    : "inherit", // 土日だけ薄いグレー
+                }}
+              >
+                <TableCell
+                  onClick={() => {
+                    handleCellClick(row.baseDate);
+                  }}
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "#f5f5f5", // hover時に明るくする
+                    },
+                  }}
+                >
+                  {formatDateWithWeekday(row.baseDate)}
+                </TableCell>
+                <TableCell align="right">{row.value1}</TableCell>
+                <TableCell align="right">{row.value2}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TaskDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        selectedDate={selectedDate}
+        selectedAssignee={undefined}
+        taskRows={taskRows}
+        project={project}
+        showFullTaskName={showFullTaskName}
+        onToggleTaskNameDisplay={toggleTaskNameDisplay}
+      />
+    </>
   );
 };
 
