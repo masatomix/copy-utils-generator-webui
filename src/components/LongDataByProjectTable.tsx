@@ -8,7 +8,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import type { LongData } from "evmtools-node/domain";
+import type { LongData, Project } from "evmtools-node/domain";
 import { formatDateWithWeekday } from "../utils/format";
 
 type MergedRow = {
@@ -22,6 +22,7 @@ type Props = {
   label?: string; // デフォルト: "値"
   data2?: LongData[];
   label2?: string;
+  project: Project;
 };
 
 export const LongDataByProjectTable = ({
@@ -29,6 +30,7 @@ export const LongDataByProjectTable = ({
   label = "値",
   data2 = [],
   label2 = "",
+  project,
 }: Props) => {
   const mergedMap = new Map<string, MergedRow>();
 
