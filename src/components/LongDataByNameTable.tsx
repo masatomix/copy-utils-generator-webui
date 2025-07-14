@@ -11,6 +11,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Typography,
 } from "@mui/material";
 import type { LongData, Project, TaskRow } from "evmtools-node/domain";
 import { formatDateWithWeekday, formatNumberIntl } from "../utils/format";
@@ -31,6 +32,11 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
   );
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const [showFullTaskName, setShowFullTaskName] = useState(false);
+  const toggleTaskNameDisplay = () => {
+    setShowFullTaskName((prev) => !prev);
+  };
+
   // 1. 要員一覧（列ヘッダ）を一意に抽出
   const assignees = Array.from(new Set(data.map((d) => d.assignee))).sort();
 
@@ -48,12 +54,14 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
     setSelectedDate(date);
     setSelectedAssignee(assignee);
     setDialogOpen(true);
+    setShowFullTaskName(false)
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
     setSelectedDate(undefined);
     setSelectedAssignee(undefined);
+    setShowFullTaskName(false)
   };
 
   const taskRows: TaskRow[] = selectedDate
@@ -145,11 +153,20 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
         fullWidth
       >
         <DialogTitle>
-          {selectedDate
-            ? `${formatDateWithWeekday(selectedDate)} の${
-                selectedAssignee ? ` ${selectedAssignee} の` : ""
-              }タスク`
-            : "稼働情報"}
+          <div>
+            {selectedDate ? (
+              <>
+                {`${formatDateWithWeekday(selectedDate)} の${
+                  selectedAssignee ? ` ${selectedAssignee} の` : ""
+                }タスク`}
+                <Typography variant="caption" sx={{ display: "block" }}>
+                  （「タスク名」をヘッダやデータのクリックで、詳細名に切り替えます）
+                </Typography>
+              </>
+            ) : (
+              "稼働情報"
+            )}
+          </div>
         </DialogTitle>
         <DialogContent dividers>
           {taskRows.length > 0 ? (
@@ -157,7 +174,12 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
-                  <TableCell sx={{ minWidth: 100 }}>タスク名</TableCell>
+                  <TableCell
+                    onClick={toggleTaskNameDisplay}
+                    sx={{ cursor: "pointer", minWidth: 100 }}
+                  >
+                    タスク名
+                  </TableCell>
                   <TableCell sx={{ minWidth: 30 }}>担当者</TableCell>
                   <TableCell>工数(MD)</TableCell>
                   <TableCell>日数(日)</TableCell>
@@ -184,7 +206,14 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
                     }}
                   >
                     <TableCell>{task.id}</TableCell>
-                    <TableCell>{task.name}</TableCell>
+                    <TableCell
+                      onClick={toggleTaskNameDisplay}
+                      sx={{ cursor: "pointer" }}
+                    >
+                      {showFullTaskName
+                        ? project.getFullTaskName(task)
+                        : task.name}
+                    </TableCell>
                     <TableCell>{task.assignee}</TableCell>
 
                     <TableCell align="right">
