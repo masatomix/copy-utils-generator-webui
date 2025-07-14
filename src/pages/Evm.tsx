@@ -27,7 +27,6 @@ import { InMemoryRepository } from "../repository/InMemoryRepository";
 import UploadIcon from "@mui/icons-material/Upload";
 import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
-import { LongDataByProjectTable } from "../components/LongDataByProjectTable";
 import { ProjectStatsView } from "../components/ProjectStatsView";
 import { AssigneeStatsView } from "../components/AssigneeStatsView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -35,6 +34,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
 import { TaskDiffTabs } from "../components/TaskDiffTabs";
 import { createLongDataTableWithProject } from "../components/LongDataByNameTableWrapper";
+import { createLongDataByProjectTableWithProject } from "../components/LongDataByProjectTableWrapper";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -214,6 +214,12 @@ function Evm() {
 
   const TableWithProject = useMemo(() => {
     return state.project ? createLongDataTableWithProject(state.project) : null;
+  }, [state.project]);
+
+  const TableWithProject2 = useMemo(() => {
+    return state.project
+      ? createLongDataByProjectTableWithProject(state.project)
+      : null;
   }, [state.project]);
 
   return (
@@ -433,7 +439,7 @@ SPI（Schedule Performance Index）
 
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
-            TableComponent={LongDataByProjectTable}
+            TableComponent={TableWithProject2!}
             tableData={state.project.pvByProjectLong}
             chartData={state.project.pvsByProjectLong}
             label="日々のPV"
