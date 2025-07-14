@@ -33,7 +33,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
 import { TaskDiffTabs } from "../components/TaskDiffTabs";
-import { createLongDataTableWithProject } from "../components/LongDataByNameTableWrapper";
+import { createLongDataByNameTableWithProject } from "../components/LongDataByNameTableWrapper";
 import { createLongDataByProjectTableWithProject } from "../components/LongDataByProjectTableWrapper";
 
 export type ProjectInfoCallbacks = {
@@ -212,13 +212,15 @@ function Evm() {
     );
   };
 
-  const TableWithProject = useMemo(() => {
-    return state.project ? createLongDataTableWithProject(state.project) : null;
+  const LongDataByNameTableWithProject = useMemo(() => {
+    return state.project
+      ? createLongDataByNameTableWithProject(state.project)
+      : null; // Projectをココで渡しちゃう
   }, [state.project]);
 
-  const TableWithProject2 = useMemo(() => {
+  const LongDataByProjectTableWithProject = useMemo(() => {
     return state.project
-      ? createLongDataByProjectTableWithProject(state.project)
+      ? createLongDataByProjectTableWithProject(state.project) // Projectをココで渡しちゃう
       : null;
   }, [state.project]);
 
@@ -439,7 +441,7 @@ SPI（Schedule Performance Index）
 
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
-            TableComponent={TableWithProject2!}
+            TableComponent={LongDataByProjectTableWithProject!}
             tableData={state.project.pvByProjectLong}
             chartData={state.project.pvsByProjectLong}
             label="日々のPV"
@@ -463,7 +465,7 @@ SPI（Schedule Performance Index）
           </Stack>
           <Divider sx={{ mb: 2 }} />
           <AssigneeView
-            TableComponent={TableWithProject!}
+            TableComponent={LongDataByNameTableWithProject!}
             tableData={state.project.pvByNameLong}
             chartData={state.project.pvsByNameLong}
             label="PV累積"

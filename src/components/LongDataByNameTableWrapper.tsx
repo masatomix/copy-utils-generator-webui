@@ -9,7 +9,7 @@ type WrapperProps = {
   label2?: string; // 未使用
 };
 
-export const createLongDataTableWithProject = (project: Project) => {
+export const createLongDataByNameTableWithProject = (project: Project) => {
   return function LongDataByNameTableWrapper(props: WrapperProps) {
     return <LongDataByNameTable data={props.data} project={project} />;
   };

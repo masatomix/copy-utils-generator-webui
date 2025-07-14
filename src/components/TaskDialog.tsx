@@ -9,6 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { dateStr } from "evmtools-node/common";
@@ -96,9 +97,25 @@ export const TaskDialog = ({
                     onClick={onToggleTaskNameDisplay}
                     sx={{ cursor: "pointer" }}
                   >
-                    {showFullTaskName
-                      ? project.getFullTaskName(task)
-                      : task.name}
+                    <Tooltip
+                      title={project.getFullTaskName(task)}
+                      arrow
+                      placement="top"
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            fontSize: "1rem", // 通常よりやや大きめ（例: 16px）
+                            maxWidth: 400,     // 長い文字が折り返されすぎないように
+                          },
+                        },
+                      }}
+                    >
+                      <span>
+                        {showFullTaskName
+                          ? project.getFullTaskName(task)
+                          : task.name}
+                      </span>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>{task.assignee}</TableCell>
 
