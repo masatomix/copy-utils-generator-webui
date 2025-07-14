@@ -6,17 +6,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
 } from "@mui/material";
 import type { LongData, Project, TaskRow } from "evmtools-node/domain";
-import { formatDateWithWeekday, formatNumberIntl } from "../utils/format";
+import { formatDateWithWeekday,  } from "../utils/format";
 import { useState } from "react";
-import { dateStr } from "evmtools-node/common";
+import { TaskDialog } from "./TaskDialog";
 
 type Props = {
   data: LongData[];
@@ -54,14 +48,14 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
     setSelectedDate(date);
     setSelectedAssignee(assignee);
     setDialogOpen(true);
-    setShowFullTaskName(false)
+    setShowFullTaskName(false);
   };
 
   const handleDialogClose = () => {
     setDialogOpen(false);
     setSelectedDate(undefined);
     setSelectedAssignee(undefined);
-    setShowFullTaskName(false)
+    setShowFullTaskName(false);
   };
 
   const taskRows: TaskRow[] = selectedDate
@@ -146,123 +140,16 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
         </Table>
       </TableContainer>
 
-      <Dialog
+      <TaskDialog
         open={dialogOpen}
-        onClose={() => handleDialogClose()}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <div>
-            {selectedDate ? (
-              <>
-                {`${formatDateWithWeekday(selectedDate)} の${
-                  selectedAssignee ? ` ${selectedAssignee} の` : ""
-                }タスク`}
-                <Typography variant="caption" sx={{ display: "block" }}>
-                  （「タスク名」をヘッダやデータのクリックで、詳細名に切り替えます）
-                </Typography>
-              </>
-            ) : (
-              "稼働情報"
-            )}
-          </div>
-        </DialogTitle>
-        <DialogContent dividers>
-          {taskRows.length > 0 ? (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell
-                    onClick={toggleTaskNameDisplay}
-                    sx={{ cursor: "pointer", minWidth: 100 }}
-                  >
-                    タスク名
-                  </TableCell>
-                  <TableCell sx={{ minWidth: 30 }}>担当者</TableCell>
-                  <TableCell>工数(MD)</TableCell>
-                  <TableCell>日数(日)</TableCell>
-                  <TableCell align="right">本日のPV</TableCell>
-                  <TableCell>予定開始日</TableCell>
-                  <TableCell>予定終了日</TableCell>
-                  <TableCell>進捗率(%)</TableCell>
-                  <TableCell align="right" sx={{ minWidth: 100 }}>
-                    PV/EV/SPI
-                  </TableCell>
-                  {/* <TableCell align="right">未完了/完了</TableCell> */}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {taskRows.map((task, idx) => (
-                  <TableRow
-                    key={idx}
-                    sx={{
-                      backgroundColor: task.finished
-                        ? "#f0f0f0"
-                        : // : task.isOverdueAt(new Date(selectedDate!))
-                          // ? "#ffebee"
-                          undefined,
-                    }}
-                  >
-                    <TableCell>{task.id}</TableCell>
-                    <TableCell
-                      onClick={toggleTaskNameDisplay}
-                      sx={{ cursor: "pointer" }}
-                    >
-                      {showFullTaskName
-                        ? project.getFullTaskName(task)
-                        : task.name}
-                    </TableCell>
-                    <TableCell>{task.assignee}</TableCell>
-
-                    <TableCell align="right">
-                      {formatNumberIntl(task.workload, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                    <TableCell align="right">
-                      {formatNumberIntl(task.scheduledWorkDays, {
-                        maximumFractionDigits: 0,
-                      })}
-                    </TableCell>
-
-                    <TableCell align="right">
-                      {formatNumberIntl(
-                        task.calculatePV(new Date(selectedDate!)),
-                        { maximumFractionDigits: 3 }
-                      )}
-                    </TableCell>
-                    <TableCell>{dateStr(task.startDate)}</TableCell>
-                    <TableCell>{dateStr(task.endDate)}</TableCell>
-                    <TableCell align="right">
-                      {formatNumberIntl(task.progressRate, {
-                        style: "percent",
-                        maximumFractionDigits: 1,
-                      })}
-                    </TableCell>
-
-                    <TableCell align="right">
-                      {formatNumberIntl(task.pv, { maximumFractionDigits: 2 })}{" "}
-                      /{" "}
-                      {formatNumberIntl(task.ev, { maximumFractionDigits: 2 })}{" "}
-                      /{" "}
-                      {formatNumberIntl(task.spi, { maximumFractionDigits: 2 })}
-                    </TableCell>
-
-                    {/* <TableCell>{formatFinished(task.finished)}</TableCell> */}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p>稼働タスクはありません。</p>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>閉じる</Button>
-        </DialogActions>
-      </Dialog>
+        onClose={handleDialogClose}
+        selectedDate={selectedDate}
+        selectedAssignee={selectedAssignee}
+        taskRows={taskRows}
+        project={project}
+        showFullTaskName={showFullTaskName}
+        onToggleTaskNameDisplay={toggleTaskNameDisplay}
+      />
     </>
   );
 };
