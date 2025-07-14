@@ -10,7 +10,7 @@ import {
   TableBody,
   Button,
 } from "@mui/material";
-import type { TaskDiff, TaskRow } from "evmtools-node/domain";
+import type { Project, TaskDiff, TaskRow } from "evmtools-node/domain";
 import {
   formatFinished,
   formatIsOverdueAt,
@@ -25,6 +25,8 @@ export const TaskDiffDialog = ({
   selectedIndex,
   onSelectIndex,
   diffListLength,
+  current,
+  prev,
 }: {
   open: boolean;
   onClose: () => void;
@@ -32,6 +34,8 @@ export const TaskDiffDialog = ({
   selectedIndex: number;
   onSelectIndex: (index: number) => void;
   diffListLength: number;
+  current: Project;
+  prev: Project;
 }) => {
   if (!selectedDiff) return null;
 
@@ -77,6 +81,11 @@ export const TaskDiffDialog = ({
   ][] = [
     ["ID", currentTask?.id, prevTask?.id],
     ["名称", currentTask?.name, prevTask?.name],
+    [
+      "詳細名称",
+      current.getFullTaskName(currentTask),
+      prev.getFullTaskName(prevTask),
+    ],
     ["担当者", currentTask?.assignee, prevTask?.assignee],
     [
       "予定工数(MD)",

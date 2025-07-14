@@ -311,6 +311,8 @@ export const TaskDiffTable = ({
         selectedIndex={selectedIndex}
         onSelectIndex={setSelectedIndex}
         diffListLength={sortedData.length}
+        current={current}
+        prev={prev}
       />
     </>
   );
