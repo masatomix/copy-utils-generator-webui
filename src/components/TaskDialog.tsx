@@ -10,7 +10,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableRow,
   TextField,
@@ -27,6 +26,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import ClearIcon from "@mui/icons-material/Clear";
+import { DaysStrOverdueAt } from "./DaysStrOverdueAt";
+import { TaskRowsFooter } from "./TaskRowsFooter";
+import { PVEVSPI } from "./PVEVSPI";
 
 type Props = {
   open: boolean;
@@ -70,25 +72,6 @@ export const TaskDialog = ({
       setFilterText("");
     }
   }, [open]);
-
-  const totals = useMemo(() => {
-    const workload = filtered.reduce((sum, t) => sum + (t.workload ?? 0), 0);
-    const pv = filtered.reduce((sum, t) => sum + (t.pv ?? 0), 0);
-    const ev = filtered.reduce((sum, t) => sum + (t.ev ?? 0), 0);
-    const spi = pv !== 0 ? ev / pv : NaN;
-    const progressRate = workload !== 0 ? ev / workload : NaN;
-    return {
-      workload,
-      pvToday: filtered.reduce(
-        (sum, t) => sum + (t.calculatePV(new Date(selectedDate!)) ?? 0),
-        0
-      ),
-      progressRate,
-      pv,
-      ev,
-      spi,
-    };
-  }, [filtered, selectedDate]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -173,12 +156,12 @@ export const TaskDialog = ({
                 <TableCell>予定開始日</TableCell>
                 <TableCell>予定終了日</TableCell>
                 <TableCell>進捗率(%)</TableCell>
+                <TableCell sx={{ minWidth: 45 }}>期限切れまで</TableCell>
                 <TableCell align="right" sx={{ minWidth: 100 }}>
                   累積
                   <br />
                   PV/EV/SPI
                 </TableCell>
-                {/* <TableCell align="right">未完了/完了</TableCell> */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -242,47 +225,21 @@ export const TaskDialog = ({
                       maximumFractionDigits: 1,
                     })}
                   </TableCell>
-
-                  <TableCell align="right">
-                    {formatNumberIntl(task.pv, { maximumFractionDigits: 2 })} /{" "}
-                    {formatNumberIntl(task.ev, { maximumFractionDigits: 2 })} /{" "}
-                    {formatNumberIntl(task.spi, { maximumFractionDigits: 2 })}
-                  </TableCell>
-
-                  {/* <TableCell>{formatFinished(task.finished)}</TableCell> */}
+                  <DaysStrOverdueAt
+                    taskRow={task}
+                    baseDate={new Date(selectedDate!)}
+                  ></DaysStrOverdueAt>
+                  <PVEVSPI
+                    taskRow={task}
+                    baseDate={new Date(selectedDate!)}
+                  ></PVEVSPI>
                 </TableRow>
               ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={3} align="right">
-                  合計
-                </TableCell>
-                <TableCell align="right">
-                  {formatNumberIntl(totals.workload, {
-                    maximumFractionDigits: 2,
-                  })}
-                </TableCell>
-                <TableCell align="right"></TableCell>
-                <TableCell align="right">
-                  {formatNumberIntl(totals.pvToday, {
-                    maximumFractionDigits: 2,
-                  })}
-                </TableCell>
-                <TableCell colSpan={2}></TableCell>
-                <TableCell>
-                  {formatNumberIntl(totals.progressRate, {
-                    style: "percent",
-                    maximumFractionDigits: 1,
-                  })}
-                </TableCell>
-                <TableCell align="right">
-                  {formatNumberIntl(totals.pv, { maximumFractionDigits: 2 })} /{" "}
-                  {formatNumberIntl(totals.ev, { maximumFractionDigits: 2 })} /{" "}
-                  {formatNumberIntl(totals.spi, { maximumFractionDigits: 2 })}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
+            </TableBody>{" "}
+            <TaskRowsFooter
+              taskRows={filtered}
+              baseDate={new Date(selectedDate!)}
+            ></TaskRowsFooter>
           </Table>
         ) : (
           <p>稼働タスクはありません。</p>
