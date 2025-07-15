@@ -427,6 +427,20 @@ SPI（Schedule Performance Index）
         </Paper>
       )}
 
+      {state.project && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6" gutterBottom>
+              プロジェクト素データ
+            </Typography>
+            <HelpPopover title="" content="プロジェクトの素データを表示" />
+          </Stack>
+
+          <Divider sx={{ mb: 2 }} />
+          <TaskRowsSection project={state.project} />
+        </Paper>
+      )}
+
       {/* PVs推移グラフ(プロジェクト) */}
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
@@ -472,20 +486,6 @@ SPI（Schedule Performance Index）
             label="PV累積"
             initialTab={1}
           />
-        </Paper>
-      )}
-
-      {state.project && (
-        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6" gutterBottom>
-              プロジェクト素データ
-            </Typography>
-            <HelpPopover title="" content="プロジェクトの素データを表示" />
-          </Stack>
-
-          <Divider sx={{ mb: 2 }} />
-          <TaskRowsSection project={state.project} />
         </Paper>
       )}
     </Box>
