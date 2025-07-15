@@ -14,6 +14,8 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  TableContainer,
+  Paper,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -189,14 +191,14 @@ export const TaskDiffTable = ({
           alignItems="center"
         >
           <Stack>
-            <Typography gutterBottom>
+            <Typography variant="body2" mt={1}>
               進捗率、PV、EVに変更があったタスクを表示します。完了期限を過ぎたタスク(予定終了日
               ≤ 基準日)は変更がなくても赤背景で常に表示します。
             </Typography>
-            <Typography gutterBottom>
+            <Typography variant="body2" mt={1}>
               行をクリックすると、新旧のデータの詳細が確認できます。
             </Typography>
-            <Typography gutterBottom>
+            <Typography variant="body2" mt={1}>
               右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
             </Typography>
             <Typography variant="body2" mt={1}>
@@ -220,88 +222,105 @@ export const TaskDiffTable = ({
         </Stack>
       </Stack>
       <Divider sx={{ mb: 2 }} />
-
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {[
-              { key: "id", label: "ID" },
-              {
-                key: showFullName ? "fullName" : "name",
-                label: showFullName ? "タスク名（詳細）" : "タスク名（簡略）",
-              },
-              { key: "assignee", label: "担当者" },
-              { key: "deltaProgressRate", label: "進捗率差分" },
-              { key: "deltaPV", label: "PV差分" },
-              { key: "deltaEV", label: "EV差分" },
-              { key: "finished", label: "完了" },
-              { key: "diffType", label: "変更種別" },
-              { key: "daysStrOverdueAt", label: "期限超過日数" },
-            ].map(({ key, label }) => (
-              <TableCell key={key}>
-                <TableSortLabel
-                  active={orderBy === key}
-                  direction={orderBy === key ? order : "asc"}
-                  onClick={() => handleSort(key as SortKey)}
-                >
-                  {label}
-                </TableSortLabel>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sortedData.map((diff, index) => (
-            <TableRow
-              key={diff.id}
-              sx={{
-                backgroundColor: diff.finished
-                  ? "#f0f0f0"
-                  : diff.isOverdueAt
-                  ? "#ffebee"
-                  : undefined,
-                cursor: "pointer",
-              }}
-              onClick={() => handleRowClick(index)}
-            >
-              <TableCell>{diff.id}</TableCell>
-              <TableCell>{showFullName ? diff.fullName : diff.name}</TableCell>
-              <TableCell>{diff.assignee}</TableCell>
-              <TableCell>
-                {formatPercentPoint(diff.deltaProgressRate)}
-                <ShowDiffTag
-                  current={diff.currentProgressRate}
-                  prev={diff.prevProgressRate}
-                  show={showActualValues}
-                  style="percent"
-                  maximumFractionDigits={1}
-                />
-              </TableCell>
-              <TableCell>
-                {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                <ShowDiffTag
-                  current={diff.currentPV}
-                  prev={diff.prevPV}
-                  show={showActualValues}
-                />
-              </TableCell>
-              <TableCell>
-                {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
-                <ShowDiffTag
-                  current={diff.currentEV}
-                  prev={diff.prevEV}
-                  show={showActualValues}
-                />
-              </TableCell>
-              <TableCell>{formatFinished(diff.finished)}</TableCell>
-              <TableCell>{formatDiffType(diff.diffType)}</TableCell>
-              <TableCell>
-                {!diff.finished ? diff.daysStrOverdueAt : ""}
-              </TableCell>
+      {/* 表本体（Paperで囲んでContainer） */}
+      <TableContainer
+        component={Paper}
+        sx={{
+          maxHeight: 500, // ← 表の高さ上限
+          overflow: "auto",
+          mt: 2,
+        }}
+      >
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              {[
+                { key: "id", label: "ID" },
+                {
+                  key: showFullName ? "fullName" : "name",
+                  label: showFullName ? "タスク名（詳細）" : "タスク名（簡略）",
+                },
+                { key: "assignee", label: "担当者" },
+                { key: "deltaProgressRate", label: "進捗率差分" },
+                { key: "deltaPV", label: "PV差分" },
+                { key: "deltaEV", label: "EV差分" },
+                { key: "finished", label: "完了" },
+                { key: "diffType", label: "変更種別" },
+                { key: "daysStrOverdueAt", label: "期限超過日数" },
+              ].map(({ key, label }) => (
+                <TableCell key={key}>
+                  <TableSortLabel
+                    active={orderBy === key}
+                    direction={orderBy === key ? order : "asc"}
+                    onClick={() => handleSort(key as SortKey)}
+                  >
+                    {label}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {sortedData.map((diff, index) => (
+              <TableRow
+                key={diff.id}
+                sx={{
+                  backgroundColor: diff.finished
+                    ? "#f0f0f0"
+                    : diff.isOverdueAt
+                    ? "#ffebee"
+                    : undefined,
+                  cursor: "pointer",
+                }}
+                onClick={() => handleRowClick(index)}
+              >
+                <TableCell>{diff.id}</TableCell>
+                <TableCell
+                  sx={{
+                    maxWidth: 300,
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {showFullName ? diff.fullName : diff.name}
+                </TableCell>
+                <TableCell>{diff.assignee}</TableCell>
+                <TableCell>
+                  {formatPercentPoint(diff.deltaProgressRate)}
+                  <ShowDiffTag
+                    current={diff.currentProgressRate}
+                    prev={diff.prevProgressRate}
+                    show={showActualValues}
+                    style="percent"
+                    maximumFractionDigits={1}
+                  />
+                </TableCell>
+                <TableCell>
+                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+                  <ShowDiffTag
+                    current={diff.currentPV}
+                    prev={diff.prevPV}
+                    show={showActualValues}
+                  />
+                </TableCell>
+                <TableCell>
+                  {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
+                  <ShowDiffTag
+                    current={diff.currentEV}
+                    prev={diff.prevEV}
+                    show={showActualValues}
+                  />
+                </TableCell>
+                <TableCell>{formatFinished(diff.finished)}</TableCell>
+                <TableCell>{formatDiffType(diff.diffType)}</TableCell>
+                <TableCell>
+                  {!diff.finished ? diff.daysStrOverdueAt : ""}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* ダイアログ */}
       <TaskDiffDialog
