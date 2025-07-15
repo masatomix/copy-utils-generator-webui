@@ -277,7 +277,7 @@ export const TaskDiffTable = ({
                 <TableCell>{diff.id}</TableCell>
                 <TableCell
                   sx={{
-                    maxWidth: 300,
+                    maxWidth: 500,
                     wordBreak: "break-word",
                     whiteSpace: "normal",
                   }}
