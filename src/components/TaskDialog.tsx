@@ -182,9 +182,9 @@ export const TaskDialog = ({
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.map((task, idx) => (
+              {filtered.map((task) => (
                 <TableRow
-                  key={idx}
+                  key={task.id}
                   sx={{
                     backgroundColor: task.finished
                       ? "#f0f0f0"
