@@ -8,9 +8,10 @@ import {
   Paper,
 } from "@mui/material";
 import type { LongData, Project, TaskRow } from "evmtools-node/domain";
-import { formatDateWithWeekday,  } from "../utils/format";
+import { formatDateWithWeekday } from "../utils/format";
 import { useState } from "react";
 import { TaskDialog } from "./TaskDialog";
+import { isHoliday, isToday } from "../utils/dateUtils";
 
 type Props = {
   data: LongData[];
@@ -153,19 +154,3 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
     </>
   );
 };
-
-function isHoliday(dateString: string): boolean {
-  const date = new Date(dateString);
-  const day = date.getDay(); // 0: 日, 6: 土
-  return day === 0 || day === 6;
-}
-
-function isToday(dateString: string): boolean {
-  const today = new Date();
-  const target = new Date(dateString);
-  return (
-    today.getFullYear() === target.getFullYear() &&
-    today.getMonth() === target.getMonth() &&
-    today.getDate() === target.getDate()
-  );
-}
