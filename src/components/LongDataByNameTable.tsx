@@ -11,7 +11,8 @@ import type { LongData, Project, TaskRow } from "evmtools-node/domain";
 import { formatDateWithWeekday } from "../utils/format";
 import { useState } from "react";
 import { TaskDialog } from "./TaskDialog";
-import { isHoliday, isToday } from "../utils/dateUtils";
+import { isToday } from "../utils/dateUtils";
+import { isHoliday } from "evmtools-node/common";
 
 type Props = {
   data: LongData[];
@@ -88,7 +89,7 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
                 sx={{
                   backgroundColor: isToday(date)
                     ? "#fff8dc" // 今日: コーンシルク色
-                    : isHoliday(date)
+                    : isHoliday(new Date(date), project)
                     ? "#f0f0f0"
                     : "inherit", // 土日だけ薄いグレー
                 }}

@@ -20,7 +20,7 @@ import {
   Menu,
 } from "@mui/material";
 import type { Project, TaskRow } from "evmtools-node/domain";
-import { dateStr } from "evmtools-node/common";
+import { dateStr, isHoliday } from "evmtools-node/common";
 import { formatFinished, formatNumberIntl } from "../utils/format";
 
 import ClearIcon from "@mui/icons-material/Clear";
@@ -32,7 +32,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { DaysStrOverdueAt } from "./DaysStrOverdueAt";
 import { TaskRowsFooter } from "./TaskRowsFooter";
 import { PVEVSPI } from "./PVEVSPI";
-import { isHoliday } from "../utils/dateUtils";
 
 type TaskRowsTableSetting = {
   onlyIncomplete: boolean;
@@ -80,10 +79,9 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
   const changeBaseDate = (days: number) => {
     setBaseDate((prev) => {
       const newDate = new Date(prev);
-      // 休日考慮(いま時点土日考慮のみ)
       while (true) {
         newDate.setDate(newDate.getDate() + (days > 0 ? 1 : -1));
-        if (!isHoliday(newDate.toISOString(), project)) {
+        if (!isHoliday(newDate, project)) { // プロジェクトの休日も考慮
           break;
         }
       }

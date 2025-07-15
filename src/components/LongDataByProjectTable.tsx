@@ -12,7 +12,8 @@ import type { LongData, Project, TaskRow } from "evmtools-node/domain";
 import { formatDateWithWeekday } from "../utils/format";
 import { useState } from "react";
 import { TaskDialog } from "./TaskDialog";
-import { isHoliday, isToday } from "../utils/dateUtils";
+import { isToday } from "../utils/dateUtils";
+import { isHoliday } from "evmtools-node/common";
 
 type MergedRow = {
   baseDate: string;
@@ -102,7 +103,7 @@ export const LongDataByProjectTable = ({
                 sx={{
                   backgroundColor: isToday(row.baseDate)
                     ? "#fff8dc" // 今日: コーンシルク色
-                    : isHoliday(row.baseDate)
+                    : isHoliday(new Date(row.baseDate), project)
                     ? "#f0f0f0"
                     : "inherit", // 土日だけ薄いグレー
                 }}
