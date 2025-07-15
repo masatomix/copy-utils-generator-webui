@@ -20,12 +20,19 @@ import {
   Menu,
 } from "@mui/material";
 import type { Project, TaskRow } from "evmtools-node/domain";
-import { dateStr, formatRelativeDays } from "evmtools-node/common";
+import { dateStr } from "evmtools-node/common";
 import { formatFinished, formatNumberIntl } from "../utils/format";
 
 import ClearIcon from "@mui/icons-material/Clear";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ReplayIcon from "@mui/icons-material/Replay"; // ← 追加
 
 import SettingsIcon from "@mui/icons-material/Settings";
+import { DaysStrOverdueAt } from "./DaysStrOverdueAt";
+import { TaskRowsFooter } from "./TaskRowsFooter";
+import { PVEVSPI } from "./PVEVSPI";
+import { isHoliday } from "../utils/dateUtils";
 
 type TaskRowsTableSetting = {
   onlyIncomplete: boolean;
@@ -52,8 +59,6 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
     });
   };
 
-  const baseDate = project.baseDate;
-
   const [filterText, setFilterText] = useState<string>("");
   const [showFullTaskName, setShowFullTaskName] = useState(false);
   const toggleTaskNameDisplay = () => {
@@ -71,6 +76,22 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
     setAnchorEl(null);
   };
 
+  const [baseDate, setBaseDate] = useState<Date>(project.baseDate);
+  const changeBaseDate = (days: number) => {
+    setBaseDate((prev) => {
+      const newDate = new Date(prev);
+      // 休日考慮(いま時点土日考慮のみ)
+      while (true) {
+        newDate.setDate(newDate.getDate() + (days > 0 ? 1 : -1));
+        if (!isHoliday(newDate.toISOString(), project)) {
+          break;
+        }
+      }
+      return newDate;
+    });
+  };
+  // const baseDate = project.baseDate;
+
   const filtered = useMemo(() => {
     // 今日タスクのみのばあいは検索機能、そうじゃない場合は子タスク全部
     const tmp: TaskRow[] = onlyTodayTask
@@ -78,7 +99,6 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
       : project.toTaskRows().filter((d) => d.isLeaf);
     const taskRows = onlyIncomplete ? tmp.filter((d) => !d.finished) : tmp;
 
-    
     if (!filterText.trim()) return taskRows;
     const keyword = filterText.toLowerCase();
     return taskRows.filter((d) => {
@@ -92,21 +112,11 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
     });
   }, [project, baseDate, filterText, onlyIncomplete, onlyTodayTask]);
 
-  const DaysStrOverdueAt = ({ taskRow }: { taskRow: TaskRow }) => {
-    const relativeDay = formatRelativeDays(baseDate, taskRow.endDate); // 日付を計算して文字列で返す
-    const relativeDayStr = taskRow.finished
-      ? "" // そもそも完了していたら、(データ基準日から終了日付がどれくらい過ぎているかだしても仕方がないので) 空文字で返す
-      : relativeDay;
-    return <TableCell>{relativeDayStr}</TableCell>;
-  };
+  const isInitialDate =
+    baseDate.toDateString() === project.baseDate.toDateString();
 
   return (
     <Box mt={4}>
-      {/* 説明行 */}
-      <Typography variant="caption" sx={{ mb: 1 }}>
-        （「タスク名」ヘッダのクリックで、詳細名に切り替わります）
-      </Typography>
-
       {/* 日付 + フィルタ + 歯車アイコン */}
       <Box
         display="flex"
@@ -116,13 +126,56 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
         gap={2}
       >
         {/* 日付情報 */}
-        <Typography variant="body2">
-          <strong>基準日:</strong> {dateStr(project.baseDate)}{" "}
-          <strong>(処理対象 {filtered.length} 件)</strong>
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="body2">
+            <strong>基準日:</strong> {dateStr(baseDate)}{" "}
+            <strong>(処理対象 {filtered.length} 件)</strong>
+          </Typography>
+        </Box>
 
         {/* フィルタ + 歯車 */}
         <Box display="flex" alignItems="center" gap={1}>
+          <Tooltip title="前日へ">
+            <IconButton
+              onClick={() => changeBaseDate(-1)}
+              sx={{
+                transition: "background-color 0.2s",
+                "&:hover": {
+                  backgroundColor: "#e0f2f1",
+                },
+              }}
+            >
+              <ArrowBackIosNewIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="翌日へ">
+            <IconButton
+              onClick={() => changeBaseDate(1)}
+              sx={{
+                transition: "background-color 0.2s",
+                "&:hover": {
+                  backgroundColor: "#e3f2fd",
+                },
+              }}
+            >
+              <ArrowForwardIosIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          {/* 🔄 リセットボタン */}
+          <Tooltip title="初期日付にリセット">
+            <IconButton
+              onClick={() => setBaseDate(project.baseDate)}
+              disabled={isInitialDate}
+              sx={{
+                transition: "background-color 0.2s",
+                "&:hover": {
+                  backgroundColor: "#fff3e0",
+                },
+              }}
+            >
+              <ReplayIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip
             title={
               <span>
@@ -164,6 +217,11 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
         </Box>
       </Box>
 
+      {/* 説明行 */}
+      <Typography variant="caption">
+        （「タスク名」ヘッダのクリックで、詳細名に切り替わります）
+      </Typography>
+
       {/* 設定メニュー */}
       <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
         <MenuItem onClick={() => updateSetting("onlyIncomplete")}>
@@ -186,7 +244,7 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
               disableRipple
             />
           </ListItemIcon>
-          <ListItemText primary="今日タスクのみ表示" />
+          <ListItemText primary="基準日のタスクのみ表示" />
         </MenuItem>
       </Menu>
 
@@ -276,7 +334,6 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
                     maximumFractionDigits: 0,
                   })}
                 </TableCell>
-
                 <TableCell align="right">
                   {formatNumberIntl(task.calculatePV(new Date(baseDate)), {
                     maximumFractionDigits: 2,
@@ -290,17 +347,18 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
                     maximumFractionDigits: 0,
                   })}
                 </TableCell>
-                <DaysStrOverdueAt taskRow={task}></DaysStrOverdueAt>
-                <TableCell align="right">
-                  {formatNumberIntl(task.pv, { maximumFractionDigits: 2 })} /{" "}
-                  {formatNumberIntl(task.ev, { maximumFractionDigits: 2 })} /{" "}
-                  {formatNumberIntl(task.spi, { maximumFractionDigits: 2 })}
-                </TableCell>
-
-                {/* <TableCell>{formatFinished(task.finished)}</TableCell> */}
+                <DaysStrOverdueAt
+                  taskRow={task}
+                  baseDate={baseDate}
+                ></DaysStrOverdueAt>
+                <PVEVSPI taskRow={task} baseDate={baseDate}></PVEVSPI>
               </TableRow>
             ))}
           </TableBody>
+          <TaskRowsFooter
+            taskRows={filtered}
+            baseDate={baseDate}
+          ></TaskRowsFooter>
         </Table>
       </TableContainer>
     </Box>
@@ -308,83 +366,3 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
 };
 
 export default TaskRowsSection;
-
-// ["ID", currentTask?.id, prevTask?.id],
-// ["名称", currentTask?.name, prevTask?.name],
-// [
-//   "詳細名称",
-//   current.getFullTaskName(currentTask),
-//   prev.getFullTaskName(prevTask),
-// ],
-// ["担当者", currentTask?.assignee, prevTask?.assignee],
-// [
-//   "予定工数(MD)",
-//   formatNumberIntl(currentTask?.workload, { maximumFractionDigits: 3 }),
-//   formatNumberIntl(prevTask?.workload, { maximumFractionDigits: 3 }),
-// ],
-// [
-//   "稼働予定日数(日)",
-//   formatNumberIntl(currentTask?.scheduledWorkDays, {
-//     maximumFractionDigits: 0,
-//   }),
-//   formatNumberIntl(prevTask?.scheduledWorkDays, {
-//     maximumFractionDigits: 0,
-//   }),
-// ],
-// [
-//   "一日あたり工数(MD)",
-//   formatNumberIntl(currentTask?.workloadPerDay, {
-//     maximumFractionDigits: 3,
-//   }),
-//   formatNumberIntl(prevTask?.workloadPerDay, { maximumFractionDigits: 3 }),
-// ],
-// [
-//   "基準日",
-//   `${dateStr(selectedDiff.currentBaseDate)}`,
-//   `${dateStr(selectedDiff.prevBaseDate)}`,
-// ],
-// ["予定開始日～終了日", fromToStrPV(currentTask), fromToStrPV(prevTask)],
-// ["実績開始日～終了日", fromToStrEV(currentTask), fromToStrEV(prevTask)],
-// [
-//   "進捗率(%)",
-//   formatNumberIntl(currentTask?.progressRate, {
-//     style: "percent",
-//     maximumFractionDigits: 1,
-//   }),
-//   formatNumberIntl(prevTask?.progressRate, {
-//     style: "percent",
-//     maximumFractionDigits: 1,
-//   }),
-// ],
-// [
-//   "PV(MD)",
-//   formatNumberIntl(currentTask?.pv, { maximumFractionDigits: 3 }),
-//   formatNumberIntl(prevTask?.pv, { maximumFractionDigits: 3 }),
-// ],
-// [
-//   "EV(MD)",
-//   formatNumberIntl(currentTask?.ev, { maximumFractionDigits: 3 }),
-//   formatNumberIntl(prevTask?.ev, { maximumFractionDigits: 3 }),
-// ],
-// [
-//   "SPI (EV/PV)",
-//   formatNumberIntl(currentTask?.spi, { maximumFractionDigits: 3 }),
-//   formatNumberIntl(prevTask?.spi, { maximumFractionDigits: 3 }),
-// ],
-// [
-//   "予定進捗日",
-//   dateStr(currentTask?.expectedProgressDate),
-//   dateStr(prevTask?.expectedProgressDate),
-// ],
-// ["遅延日数", currentTask?.delayDays, prevTask?.delayDays],
-// ["備考", currentTask?.remarks, prevTask?.remarks],
-// [
-//   "未完了/完了",
-//   formatFinished(currentTask?.finished),
-//   formatFinished(prevTask?.finished),
-// ],
-// [
-//   "期限切れ?",
-//   daysStrOverdueAt(selectedDiff.currentBaseDate, currentTask),
-//   daysStrOverdueAt(selectedDiff.prevBaseDate, prevTask),
-// ],
