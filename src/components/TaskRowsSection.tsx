@@ -20,7 +20,7 @@ import {
   Menu,
 } from "@mui/material";
 import type { Project, TaskRow } from "evmtools-node/domain";
-import { dateStr } from "evmtools-node/common";
+import { dateStr, formatRelativeDays } from "evmtools-node/common";
 import { formatFinished, formatNumberIntl } from "../utils/format";
 
 import ClearIcon from "@mui/icons-material/Clear";
@@ -29,6 +29,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 
 type TaskRowsTableSetting = {
   onlyIncomplete: boolean;
+  onlyTodayTask: boolean;
 };
 
 type TaskRowsSectionProps = {
@@ -40,8 +41,9 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
   const [taskRowsTableSetting, setTaskRowsTableSetting] =
     useState<TaskRowsTableSetting>({
       onlyIncomplete: false,
+      onlyTodayTask: true,
     });
-  const { onlyIncomplete } = taskRowsTableSetting;
+  const { onlyIncomplete, onlyTodayTask } = taskRowsTableSetting;
 
   const updateSetting = (key: keyof TaskRowsTableSetting) => {
     setTaskRowsTableSetting({
@@ -50,7 +52,7 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
     });
   };
 
-  const taskRows: TaskRow[] = project.toTaskRows();
+  const baseDate = project.baseDate;
 
   const [filterText, setFilterText] = useState<string>("");
   const [showFullTaskName, setShowFullTaskName] = useState(false);
@@ -70,52 +72,57 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
   };
 
   const filtered = useMemo(() => {
-    // if (!filterText.trim()) return taskRows;
-    const keyword = filterText.toLowerCase();
-    return taskRows
-      .filter((d) => {
-        return (
-          d.name?.toLowerCase().includes(keyword) ||
-          project.getFullTaskName(d).toLowerCase().includes(keyword) ||
-          d.assignee?.toLowerCase().includes(keyword) ||
-          String(d.id).includes(keyword) ||
-          formatFinished(d.finished).toLowerCase() === keyword
-        );
-      })
-      .filter((d) => (onlyIncomplete ? !d.finished : true));
-  }, [project, taskRows, filterText, onlyIncomplete]);
+    // 今日タスクのみのばあいは検索機能、そうじゃない場合は子タスク全部
+    const tmp: TaskRow[] = onlyTodayTask
+      ? project.getTaskRows(baseDate)
+      : project.toTaskRows().filter((d) => d.isLeaf);
+    const taskRows = onlyIncomplete ? tmp.filter((d) => !d.finished) : tmp;
 
-  const baseDate = project.baseDate;
-  // 基準日
+    
+    if (!filterText.trim()) return taskRows;
+    const keyword = filterText.toLowerCase();
+    return taskRows.filter((d) => {
+      return (
+        d.name?.toLowerCase().includes(keyword) ||
+        project.getFullTaskName(d).toLowerCase().includes(keyword) ||
+        d.assignee?.toLowerCase().includes(keyword) ||
+        String(d.id).includes(keyword) ||
+        formatFinished(d.finished).toLowerCase() === keyword
+      );
+    });
+  }, [project, baseDate, filterText, onlyIncomplete, onlyTodayTask]);
+
+  const DaysStrOverdueAt = ({ taskRow }: { taskRow: TaskRow }) => {
+    const relativeDay = formatRelativeDays(baseDate, taskRow.endDate); // 日付を計算して文字列で返す
+    const relativeDayStr = taskRow.finished
+      ? "" // そもそも完了していたら、(データ基準日から終了日付がどれくらい過ぎているかだしても仕方がないので) 空文字で返す
+      : relativeDay;
+    return <TableCell>{relativeDayStr}</TableCell>;
+  };
+
   return (
     <Box mt={4}>
-      <Typography
-        variant="caption"
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mt: 1,
-        }}
+      {/* 説明行 */}
+      <Typography variant="caption" sx={{ mb: 1 }}>
+        （「タスク名」ヘッダのクリックで、詳細名に切り替わります）
+      </Typography>
+
+      {/* 日付 + フィルタ + 歯車アイコン */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        flexWrap="wrap"
+        gap={2}
       >
-        <Box>（「タスク名」ヘッダのクリックで、詳細名に切り替わります）</Box>
-        
+        {/* 日付情報 */}
+        <Typography variant="body2">
+          <strong>基準日:</strong> {dateStr(project.baseDate)}{" "}
+          <strong>(処理対象 {filtered.length} 件)</strong>
+        </Typography>
 
-        <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-          <MenuItem onClick={() => updateSetting("onlyIncomplete")}>
-            <ListItemIcon>
-              <Checkbox
-                edge="start"
-                checked={onlyIncomplete}
-                tabIndex={-1}
-                disableRipple
-              />
-            </ListItemIcon>
-            <ListItemText primary="完了は非表示" />
-          </MenuItem>
-        </Menu>
-
-        <Box ml={2}>
+        {/* フィルタ + 歯車 */}
+        <Box display="flex" alignItems="center" gap={1}>
           <Tooltip
             title={
               <span>
@@ -149,22 +156,47 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
               }}
             />
           </Tooltip>
+
           {/* 歯車ボタン */}
-          <IconButton
-            onClick={handleMenuOpen}
-            size="small"
-            sx={{ alignSelf: "flex-start" }}
-          >
+          <IconButton onClick={handleMenuOpen} size="small">
             <SettingsIcon />
           </IconButton>
         </Box>
-      </Typography>
+      </Box>
 
+      {/* 設定メニュー */}
+      <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
+        <MenuItem onClick={() => updateSetting("onlyIncomplete")}>
+          <ListItemIcon>
+            <Checkbox
+              edge="start"
+              checked={onlyIncomplete}
+              tabIndex={-1}
+              disableRipple
+            />
+          </ListItemIcon>
+          <ListItemText primary="完了は非表示" />
+        </MenuItem>
+        <MenuItem onClick={() => updateSetting("onlyTodayTask")}>
+          <ListItemIcon>
+            <Checkbox
+              edge="start"
+              checked={onlyTodayTask}
+              tabIndex={-1}
+              disableRipple
+            />
+          </ListItemIcon>
+          <ListItemText primary="今日タスクのみ表示" />
+        </MenuItem>
+      </Menu>
+
+      {/* タスクテーブル */}
       <TableContainer
         component={Paper}
         sx={{
           maxHeight: 500, // ← 表の高さ上限
           overflow: "auto",
+          mt: 2,
         }}
       >
         <Table size="small" stickyHeader>
@@ -184,6 +216,7 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
               <TableCell>予定開始日</TableCell>
               <TableCell>予定終了日</TableCell>
               <TableCell>進捗率(%)</TableCell>
+              <TableCell>期限切れまで</TableCell>
               <TableCell align="right" sx={{ minWidth: 100 }}>
                 累積
                 <br />
@@ -246,7 +279,7 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
 
                 <TableCell align="right">
                   {formatNumberIntl(task.calculatePV(new Date(baseDate)), {
-                    maximumFractionDigits: 3,
+                    maximumFractionDigits: 2,
                   })}
                 </TableCell>
                 <TableCell>{dateStr(task.startDate)}</TableCell>
@@ -254,10 +287,10 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
                 <TableCell align="right">
                   {formatNumberIntl(task.progressRate, {
                     style: "percent",
-                    maximumFractionDigits: 1,
+                    maximumFractionDigits: 0,
                   })}
                 </TableCell>
-
+                <DaysStrOverdueAt taskRow={task}></DaysStrOverdueAt>
                 <TableCell align="right">
                   {formatNumberIntl(task.pv, { maximumFractionDigits: 2 })} /{" "}
                   {formatNumberIntl(task.ev, { maximumFractionDigits: 2 })} /{" "}
