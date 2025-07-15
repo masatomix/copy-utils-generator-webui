@@ -15,9 +15,9 @@ import {
 } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
+  Project,
   ProjectService,
   type AssigneeStatistics,
-  type Project,
   type ProjectStatistics,
   type TaskDiff,
 } from "evmtools-node/domain";
@@ -35,6 +35,7 @@ import React from "react";
 import { TaskDiffTabs } from "../components/TaskDiffTabs";
 import { createLongDataByNameTableWithProject } from "../components/LongDataByNameTableWrapper";
 import { createLongDataByProjectTableWithProject } from "../components/LongDataByProjectTableWrapper";
+import TaskRowsSection from "../components/TaskRowsSection";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -471,6 +472,20 @@ SPI（Schedule Performance Index）
             label="PV累積"
             initialTab={1}
           />
+        </Paper>
+      )}
+
+      {state.project && (
+        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="h6" gutterBottom>
+              プロジェクト素データ
+            </Typography>
+            <HelpPopover title="" content="プロジェクトの素データを表示" />
+          </Stack>
+
+          <Divider sx={{ mb: 2 }} />
+          <TaskRowsSection project={state.project} />
         </Paper>
       )}
     </Box>
