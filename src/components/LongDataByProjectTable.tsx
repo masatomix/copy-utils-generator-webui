@@ -67,7 +67,7 @@ export const LongDataByProjectTable = ({
     setShowFullTaskName((prev) => !prev);
   };
 
-  const handleCellClick = (date: string, assignee?: string) => {
+  const handleCellClick = (date: string) => {
     setSelectedDate(date);
     setDialogOpen(true);
     setShowFullTaskName(false);
