@@ -3,71 +3,194 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
   Button,
-  Typography,
 } from "@mui/material";
-import type { TaskRow, Project } from "evmtools-node/domain";
-import { formatNumberIntl, formatFinished } from "../utils/format";
-import { dateStr } from "evmtools-node/common";
-
-type Props = {
-  open: boolean;
-  onClose: () => void;
-  task: TaskRow;
-  baseDate: Date;
-  project: Project;
-};
+import type { Project, TaskRow } from "evmtools-node/domain";
+import {
+  formatFinished,
+  formatIsOverdueAt,
+  formatNumberIntl,
+} from "../utils/format";
+import { dateStr, formatRelativeDays } from "evmtools-node/common";
 
 export const TaskDetailDialog = ({
   open,
   onClose,
-  task,
+  selectedIndex,
+  onSelectIndex,
+  taskRows,
   baseDate,
   project,
-}: Props) => {
+}: {
+  open: boolean;
+  onClose: () => void;
+  selectedIndex: number;
+  onSelectIndex: (index: number) => void;
+  taskRows: TaskRow[];
+  baseDate: Date;
+  project: Project;
+}) => {
+  const currentTask = taskRows[selectedIndex];
 
+  const daysStrOverdueAt = (baseDate?: Date, taskRow?: TaskRow): string => {
+    if (taskRow == null) return "-"; // taskRowがなければそもそも抜ける
+    // 完了、未完了(期限切れ)、未完了(期限まだ)
+    const isOverdueAtStr = formatIsOverdueAt(
+      taskRow.isOverdueAt(baseDate!),
+      taskRow.finished
+    );
 
+    const relativeDay = formatRelativeDays(baseDate, taskRow.endDate); // 日付を計算して文字列で返す
+    const relativeDayStr = taskRow.finished
+      ? "" // そもそも完了していたら、(データ基準日から終了日付がどれくらい過ぎているかだしても仕方がないので) 空文字で返す
+      : relativeDay
+      ? `(${relativeDay})`
+      : ""; // データがあればカッコを付ける
 
+    return isOverdueAtStr + relativeDayStr;
+  };
 
-  
+  const fromToStrTmp = (startDate?: Date, endDate?: Date): string => {
+    if (startDate == null && endDate == null) {
+      return "-"; // taskRowがなければそもそも抜ける
+    }
+    return `${dateStr(startDate)} ～ ${dateStr(endDate)}`;
+  };
+
+  const fromToStrPV = (taskRow?: TaskRow): string =>
+    !taskRow ? "-" : fromToStrTmp(taskRow.startDate, taskRow.endDate);
+
+  const fromToStrEV = (taskRow?: TaskRow): string =>
+    !taskRow
+      ? "-"
+      : fromToStrTmp(taskRow.actualStartDate, taskRow.actualEndDate);
+
+  const rows: [string, string | number | null | undefined][] = [
+    ["ID", currentTask?.id],
+    ["名称", currentTask?.name],
+    ["詳細名称", project.getFullTaskName(currentTask)],
+    ["担当者", currentTask?.assignee],
+    [
+      "予定工数(MD)",
+      formatNumberIntl(currentTask?.workload, { maximumFractionDigits: 3 }),
+    ],
+    [
+      "稼働予定日数(日)",
+      formatNumberIntl(currentTask?.scheduledWorkDays, {
+        maximumFractionDigits: 0,
+      }),
+    ],
+    [
+      "一日あたり工数(MD)",
+      formatNumberIntl(currentTask?.workloadPerDay, {
+        maximumFractionDigits: 3,
+      }),
+    ],
+    ["基準日", `${dateStr(baseDate)}`],
+    ["予定開始日～終了日", fromToStrPV(currentTask)],
+    ["実績開始日～終了日", fromToStrEV(currentTask)],
+    [
+      "進捗率(%)",
+      formatNumberIntl(currentTask?.progressRate, {
+        style: "percent",
+        maximumFractionDigits: 1,
+      }),
+    ],
+    ["PV(MD)", formatNumberIntl(currentTask?.pv, { maximumFractionDigits: 3 })],
+    ["EV(MD)", formatNumberIntl(currentTask?.ev, { maximumFractionDigits: 3 })],
+    [
+      "SPI (EV/PV)",
+      formatNumberIntl(currentTask?.spi, { maximumFractionDigits: 3 }),
+    ],
+    ["予定進捗日", dateStr(currentTask?.expectedProgressDate)],
+    ["遅延日数", currentTask?.delayDays],
+    ["備考", currentTask?.remarks],
+    ["未完了/完了", formatFinished(currentTask?.finished)],
+    ["期限切れ?", daysStrOverdueAt(baseDate, currentTask)],
+  ];
+
+  // 前ボタンを押したら、親からもらった onSelectIndexをつかって1減らす
+  const handlePrev = () => {
+    if (selectedIndex > 0) {
+      onSelectIndex(selectedIndex - 1);
+    }
+  };
+
+  // 次ボタンを押したら、親からもらった onSelectIndexをつかって1増やす
+  const handleNext = () => {
+    if (selectedIndex < taskRows.length - 1) {
+      onSelectIndex(selectedIndex + 1);
+    }
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>タスク詳細 (ID: {task.id})</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>タスク詳細</DialogTitle>
       <DialogContent dividers>
-        <Typography variant="body1">
-          <strong>タスク名:</strong> {task.name}
-        </Typography>
-        <Typography variant="body1">
-          <strong>詳細名:</strong> {project.getFullTaskName(task)}
-        </Typography>
-        <Typography variant="body1">
-          <strong>担当者:</strong> {task.assignee}
-        </Typography>
-        <Typography variant="body1">
-          <strong>工数(MD):</strong> {formatNumberIntl(task.workload)}
-        </Typography>
-        <Typography variant="body1">
-          <strong>進捗率:</strong>{" "}
-          {formatNumberIntl(task.progressRate, { style: "percent" })}
-        </Typography>
-        <Typography variant="body1">
-          <strong>完了:</strong> {formatFinished(task.finished)}
-        </Typography>
-        <Typography variant="body1">
-          <strong>開始日:</strong> {dateStr(task.startDate)}
-        </Typography>
-        <Typography variant="body1">
-          <strong>終了日:</strong> {dateStr(task.endDate)}
-        </Typography>
-        <Typography variant="body1">
-          <strong>本日のPV:</strong>{" "}
-          {formatNumberIntl(task.calculatePV(baseDate))}
-        </Typography>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ width: "180px", fontWeight: "bold" }}>
+                項目
+              </TableCell>
+              <TableCell>タスク</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map(([label, current]) => {
+              // 背景色を定義
+              const currentBgColor =
+                currentTask && currentTask.finished
+                  ? "#f0f0f0"
+                  : currentTask?.isOverdueAt?.(baseDate)
+                  ? "#ffebee"
+                  : undefined;
+
+              return (
+                <TableRow key={label}>
+                  <TableCell
+                    sx={{
+                      width: "180px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {label}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      backgroundColor: currentBgColor,
+                      whiteSpace: "normal",
+                      wordBreak: "break-word",
+                      maxWidth: "600px",
+                    }}
+                  >
+                    {current ?? "-"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="contained">
-          閉じる
+        {" "}
+        <Button onClick={handlePrev} disabled={selectedIndex === 0}>
+          前の行
         </Button>
+        <Button
+          onClick={handleNext}
+          disabled={selectedIndex >= taskRows.length - 1}
+        >
+          次の行
+        </Button>
+        <Button onClick={onClose}>閉じる</Button>
       </DialogActions>
     </Dialog>
   );

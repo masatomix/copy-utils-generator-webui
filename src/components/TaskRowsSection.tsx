@@ -115,20 +115,19 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
   const isInitialDate =
     baseDate.toDateString() === project.baseDate.toDateString();
 
-  const [selectedTask, setSelectedTask] = useState<TaskRow | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleRowClick = (task: TaskRow) => {
-    setSelectedTask(task);
+  // 行クリックで、indexとその行のデータをセットする
+  const handleRowClick = (index: number) => {
+    setSelectedIndex(index);
     setDialogOpen(true);
-
-    console.log(task.id);
-    console.log(baseDate);
   };
 
+  // 閉じるで、Indexと、選択データを初期化
   const handleDialogClose = () => {
+    setSelectedIndex(-1);
     setDialogOpen(false);
-    setSelectedTask(null);
   };
 
   return (
@@ -300,10 +299,10 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filtered.map((task) => (
+              {filtered.map((task, index) => (
                 <TableRow
                   key={task.id}
-                  onClick={() => handleRowClick(task)}
+                  onClick={() => handleRowClick(index)}
                   hover
                   sx={{
                     cursor: "pointer",
@@ -383,15 +382,15 @@ const TaskRowsSection: React.FC<TaskRowsSectionProps> = ({ project }) => {
         </TableContainer>
       </Box>
 
-      {selectedTask && (
-        <TaskDetailDialog
-          open={dialogOpen}
-          onClose={handleDialogClose}
-          task={selectedTask}
-          baseDate={baseDate}
-          project={project}
-        />
-      )}
+      <TaskDetailDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        selectedIndex={selectedIndex}
+        onSelectIndex={setSelectedIndex}
+        taskRows={filtered}
+        baseDate={baseDate}
+        project={project}
+      />
     </>
   );
 };
