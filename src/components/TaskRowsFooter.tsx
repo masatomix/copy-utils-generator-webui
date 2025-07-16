@@ -17,6 +17,7 @@ export const TaskRowsFooter = ({
     const spi = pv !== 0 ? ev / pv : NaN;
     const progressRate = workload !== 0 ? ev / workload : NaN;
     return {
+      taskCount: taskRows.length,
       workload,
       pvToday: taskRows.reduce(
         (sum, t) => sum + (t.calculatePV(new Date(baseDate)) ?? 0),
@@ -31,9 +32,9 @@ export const TaskRowsFooter = ({
   return (
     <TableFooter>
       <TableRow>
-        <TableCell colSpan={3} align="right">
-          合計
-        </TableCell>
+        <TableCell align="right">計</TableCell>
+        <TableCell>{totals.taskCount} タスク</TableCell>
+        <TableCell align="right"></TableCell>
         <TableCell align="right">
           {formatNumberIntl(totals.workload, {
             maximumFractionDigits: 2,
@@ -46,7 +47,7 @@ export const TaskRowsFooter = ({
           })}
         </TableCell>
         <TableCell colSpan={2}></TableCell>
-        <TableCell>
+        <TableCell align="right">
           {formatNumberIntl(totals.progressRate, {
             style: "percent",
             maximumFractionDigits: 1,

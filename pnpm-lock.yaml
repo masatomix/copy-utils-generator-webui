@@ -21,14 +21,14 @@ importers:
         specifier: ^7.1.1
         version: 7.2.0(@emotion/react@11.14.0(@types/react@19.1.8)(react@19.1.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.8)(react@19.1.0))(@types/react@19.1.8)(react@19.1.0))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       copy-utils-generator:
-        specifier: ^0.0.15
-        version: 0.0.15
+        specifier: ^0.0.16
+        version: 0.0.16
       evmtools-node:
-        specifier: file:../evmtools/evmtools-node-0.0.8-SNAPSHOT.tgz
-        version: file:../evmtools/evmtools-node-0.0.8-SNAPSHOT.tgz(@types/node@24.0.14)(typescript@5.8.3)
+        specifier: ^0.0.10
+        version: 0.0.10(@types/node@24.0.14)(typescript@5.8.3)
       excel-csv-read-write:
-        specifier: ^0.2.4
-        version: 0.2.5
+        specifier: ^0.2.6
+        version: 0.2.6
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -1080,8 +1080,8 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  config@4.0.0:
-    resolution: {integrity: sha512-zOzfDfcpaBUMRvTH+pbj111Gfb+1BMvCy9EcE5ckuugfAcks3FIQMyt8TRA30dhuGnZNBxfbPBUKtuM03ih/nA==}
+  config@4.0.1:
+    resolution: {integrity: sha512-ASEWHlW28WEsaxXt8+pNQcHvJVqk5KFTGiq9s0YbnBCkEiUwvfB/dOm4jLgfylBo1GamQAS0DzhWY7T7/h8Mgg==}
     engines: {node: '>= 20.0.0'}
 
   convert-source-map@1.9.0:
@@ -1094,8 +1094,8 @@ packages:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
     engines: {node: '>=18'}
 
-  copy-utils-generator@0.0.15:
-    resolution: {integrity: sha512-jkFZfMps+Q0uSOmQm2d083Rb7seTrIKlAbxcZEfO/lrgxCPafOV705kvo+V5v/56oNk8BtK9+Ik9fft8IRvcuQ==}
+  copy-utils-generator@0.0.16:
+    resolution: {integrity: sha512-yO98/03xTPqu4Qy3IBtIzH+CdAo/mBClRGLH9eGGRhR2k58kvh5rra430otHde2RZjS6vTkIk5ZHVSXNrMEujA==}
     hasBin: true
 
   core-util-is@1.0.2:
@@ -1216,8 +1216,8 @@ packages:
   ecc-jsbn@0.1.2:
     resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
 
-  electron-to-chromium@1.5.183:
-    resolution: {integrity: sha512-vCrDBYjQCAEefWGjlK3EpoSKfKbT10pR4XXPdn65q7snuNOZnthoVpBfZPykmDapOKfoD+MMIPG8ZjKyyc9oHA==}
+  electron-to-chromium@1.5.185:
+    resolution: {integrity: sha512-dYOZfUk57hSMPePoIQ1fZWl1Fkj+OshhEVuPacNKWzC1efe56OsHY3l/jCfiAgIICOU3VgOIdoq7ahg7r7n6MQ==}
 
   email-addresses@5.0.0:
     resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
@@ -1326,16 +1326,12 @@ packages:
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
-  evmtools-node@file:../evmtools/evmtools-node-0.0.8-SNAPSHOT.tgz:
-    resolution: {integrity: sha512-k9PVTSipy4DWSBuAIyhborHoG5U1V7hrRhoNkY1AD/c+r255zJ2Bj760tE4em4CX9vCMmjalmtLNG8LBBPAsxw==, tarball: file:../evmtools/evmtools-node-0.0.8-SNAPSHOT.tgz}
-    version: 0.0.8-SNAPSHOT
+  evmtools-node@0.0.10:
+    resolution: {integrity: sha512-x6Awqv8R/0g6+Nk5ORDcmd4Y11JHcDdlA/7KgP7xHsJCPiiacMCE/CbUrEFLt0k7PPz/MhMBRpIKyzXl31+Q5g==}
     hasBin: true
 
-  excel-csv-read-write@0.2.4:
-    resolution: {integrity: sha512-aGffTz3L8nrNrp5y3qab7ofcv95o3vu0a1B6sx2iacCIvZ90/PlX2m2/IArXlQ9mqudDE12i2+ybQ+Rhl4BOLg==}
-
-  excel-csv-read-write@0.2.5:
-    resolution: {integrity: sha512-OdiL5debWaItb7xXq7D6xiTNmemA8ZLAu6k+zfNNrv135UNjWtLnZXvI2JZ+/elXsUCC0LQoDIkXfyL8MrI2hA==}
+  excel-csv-read-write@0.2.6:
+    resolution: {integrity: sha512-iPhYiYR+gUnuXJCqsgz0z+D6tbLwA5ITFT9SNHIRToZsssnM4aLJlLuMJSyPQ1WLh6WWHSAM7i0qvgV1htPBmA==}
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
@@ -1877,8 +1873,8 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  picomatch@4.0.2:
-    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+  picomatch@4.0.3:
+    resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
     engines: {node: '>=12'}
 
   pino-abstract-transport@2.0.0:
@@ -2924,7 +2920,7 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
       estree-walker: 2.0.2
-      picomatch: 4.0.2
+      picomatch: 4.0.3
     optionalDependencies:
       rollup: 4.45.1
 
@@ -3277,7 +3273,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001727
-      electron-to-chromium: 1.5.183
+      electron-to-chromium: 1.5.185
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -3339,7 +3335,7 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  config@4.0.0:
+  config@4.0.1:
     dependencies:
       json5: 2.2.3
 
@@ -3349,10 +3345,10 @@ snapshots:
 
   cookie@1.0.2: {}
 
-  copy-utils-generator@0.0.15:
+  copy-utils-generator@0.0.16:
     dependencies:
-      config: 4.0.0
-      excel-csv-read-write: 0.2.5
+      config: 4.0.1
+      excel-csv-read-write: 0.2.6
       handlebars: 4.7.8
       pino: 9.7.0
       yargs: 17.7.2
@@ -3467,7 +3463,7 @@ snapshots:
       jsbn: 0.1.1
       safer-buffer: 2.1.2
 
-  electron-to-chromium@1.5.183: {}
+  electron-to-chromium@1.5.185: {}
 
   email-addresses@5.0.0: {}
 
@@ -3610,11 +3606,11 @@ snapshots:
 
   eventemitter3@5.0.1: {}
 
-  evmtools-node@file:../evmtools/evmtools-node-0.0.8-SNAPSHOT.tgz(@types/node@24.0.14)(typescript@5.8.3):
+  evmtools-node@0.0.10(@types/node@24.0.14)(typescript@5.8.3):
     dependencies:
       '@tidyjs/tidy': 2.5.2
-      config: 4.0.0
-      excel-csv-read-write: 0.2.4
+      config: 4.0.1
+      excel-csv-read-write: 0.2.6
       handlebars: 4.7.8
       pino: 9.7.0
       ts-node: 10.9.2(@types/node@24.0.14)(typescript@5.8.3)
@@ -3626,25 +3622,10 @@ snapshots:
       - debug
       - typescript
 
-  excel-csv-read-write@0.2.4:
+  excel-csv-read-write@0.2.6:
     dependencies:
       axios: 1.10.0
-      config: 4.0.0
-      csvtojson: 2.0.10
-      iconv-lite: 0.6.3
-      jszip: 3.10.1
-      pino: 9.7.0
-      request: 2.88.2
-      unzip: 0.1.11
-      unzip-stream: 0.3.4
-      xlsx-populate: 1.21.0
-    transitivePeerDependencies:
-      - debug
-
-  excel-csv-read-write@0.2.5:
-    dependencies:
-      axios: 1.10.0
-      config: 4.0.0
+      config: 4.0.1
       csvtojson: 2.0.10
       iconv-lite: 0.6.3
       jszip: 3.10.1
@@ -3680,9 +3661,9 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.4.6(picomatch@4.0.2):
+  fdir@6.4.6(picomatch@4.0.3):
     optionalDependencies:
-      picomatch: 4.0.2
+      picomatch: 4.0.3
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -4150,7 +4131,7 @@ snapshots:
 
   picomatch@2.3.1: {}
 
-  picomatch@4.0.2: {}
+  picomatch@4.0.3: {}
 
   pino-abstract-transport@2.0.0:
     dependencies:
@@ -4516,8 +4497,8 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.6(picomatch@4.0.2)
-      picomatch: 4.0.2
+      fdir: 6.4.6(picomatch@4.0.3)
+      picomatch: 4.0.3
 
   to-regex-range@5.0.1:
     dependencies:
@@ -4650,8 +4631,8 @@ snapshots:
   vite@6.3.5(@types/node@24.0.14):
     dependencies:
       esbuild: 0.25.6
-      fdir: 6.4.6(picomatch@4.0.2)
-      picomatch: 4.0.2
+      fdir: 6.4.6(picomatch@4.0.3)
+      picomatch: 4.0.3
       postcss: 8.5.6
       rollup: 4.45.1
       tinyglobby: 0.2.14

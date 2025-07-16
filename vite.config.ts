@@ -33,6 +33,7 @@ export default defineConfig({
       path: "path-browserify",
       process: "process/browser",
       buffer: "buffer",
+      config: '/dev/null', // Node.js専用モジュールを無効化
     },
   },
   build: {
