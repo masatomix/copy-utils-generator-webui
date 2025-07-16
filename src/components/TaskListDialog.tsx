@@ -41,7 +41,7 @@ type Props = {
   onToggleTaskNameDisplay: () => void;
 };
 
-export const TaskDialog = ({
+export const TaskListDialog = ({
   open,
   onClose,
   selectedDate,

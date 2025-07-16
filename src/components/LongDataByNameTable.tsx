@@ -10,9 +10,9 @@ import {
 import type { LongData, Project, TaskRow } from "evmtools-node/domain";
 import { formatDateWithWeekday } from "../utils/format";
 import { useState } from "react";
-import { TaskDialog } from "./TaskDialog";
 import { isToday } from "../utils/dateUtils";
 import { isHoliday } from "evmtools-node/common";
+import { TaskListDialog } from "./TaskListDialog";
 
 type Props = {
   data: LongData[];
@@ -142,7 +142,7 @@ export const LongDataByNameTable = ({ data, project }: Props) => {
         </Table>
       </TableContainer>
 
-      <TaskDialog
+      <TaskListDialog
         open={dialogOpen}
         onClose={handleDialogClose}
         selectedDate={selectedDate}
