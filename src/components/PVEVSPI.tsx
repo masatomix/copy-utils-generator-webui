@@ -14,22 +14,21 @@ export const PVEVSPI = ({
   const spi = taskRow.calculateSPI(baseDate);
   const sv = taskRow.calculateSV(baseDate);
 
+  const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
+
   return (
     <TableCell align="right">
       {formatNumberIntl(pv, {
         maximumFractionDigits: 2,
       })}{" "}
       / {formatNumberIntl(ev, { maximumFractionDigits: 2 })} /{" "}
-      {formatNumberIntl(spi, {
-        maximumFractionDigits: 2,
-      })}{" "}
+      <Box component="span" sx={{ color: svColor }}>
+        {formatNumberIntl(spi, {
+          maximumFractionDigits: 2,
+        })}
+      </Box>{" "}
       /{" "}
-      <Box
-        component="span"
-        sx={{
-          color: sv! < 0 ? "error.main" : "inherit",
-        }}
-      >
+      <Box component="span" sx={{ color: svColor }}>
         {formatNumberIntl(sv, {
           maximumFractionDigits: 2,
         })}

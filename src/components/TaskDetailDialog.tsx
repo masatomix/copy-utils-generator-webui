@@ -75,22 +75,14 @@ export const TaskDetailDialog = ({
     ["名称", currentTask?.name],
     ["詳細名称", project.getFullTaskName(currentTask)],
     ["担当者", currentTask?.assignee],
-    [
-      "予定工数(MD)",
-      formatNumberIntl(currentTask?.workload, { maximumFractionDigits: 3 }),
-    ],
+    ["予定工数(MD)", currentTask?.workload],
     [
       "稼働予定日数(日)",
       formatNumberIntl(currentTask?.scheduledWorkDays, {
         maximumFractionDigits: 0,
       }),
     ],
-    [
-      "一日あたり工数(MD)",
-      formatNumberIntl(currentTask?.workloadPerDay, {
-        maximumFractionDigits: 3,
-      }),
-    ],
+    ["一日あたり工数(MD)", currentTask?.workloadPerDay],
     ["基準日", `${dateStr(baseDate)}`],
     ["予定開始日～終了日", fromToStrPV(currentTask)],
     ["実績開始日～終了日", fromToStrEV(currentTask)],
@@ -101,12 +93,10 @@ export const TaskDetailDialog = ({
         maximumFractionDigits: 1,
       }),
     ],
-    ["PV(MD)", formatNumberIntl(currentTask?.pv, { maximumFractionDigits: 3 })],
-    ["EV(MD)", formatNumberIntl(currentTask?.ev, { maximumFractionDigits: 3 })],
-    [
-      "SPI (EV/PV)",
-      formatNumberIntl(currentTask?.spi, { maximumFractionDigits: 3 }),
-    ],
+    ["PV(MD)", currentTask?.calculatePVs(baseDate)],
+    ["EV(MD)", currentTask?.ev],
+    ["SPI (EV/PV)", currentTask?.calculateSPI(baseDate)],
+    ["SV (EV-PV)", currentTask?.calculateSV(baseDate)],
     ["予定進捗日", dateStr(currentTask?.expectedProgressDate)],
     ["遅延日数", currentTask?.delayDays],
     ["備考", currentTask?.remarks],
@@ -143,6 +133,15 @@ export const TaskDetailDialog = ({
           </TableHead>
           <TableBody>
             {rows.map(([label, current]) => {
+              const isBadSV =
+                label === "SV (EV-PV)" &&
+                typeof current === "number" &&
+                current < 0;
+              const isBadSPI =
+                label === "SPI (EV/PV)" &&
+                typeof current === "number" &&
+                current < 1;
+
               // 背景色を定義
               const currentBgColor =
                 currentTask && currentTask.finished
@@ -169,9 +168,12 @@ export const TaskDetailDialog = ({
                       whiteSpace: "normal",
                       wordBreak: "break-word",
                       maxWidth: "600px",
+                      color: isBadSV || isBadSPI ? "error.main" : "inherit",
                     }}
                   >
-                    {current ?? "-"}
+                    {typeof current === "number"
+                      ? formatNumberIntl(current, { maximumFractionDigits: 3 })
+                      : current ?? "-"}
                   </TableCell>
                 </TableRow>
               );
