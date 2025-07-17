@@ -12,9 +12,13 @@ export const TaskRowsFooter = ({
 }) => {
   const totals = useMemo(() => {
     const workload = taskRows.reduce((sum, t) => sum + (t.workload ?? 0), 0);
-    const pv = taskRows.reduce((sum, t) => sum + (t.pv ?? 0), 0);
+    const pv = taskRows.reduce(
+      (sum, t) => sum + (t.calculatePVs(baseDate) ?? 0),
+      0
+    );
     const ev = taskRows.reduce((sum, t) => sum + (t.ev ?? 0), 0);
     const spi = pv !== 0 ? ev / pv : NaN;
+    const sv = pv !== 0 ? ev - pv : NaN;
     const progressRate = workload !== 0 ? ev / workload : NaN;
     return {
       taskCount: taskRows.length,
@@ -27,6 +31,7 @@ export const TaskRowsFooter = ({
       pv,
       ev,
       spi,
+      sv,
     };
   }, [taskRows, baseDate]);
   return (
@@ -57,7 +62,8 @@ export const TaskRowsFooter = ({
         <TableCell align="right">
           {formatNumberIntl(totals.pv, { maximumFractionDigits: 2 })} /{" "}
           {formatNumberIntl(totals.ev, { maximumFractionDigits: 2 })} /{" "}
-          {formatNumberIntl(totals.spi, { maximumFractionDigits: 2 })}
+          {formatNumberIntl(totals.spi, { maximumFractionDigits: 2 })} /{" "}
+          {formatNumberIntl(totals.sv, { maximumFractionDigits: 2 })}
         </TableCell>
       </TableRow>
     </TableFooter>

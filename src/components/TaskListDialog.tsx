@@ -139,7 +139,7 @@ export const TaskListDialog = ({
       </DialogTitle>
       <DialogContent dividers>
         {filtered.length > 0 ? (
-          <Table size="small">
+          <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
@@ -156,12 +156,23 @@ export const TaskListDialog = ({
                 <TableCell>予定開始日</TableCell>
                 <TableCell>予定終了日</TableCell>
                 <TableCell>進捗率(%)</TableCell>
-                <TableCell sx={{ minWidth: 45 }}>期限切れまで</TableCell>
-                <TableCell align="right" sx={{ minWidth: 100 }}>
-                  累積
-                  <br />
-                  PV/EV/SPI
-                </TableCell>
+                <TableCell sx={{ minWidth: 45 }}>期限</TableCell>
+                <Tooltip
+                  title={
+                    <span>
+                      ・SV = EV - PV <br />
+                      ・SPI = EV / PV <br />
+                      EV - PV は、マイナス値は赤字表示
+                    </span>
+                  }
+                  placement="top"
+                >
+                  <TableCell align="right" sx={{ minWidth: 150 }}>
+                    累積
+                    <br />
+                    PV/EV/SPI/SV
+                  </TableCell>
+                </Tooltip>
               </TableRow>
             </TableHead>
             <TableBody>

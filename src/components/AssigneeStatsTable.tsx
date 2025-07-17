@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import type { AssigneeStatistics } from "evmtools-node/domain";
 import { formatNumberIntl } from "../utils/format";
+import { subtract } from "evmtools-node/common";
 
 type Order = "asc" | "desc";
 
@@ -185,9 +186,9 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
 
             <TableCell align="right" sx={{ fontWeight: "bold" }}>
               <TableSortLabel
-                // active={orderBy === "totalEv"}
-                // direction={orderBy === "totalEv" ? order : "asc"}
-                // onClick={() => handleSort("totalEv")}
+              // active={orderBy === "totalEv"}
+              // direction={orderBy === "totalEv" ? order : "asc"}
+              // onClick={() => handleSort("totalEv")}
               >
                 EV-PV
               </TableSortLabel>
@@ -283,13 +284,3 @@ export const AssigneeStatsTable = ({ data, detail = false }: Props) => {
     </TableContainer>
   );
 };
-
-function subtract(
-  a: number | undefined,
-  b: number | undefined
-): number | undefined {
-  if (typeof a !== "number" || typeof b !== "number") {
-    return undefined;
-  }
-  return a - b;
-}
