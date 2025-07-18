@@ -1,4 +1,5 @@
 // src/components/AssigneeLineChart.tsx
+import { dateStr } from "evmtools-node/common";
 import type { LongData } from "evmtools-node/domain";
 import React from "react";
 import {
@@ -23,17 +24,17 @@ type ChartRow = {
   [key: string]: string | number;
 };
 
-// baseDateを"YYYY-MM-DD"形式に揃える関数
+// baseDateを"YYYY/MM/DD"形式に揃える関数
 function formatDateToISO(dateInput: string | Date): string {
   const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
-  return d.toISOString().slice(0, 10);
+  return dateStr(d);
 }
 
-// 最小限の線形回帰（切片bなし）
+// 最小限の線形回帰（切片bなし）、傾きを返す
 function linearRegression(points: Point[]): { a: number } {
-  const n = points.length;
-  const sumX = points.reduce((sum, p) => sum + p.x, 0);
-  const sumY = points.reduce((sum, p) => sum + p.y, 0);
+  // const n = points.length;
+  // const sumX = points.reduce((sum, p) => sum + p.x, 0);
+  // const sumY = points.reduce((sum, p) => sum + p.y, 0);
   const sumXY = points.reduce((sum, p) => sum + p.x * p.y, 0);
   const sumX2 = points.reduce((sum, p) => sum + p.x * p.x, 0);
 
@@ -62,9 +63,9 @@ function createRegressionDataMap(
   data: LongData[],
   assignees: string[]
 ): {
-  regressionMap: Map<string, Record<string, any>>;
-  flatLines: Record<string, number>;
-  extendedFlatLines: Record<string, number>;
+  regressionMap: Map<string, Record<string, any>>; //回帰
+  flatLines: Record<string, number>; //最終日横線
+  extendedFlatLines: Record<string, number>; //バッファ横線
 } {
   const map = new Map<string, Record<string, any>>();
   const flatLines: Record<string, number> = {};
@@ -93,8 +94,7 @@ function createRegressionDataMap(
 
     // 傾きaが0でない場合、回帰線がextendedYに達するx値を計算して延長
     // a = y/x なので x = y/a
-    const extendedX =
-      a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7; // 傾き0なら適当に7日延長
+    const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7; // 傾き0なら適当に7日延長
 
     for (let x = 0; x <= extendedX; x++) {
       const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
@@ -133,6 +133,7 @@ function mergeChartData(
 
 // --- メイン描画コンポーネント ---
 export const AssigneeLineChart = ({ data }: Props) => {
+  // console.table(data)
   const assignees = Array.from(new Set(data.map((d) => d.assignee))).sort();
   const actualMap = createActualDataMap(data);
   const { regressionMap } = createRegressionDataMap(data, assignees);
