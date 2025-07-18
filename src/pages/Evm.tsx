@@ -325,7 +325,7 @@ function Evm() {
       {state.taskDiffs.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Typography variant="h6" gutterBottom>
-            タスクの差分(β版)
+            タスクの差分
           </Typography>
           <TaskDiffTabs
             data={state.taskDiffs}
@@ -446,7 +446,7 @@ SPI（Schedule Performance Index）
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography variant="h6" gutterBottom>
-              プロジェクトのPV累積グラフ
+              プロジェクトのPV累積グラフ(β版)
             </Typography>
             <HelpPopover
               title="このグラフについて"
