@@ -16,6 +16,9 @@ import {
 
 type Props = {
   data: LongData[];
+  limitDate?: Date;
+  bufferRate?: number;
+  viewRegression?: boolean;
 };
 
 type Point = { x: number; y: number };
@@ -43,9 +46,14 @@ function linearRegression(points: Point[]): { a: number } {
 
   const a = sumXY / sumX2;
   return { a };
+  // return { a: 5 };
 }
 
 // 実データをMapに変換
+// Map {
+//   "2025-07-01" => { baseDate: "2025-07-01", Alice: 10, Bob: 15 },
+//   "2025-07-02" => { baseDate: "2025-07-02", Alice: 12 },
+// }
 function createActualDataMap(
   data: LongData[]
 ): Map<string, Record<string, any>> {
@@ -61,33 +69,30 @@ function createActualDataMap(
 // 回帰・横線データ作成
 function createRegressionDataMap(
   data: LongData[],
-  assignees: string[]
+  assignees: string[],
+  bufferRate: number,
+  viewRegression: boolean
 ): {
   regressionMap: Map<string, Record<string, any>>;
-  flatLines: Record<string, number>;
-  extendedFlatLines: Record<string, number>;
 } {
   const map = new Map<string, Record<string, any>>();
-  const flatLines: Record<string, number> = {};
-  const extendedFlatLines: Record<string, number> = {};
-
   for (const assignee of assignees) {
     const filtered = data.filter(
       (d) => d.assignee === assignee && typeof d.value === "number"
     );
     if (filtered.length < 2) continue;
 
-    const baseDate = new Date(formatDateToISO(filtered[0].baseDate));
+    const baseDate = new Date(filtered[0].baseDate);
     const points: Point[] = filtered.map((d) => ({
       x:
-        (new Date(formatDateToISO(d.baseDate)).getTime() - baseDate.getTime()) /
+        (new Date(d.baseDate).getTime() - baseDate.getTime()) /
         (1000 * 60 * 60 * 24),
       y: d.value as number,
     }));
 
     const { a } = linearRegression(points);
     const flatY = points[points.length - 1].y;
-    const extendedY = flatY * 1.2;
+    const extendedY = flatY * bufferRate;
     const lastX = points[points.length - 1].x;
     const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7;
 
@@ -101,80 +106,24 @@ function createRegressionDataMap(
       map.get(dateStr)![`${assignee}_regression`] = a * x;
       map.get(dateStr)![`${assignee}_flat`] = flatY;
       map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
+      // console.log(`${dateStr}: ${map.get(dateStr)![`${assignee}_regression`]}`);
     }
 
-    // 2. 拡張（連続日付で延長）
-    // const lastDate = new Date(
-    //   baseDate.getTime() + lastX * 24 * 60 * 60 * 1000
-    // );
-    for (let x = Math.floor(lastX) + 1; x <= Math.ceil(extendedX); x++) {
-      const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
-      const dateStr = formatDateToISO(date);
-      if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
-      map.get(dateStr)![`${assignee}_regression`] = a * x;
-      map.get(dateStr)![`${assignee}_flat`] = flatY;
-      map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
+    if (viewRegression) {
+      // 2. 拡張（連続日付で延長）
+      for (let x = Math.floor(lastX) + 1; x <= Math.ceil(extendedX); x++) {
+        const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
+        const dateStr = formatDateToISO(date);
+        if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
+        map.get(dateStr)![`${assignee}_regression`] = a * x;
+        map.get(dateStr)![`${assignee}_flat`] = flatY;
+        map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
+      }
     }
-
-    flatLines[assignee] = flatY;
-    extendedFlatLines[assignee] = extendedY;
   }
 
-  return { regressionMap: map, flatLines, extendedFlatLines };
+  return { regressionMap: map };
 }
-
-// function createRegressionDataMap(
-//   data: LongData[],
-//   assignees: string[]
-// ): {
-//   regressionMap: Map<string, Record<string, any>>; //回帰
-//   flatLines: Record<string, number>; //最終日横線
-//   extendedFlatLines: Record<string, number>; //バッファ横線
-// } {
-//   const map = new Map<string, Record<string, any>>();
-//   const flatLines: Record<string, number> = {};
-//   const extendedFlatLines: Record<string, number> = {};
-
-//   for (const assignee of assignees) {
-//     const filtered = data.filter(
-//       (d) => d.assignee === assignee && typeof d.value === "number"
-//     );
-//     if (filtered.length < 2) continue;
-
-//     const baseDate = new Date(formatDateToISO(filtered[0].baseDate));
-//     const points: Point[] = filtered.map((d) => ({
-//       x:
-//         (new Date(formatDateToISO(d.baseDate)).getTime() - baseDate.getTime()) /
-//         (1000 * 60 * 60 * 24),
-//       y: d.value as number,
-//     }));
-
-//     const { a } = linearRegression(points);
-//     const lastX = points[points.length - 1].x;
-//     const flatY = points[points.length - 1].y;
-
-//     // オリジナル最後のy値を1.2倍した値
-//     const extendedY = flatY * 1.2;
-
-//     // 傾きaが0でない場合、回帰線がextendedYに達するx値を計算して延長
-//     // a = y/x なので x = y/a
-//     const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7; // 傾き0なら適当に7日延長
-
-//     for (let x = 0; x <= extendedX; x++) {
-//       const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
-//       const dateStr = formatDateToISO(date);
-//       if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
-//       map.get(dateStr)![`${assignee}_regression`] = a * x;
-//       map.get(dateStr)![`${assignee}_flat`] = flatY;
-//       map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
-//     }
-
-//     flatLines[assignee] = flatY;
-//     extendedFlatLines[assignee] = extendedY;
-//   }
-
-//   return { regressionMap: map, flatLines, extendedFlatLines };
-// }
 
 // マージ処理
 function mergeChartData(
@@ -184,6 +133,7 @@ function mergeChartData(
   const allDates = Array.from(
     new Set([...actualMap.keys(), ...regressionMap.keys()])
   ).sort();
+  // console.table(allDates);
   return allDates
     .map((date) => ({
       ...(actualMap.get(date) || {}),
@@ -196,11 +146,26 @@ function mergeChartData(
 }
 
 // --- メイン描画コンポーネント ---
-export const AssigneeLineChart = ({ data }: Props) => {
+export const AssigneeLineChart = ({
+  data,
+  limitDate,
+  bufferRate = 1.0,
+  viewRegression = false,
+}: Props) => {
   // console.table(data)
+
+  // const limitDate = new Date("2025-09-11");
+  // const bufferRate = 1.2;
+  // const viewRegression = true;
+
   const assignees = Array.from(new Set(data.map((d) => d.assignee))).sort();
   const actualMap = createActualDataMap(data);
-  const { regressionMap } = createRegressionDataMap(data, assignees);
+  const { regressionMap } = createRegressionDataMap(
+    data,
+    assignees,
+    bufferRate,
+    viewRegression
+  );
   const chartData = mergeChartData(actualMap, regressionMap);
 
   return (
@@ -213,17 +178,19 @@ export const AssigneeLineChart = ({ data }: Props) => {
         <Legend />
 
         {/* 〆切線（実線・茶色） */}
-        <ReferenceLine
-          x="2025-09-11"
-          stroke="brown"
-          strokeDasharray=""
-          label={{
-            value: "〆切",
-            position: "top",
-            fill: "brown",
-            fontSize: 12,
-          }}
-        />
+        {limitDate && (
+          <ReferenceLine
+            x={dateStr(limitDate)}
+            stroke="brown"
+            strokeDasharray=""
+            label={{
+              value: "〆切",
+              position: "top",
+              fill: "brown",
+              fontSize: 12,
+            }}
+          />
+        )}
 
         {assignees.map((assignee) => (
           <React.Fragment key={assignee}>
@@ -236,30 +203,36 @@ export const AssigneeLineChart = ({ data }: Props) => {
               name={assignee}
             />
             {/* 回帰線：オレンジ破線 */}
-            <Line
-              type="monotone"
-              dataKey={`${assignee}_regression`}
-              stroke="#FFA500"
-              strokeDasharray="5 5"
-              dot={false}
-              name={`${assignee}（回帰線）`}
-            />
+            {viewRegression && (
+              <Line
+                type="monotone"
+                dataKey={`${assignee}_regression`}
+                stroke="#FFA500"
+                strokeDasharray="5 5"
+                dot={false}
+                name={`${assignee}（回帰線）`}
+              />
+            )}
             {/* 実データ最終y横線：濃い緑実線 */}
-            <Line
-              type="linear"
-              dataKey={`${assignee}_flat`}
-              stroke="#006400"
-              dot={false}
-              name={`${assignee}（最終値）`}
-            />
+            {viewRegression && (
+              <Line
+                type="linear"
+                dataKey={`${assignee}_flat`}
+                stroke="#006400"
+                dot={false}
+                name={`${assignee}（最終値）`}
+              />
+            )}
             {/* 回帰線拡張最終y横線：濃い青実線 */}
-            <Line
-              type="linear"
-              dataKey={`${assignee}_extended_flat`}
-              stroke="#00008B"
-              dot={false}
-              name={`${assignee}（拡張最終値）`}
-            />
+            {viewRegression && (
+              <Line
+                type="linear"
+                dataKey={`${assignee}_extended_flat`}
+                stroke="#00008B"
+                dot={false}
+                name={`${assignee}（拡張最終値）`}
+              />
+            )}
           </React.Fragment>
         ))}
       </LineChart>

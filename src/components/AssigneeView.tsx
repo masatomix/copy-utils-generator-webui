@@ -18,6 +18,10 @@ type Props = {
     data2?: LongData[];
     label2?: string;
   }>;
+
+  limitDate?: Date;
+  bufferRate?: number;
+  viewRegression?: boolean;
 };
 
 export const AssigneeView = ({
@@ -28,6 +32,9 @@ export const AssigneeView = ({
   tableData2,
   label2,
   TableComponent,
+  limitDate,
+  bufferRate,
+  viewRegression,
 }: Props) => {
   const [tabIndex, setTabIndex] = useState(initialTab);
 
@@ -38,7 +45,14 @@ export const AssigneeView = ({
         <Tab label="数値データ" />
       </Tabs>
       <Box mt={2}>
-        {tabIndex === 0 && <AssigneeLineChart data={chartData} />}
+        {tabIndex === 0 && (
+          <AssigneeLineChart
+            data={chartData}
+            bufferRate={bufferRate}
+            limitDate={limitDate}
+            viewRegression={viewRegression}
+          />
+        )}
         {tabIndex === 1 && (
           <TableComponent
             data={tableData}

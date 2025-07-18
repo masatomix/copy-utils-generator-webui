@@ -458,10 +458,17 @@ SPI（Schedule Performance Index）
           <AssigneeView
             TableComponent={LongDataByProjectTableWithProject!}
             tableData={state.project.pvByProjectLong}
-            chartData={state.project.pvsByProjectLong}
+            chartData={state.project.pvsByProjectLong.filter(
+              (d) => !state.project?.isHoliday(new Date(d.baseDate))
+            )} //
+            // chartData={state.project.pvsByProjectLong
+            // }
             label="日々のPV"
             tableData2={state.project.pvsByProjectLong}
             label2="PV累積"
+            bufferRate={1.2}
+            limitDate={new Date("2025/09/11")}
+            viewRegression={true}
           />
         </Paper>
       )}
