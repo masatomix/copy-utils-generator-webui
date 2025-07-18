@@ -63,9 +63,9 @@ function createRegressionDataMap(
   data: LongData[],
   assignees: string[]
 ): {
-  regressionMap: Map<string, Record<string, any>>; //回帰
-  flatLines: Record<string, number>; //最終日横線
-  extendedFlatLines: Record<string, number>; //バッファ横線
+  regressionMap: Map<string, Record<string, any>>;
+  flatLines: Record<string, number>;
+  extendedFlatLines: Record<string, number>;
 } {
   const map = new Map<string, Record<string, any>>();
   const flatLines: Record<string, number> = {};
@@ -86,17 +86,28 @@ function createRegressionDataMap(
     }));
 
     const { a } = linearRegression(points);
-    const lastX = points[points.length - 1].x;
     const flatY = points[points.length - 1].y;
-
-    // オリジナル最後のy値を1.2倍した値
     const extendedY = flatY * 1.2;
+    const lastX = points[points.length - 1].x;
+    const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7;
 
-    // 傾きaが0でない場合、回帰線がextendedYに達するx値を計算して延長
-    // a = y/x なので x = y/a
-    const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7; // 傾き0なら適当に7日延長
+    // 1. 実データの日付のみ（歯抜けOK）
+    for (const d of filtered) {
+      const x =
+        (new Date(formatDateToISO(d.baseDate)).getTime() - baseDate.getTime()) /
+        (1000 * 60 * 60 * 24);
+      const dateStr = formatDateToISO(d.baseDate);
+      if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
+      map.get(dateStr)![`${assignee}_regression`] = a * x;
+      map.get(dateStr)![`${assignee}_flat`] = flatY;
+      map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
+    }
 
-    for (let x = 0; x <= extendedX; x++) {
+    // 2. 拡張（連続日付で延長）
+    // const lastDate = new Date(
+    //   baseDate.getTime() + lastX * 24 * 60 * 60 * 1000
+    // );
+    for (let x = Math.floor(lastX) + 1; x <= Math.ceil(extendedX); x++) {
       const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
       const dateStr = formatDateToISO(date);
       if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
@@ -111,6 +122,59 @@ function createRegressionDataMap(
 
   return { regressionMap: map, flatLines, extendedFlatLines };
 }
+
+// function createRegressionDataMap(
+//   data: LongData[],
+//   assignees: string[]
+// ): {
+//   regressionMap: Map<string, Record<string, any>>; //回帰
+//   flatLines: Record<string, number>; //最終日横線
+//   extendedFlatLines: Record<string, number>; //バッファ横線
+// } {
+//   const map = new Map<string, Record<string, any>>();
+//   const flatLines: Record<string, number> = {};
+//   const extendedFlatLines: Record<string, number> = {};
+
+//   for (const assignee of assignees) {
+//     const filtered = data.filter(
+//       (d) => d.assignee === assignee && typeof d.value === "number"
+//     );
+//     if (filtered.length < 2) continue;
+
+//     const baseDate = new Date(formatDateToISO(filtered[0].baseDate));
+//     const points: Point[] = filtered.map((d) => ({
+//       x:
+//         (new Date(formatDateToISO(d.baseDate)).getTime() - baseDate.getTime()) /
+//         (1000 * 60 * 60 * 24),
+//       y: d.value as number,
+//     }));
+
+//     const { a } = linearRegression(points);
+//     const lastX = points[points.length - 1].x;
+//     const flatY = points[points.length - 1].y;
+
+//     // オリジナル最後のy値を1.2倍した値
+//     const extendedY = flatY * 1.2;
+
+//     // 傾きaが0でない場合、回帰線がextendedYに達するx値を計算して延長
+//     // a = y/x なので x = y/a
+//     const extendedX = a !== 0 ? Math.max(lastX, extendedY / a) : lastX + 7; // 傾き0なら適当に7日延長
+
+//     for (let x = 0; x <= extendedX; x++) {
+//       const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
+//       const dateStr = formatDateToISO(date);
+//       if (!map.has(dateStr)) map.set(dateStr, { baseDate: dateStr });
+//       map.get(dateStr)![`${assignee}_regression`] = a * x;
+//       map.get(dateStr)![`${assignee}_flat`] = flatY;
+//       map.get(dateStr)![`${assignee}_extended_flat`] = extendedY;
+//     }
+
+//     flatLines[assignee] = flatY;
+//     extendedFlatLines[assignee] = extendedY;
+//   }
+
+//   return { regressionMap: map, flatLines, extendedFlatLines };
+// }
 
 // マージ処理
 function mergeChartData(
