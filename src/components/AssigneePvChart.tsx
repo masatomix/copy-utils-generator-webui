@@ -142,18 +142,18 @@ export const AssigneeLineChart = ({ data }: Props) => {
         <Tooltip />
         <Legend />
 
-    {/* 〆切線（実線・茶色） */}
-    <ReferenceLine
-      x="2025-09-11"
-      stroke="brown"
-      strokeDasharray=""
-      label={{
-        value: "〆切",
-        position: "top",
-        fill: "brown",
-        fontSize: 12,
-      }}
-    />
+        {/* 〆切線（実線・茶色） */}
+        <ReferenceLine
+          x="2025-09-11"
+          stroke="brown"
+          strokeDasharray=""
+          label={{
+            value: "〆切",
+            position: "top",
+            fill: "brown",
+            fontSize: 12,
+          }}
+        />
         {assignees.map((assignee, index) => {
           return (
             <React.Fragment key={assignee}>
