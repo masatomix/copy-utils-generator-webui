@@ -41,9 +41,9 @@ function linearRegression(points: Point[]): { a: number; b: number } {
 
   const a = (n * sumXY - sumX * sumY) / denominator;
   const b = (sumY - a * sumX) / n;
+  // const b = 0
   return { a, b };
 }
-
 function generateRegressionSeries(
   data: LongData[],
   assignee: string
@@ -65,15 +65,57 @@ function generateRegressionSeries(
     }));
 
   const { a, b } = linearRegression(points);
+  const lastX = points[points.length - 1].x;
+  const lastY = a * lastX + b;
+  const targetY = lastY * 1.2;
 
-  return points.map((p) => {
-    const date = new Date(baseDate.getTime() + p.x * 24 * 60 * 60 * 1000);
-    return {
+  const extendedX = a === 0 ? lastX + 7 : (targetY - b) / a; // 0除算防止
+
+  const regressionPoints: ChartRow[] = [];
+
+  // 1日刻みで補間
+  for (let x = 0; x <= extendedX; x++) {
+    const date = new Date(baseDate.getTime() + x * 24 * 60 * 60 * 1000);
+    regressionPoints.push({
       baseDate: formatDateToISO(date),
-      [`${assignee}_regression`]: a * p.x + b,
-    };
-  });
+      [`${assignee}_regression`]: a * x + b,
+    });
+  }
+
+  return regressionPoints;
 }
+
+
+// function generateRegressionSeries(
+//   data: LongData[],
+//   assignee: string
+// ): ChartRow[] {
+//   const filtered = data.filter((d) => d.assignee === assignee);
+//   if (filtered.length < 2) return [];
+
+//   const baseDate = new Date(formatDateToISO(filtered[0].baseDate));
+//   const points: Point[] = filtered
+//     .filter(
+//       (d): d is LongData & { value: number } => typeof d.value === "number"
+//     )
+//     .map((d) => ({
+//       x:
+//         (new Date(formatDateToISO(d.baseDate)).getTime() -
+//           baseDate.getTime()) /
+//         (1000 * 60 * 60 * 24),
+//       y: d.value,
+//     }));
+
+//   const { a, b } = linearRegression(points);
+
+//   return points.map((p) => {
+//     const date = new Date(baseDate.getTime() + p.x * 24 * 60 * 60 * 1000);
+//     return {
+//       baseDate: formatDateToISO(date),
+//       [`${assignee}_regression`]: a * p.x + b,
+//     };
+//   });
+// }
 
 export const AssigneeLineChart = ({ data }: Props) => {
   const wideMap = new Map<string, Record<string, any>>();
