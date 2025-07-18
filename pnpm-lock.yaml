@@ -24,8 +24,8 @@ importers:
         specifier: ^0.0.16
         version: 0.0.16
       evmtools-node:
-        specifier: file:../evmtools/evmtools-node-0.0.11-SNAPSHOT.tgz
-        version: file:../evmtools/evmtools-node-0.0.11-SNAPSHOT.tgz(@types/node@24.0.14)(typescript@5.8.3)
+        specifier: ^0.0.11
+        version: 0.0.11(@types/node@24.0.14)(typescript@5.8.3)
       excel-csv-read-write:
         specifier: ^0.2.6
         version: 0.2.6
@@ -1326,9 +1326,8 @@ packages:
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
-  evmtools-node@file:../evmtools/evmtools-node-0.0.11-SNAPSHOT.tgz:
-    resolution: {integrity: sha512-MHAuHHMaajHcRITYxMndVHZ09eTbCmcwod/MlMMtN/ha7fR5j8aythuCjdkn/HJ3+RC2WkVCeH8VMP0Vwdvk5Q==, tarball: file:../evmtools/evmtools-node-0.0.11-SNAPSHOT.tgz}
-    version: 0.0.11-SNAPSHOT
+  evmtools-node@0.0.11:
+    resolution: {integrity: sha512-s+IPyHddo8A+gPJFhcpVEGSJkF4VKGKBXHv04iOvE5xKwrNaSeaGYc9TQUiHEcx+xmRrHWzb/d7eaHvcJ8vNJA==}
     hasBin: true
 
   excel-csv-read-write@0.2.6:
@@ -3607,7 +3606,7 @@ snapshots:
 
   eventemitter3@5.0.1: {}
 
-  evmtools-node@file:../evmtools/evmtools-node-0.0.11-SNAPSHOT.tgz(@types/node@24.0.14)(typescript@5.8.3):
+  evmtools-node@0.0.11(@types/node@24.0.14)(typescript@5.8.3):
     dependencies:
       '@tidyjs/tidy': 2.5.2
       config: 4.0.1

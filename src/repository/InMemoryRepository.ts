@@ -7,8 +7,10 @@ import type {
 } from "evmtools-node/domain";
 import { createWorkbook, json2workbook } from "excel-csv-read-write";
 import type { ProjectInfoCallbacks } from "../pages/Evm";
+import { getLogger } from "evmtools-node/logger";
 
 export class InMemoryRepository implements ProjectRepository {
+  private logger = getLogger("repository/InMemoryRepository");
   private callbacks: ProjectInfoCallbacks;
 
   constructor(callbacks: ProjectInfoCallbacks) {
@@ -69,7 +71,7 @@ export class InMemoryRepository implements ProjectRepository {
     const dateStrHyphen = dateStr(baseDate).replace(/\//g, "-");
 
     if (statisticsByProject) {
-      console.log("プロジェクト情報");
+      this.logger.info("プロジェクト情報");
       console.table(statisticsByProject);
       json2workbook({
         instances: statisticsByProject,
@@ -79,7 +81,7 @@ export class InMemoryRepository implements ProjectRepository {
       });
     }
     if (statisticsByName) {
-      console.log("要員ごと統計");
+      this.logger.info("要員ごと統計");
       console.table(statisticsByName);
       json2workbook({
         instances: statisticsByName,

@@ -9,7 +9,10 @@ import { getLogger, setLoggerConfig } from "evmtools-node/logger";
 setLoggerConfig({
   level: "error",
   moduleLogLevels: {
-    "domain/TaskRow": "error",
+    // "domain/TaskRow": "error",
+    // "domain/Project": "info",
+    // "infrastructure/ProjectRepositoryImpl": "error",
+    // "repository/InMemoryRepository": "info",
     // "common/utils": "debug",
   },
 });

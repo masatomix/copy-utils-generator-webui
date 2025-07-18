@@ -74,7 +74,13 @@ export const TaskListDialog = ({
   }, [open]);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={false}
+      fullWidth
+      sx={{ "& .MuiDialog-paper": { width: "90%", maxWidth: "1600px" } }}
+    >
       <DialogTitle>
         <div>
           {selectedDate ? (
