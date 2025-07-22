@@ -12,6 +12,9 @@ import {
   AccordionSummary,
   IconButton,
   Popover,
+  Backdrop,
+  CircularProgress,
+  Snackbar,
 } from "@mui/material";
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
@@ -52,6 +55,7 @@ type State = {
   taskDiffs: TaskDiff[]; // ← 差分結果
   // projectDiffs: ProjectDiff[]; //
   // assigneeDiffs: AssigneeDiff[]; //
+  loading: boolean; // ← 追加
 };
 
 function Evm() {
@@ -66,7 +70,10 @@ function Evm() {
     taskDiffs: [], // ← 差分結果
     // projectDiffs: [], // ← 差分結果
     // assigneeDiffs: [], // ← 差分結果
+    loading: false, // ← 追加
   });
+
+  const [snackbar, setSnackbar] = useState<string | null>(null);
 
   // ref を定義
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -97,6 +104,8 @@ function Evm() {
         console.error("FileReader result is not an ArrayBuffer");
         return;
       }
+      setState((s) => ({ ...s, loading: true }));
+
       try {
         const projectName = getFilenameWithoutExtension(file.name);
 
@@ -107,11 +116,13 @@ function Evm() {
 
         const project = await creator.createProject();
         repository.save(project);
-        setState((s) => ({ ...s, project }));
+        setState((s) => ({ ...s, project, loading: false }));
+        setSnackbar(`${file.name} :読み込み完了しました`);
 
         console.log("読み込み成功", project.length, " 件");
       } catch (error) {
         console.error("読み込み失敗", error);
+        setState((s) => ({ ...s, loading: false }));
       }
     };
     reader.readAsArrayBuffer(file);
@@ -129,6 +140,8 @@ function Evm() {
     reader.onload = async () => {
       const arrayBuffer = reader.result;
       if (!(arrayBuffer instanceof ArrayBuffer)) return;
+
+      setState((s) => ({ ...s, loading: true }));
 
       try {
         const projectName = getFilenameWithoutExtension(file.name);
@@ -161,10 +174,13 @@ function Evm() {
             ...s,
             prevProject,
             taskDiffs /*projectDiffs, assigneeDiffs*/,
+            loading: false,
           };
         });
+        setSnackbar(`${file.name} :前回データの読み込み完了しました`);
       } catch (error) {
         console.error("prev読み込み失敗", error);
+        setState((s) => ({ ...s, loading: false }));
       }
     };
     reader.readAsArrayBuffer(file);
@@ -493,6 +509,25 @@ SPI（Schedule Performance Index）
             initialTab={1}
           />
         </Paper>
+      )}
+
+      {state.loading && (
+        <Backdrop
+          open={true}
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+
+      {/* スナックバー通知 */}
+      {snackbar && (
+        <Snackbar
+          open={true}
+          message={snackbar}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar(null)}
+        />
       )}
     </Box>
   );
