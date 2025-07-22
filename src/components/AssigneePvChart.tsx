@@ -210,7 +210,7 @@ export const AssigneeLineChart = ({
                 stroke="#FFA500"
                 strokeDasharray="5 5"
                 dot={false}
-                name={`${assignee}（回帰線）`}
+                name={`${assignee}(回帰)`}
               />
             )}
             {/* 実データ最終y横線：濃い緑実線 */}
@@ -220,7 +220,7 @@ export const AssigneeLineChart = ({
                 dataKey={`${assignee}_flat`}
                 stroke="#006400"
                 dot={false}
-                name={`${assignee}（最終値）`}
+                name={`終了予定(楽観)`}
               />
             )}
             {/* 回帰線拡張最終y横線：濃い青実線 */}
@@ -230,7 +230,7 @@ export const AssigneeLineChart = ({
                 dataKey={`${assignee}_extended_flat`}
                 stroke="#00008B"
                 dot={false}
-                name={`${assignee}（拡張最終値）`}
+                name={`終了予定(悲観)`}
               />
             )}
           </React.Fragment>
