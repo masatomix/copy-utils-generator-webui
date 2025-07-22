@@ -285,7 +285,14 @@ export const TaskDiffTable = ({
                   {showFullName ? diff.fullName : diff.name}
                 </TableCell>
                 <TableCell>{diff.assignee}</TableCell>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: diff.hasProgressRateDiff ? "bold" : "normal",
+                    color: diff.hasProgressRateDiff
+                      ? "inherit"
+                      : "text.secondary",
+                  }}
+                >
                   {formatPercentPoint(diff.deltaProgressRate)}
                   <ShowDiffTag
                     current={diff.currentProgressRate}
@@ -295,7 +302,12 @@ export const TaskDiffTable = ({
                     maximumFractionDigits={1}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: diff.hasPvDiff ? "bold" : "normal",
+                    color: diff.hasPvDiff ? "inherit" : "text.secondary",
+                  }}
+                >
                   {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
                   <ShowDiffTag
                     current={diff.currentPV}
@@ -303,7 +315,12 @@ export const TaskDiffTable = ({
                     show={showActualValues}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: diff.hasEvDiff ? "bold" : "normal",
+                    color: diff.hasEvDiff ? "inherit" : "text.secondary",
+                  }}
+                >
                   {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
                   <ShowDiffTag
                     current={diff.currentEV}
