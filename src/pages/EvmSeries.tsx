@@ -6,9 +6,6 @@ import {
   Button,
   Typography,
   Paper,
-  List,
-  ListItem,
-  ListItemText,
   CircularProgress,
   Table,
   TableBody,
@@ -21,8 +18,7 @@ import UploadIcon from "@mui/icons-material/Upload";
 
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import { Project, type ProjectStatistics } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
-import { HelpPopover } from "./Evm";
+import { ShowProjectStatistics } from "../components/ShowProjectStatistics";
 
 type ProjectEntry = {
   fileName: string;
@@ -65,7 +61,14 @@ const EvmSeries: React.FC = () => {
       const projects = await Promise.all(promises);
       setProjects(projects);
       console.log("✅ 全ファイル読み込み成功:", projects);
-      const results = handleDiffs(projects); // ← 差分処理
+
+      // ① baseDate が新しい順に並べる
+      const sorted = [...projects].sort(
+        (a, b) => b.project.baseDate.getTime() - a.project.baseDate.getTime()
+      );
+      const results = sorted.map(
+        (entry) => entry.project.statisticsByProject[0]
+      );
       setProjectStatisticsArray(results);
     } catch (error) {
       console.error("❌ 読み込み失敗:", error);
@@ -73,12 +76,6 @@ const EvmSeries: React.FC = () => {
       setIsLoading(false); // ローディング開始
     }
   };
-
-  // const sv = subtract(row.totalEv, row.totalPvCalculated);
-  // const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
-
-  const sv = 10;
-  const svColor = "inherit";
 
   return (
     <Box p={4}>
@@ -117,30 +114,42 @@ const EvmSeries: React.FC = () => {
           <Typography variant="h6" gutterBottom>
             読み込んだプロジェクト一覧
           </Typography>
-          <List>
-            {projects.map((entry, idx) => (
-              <ListItem key={idx}>
-                <ListItemText
-                  primary={entry.fileName}
-                  secondary={`タスク数: ${entry.project.length}`}
-                />
-              </ListItem>
-            ))}
-          </List>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>ファイル名</TableCell>
+                <TableCell>タスク数(含 親タスク)</TableCell>
+                <TableCell>タスク数(子タスク)</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {projects.map((entry, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{entry.fileName}</TableCell>
+                  <TableCell>{entry.project.length}</TableCell>
+                  <TableCell>
+                    {
+                      entry.project.toTaskRows().filter((task) => task.isLeaf)
+                        .length
+                    }
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Paper>
       )}
 
       {projectStatisticsArray.length > 0 && (
         <Paper variant="outlined" sx={{ p: 2, mt: 4 }}>
           <Typography variant="h6" gutterBottom>
-            差分統計（baseDate の新しい順）
+            時系列データ
           </Typography>
 
           <TableContainer>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>ファイル名</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     プロジェクト名
                   </TableCell>
@@ -179,55 +188,10 @@ const EvmSeries: React.FC = () => {
               </TableHead>
               <TableBody>
                 {projectStatisticsArray.map((row, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{projects[idx]?.fileName ?? "-"}</TableCell>
-
-                    <TableCell>{row.projectName ?? "-"}</TableCell>
-                    <TableCell align="right">{row.startDate}</TableCell>
-                    <TableCell align="right">{row.endDate}</TableCell>
-                    <TableCell align="right">
-                      {row.totalTasksCount ?? "-"}
-                    </TableCell>
-
-                    <TableCell align="right">
-                      {row.totalWorkloadCalculated ?? "-"}
-                    </TableCell>
-                    <TableCell align="right">
-                      {formatNumberIntl(row.averageWorkload, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                    <TableCell align="right">{row.baseDate}</TableCell>
-
-                    <TableCell align="right">
-                      {formatNumberIntl(row.totalPvCalculated, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                    <TableCell align="right">
-                      {formatNumberIntl(row.totalEv, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      component="span"
-                      sx={{ color: svColor }}
-                    >
-                      {formatNumberIntl(sv, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      component="span"
-                      sx={{ color: svColor }}
-                    >
-                      {formatNumberIntl(row.spi, {
-                        maximumFractionDigits: 3,
-                      })}
-                    </TableCell>
-                  </TableRow>
+                  <ShowProjectStatistics
+                    row={row}
+                    idx={idx}
+                  ></ShowProjectStatistics>
                 ))}
               </TableBody>
             </Table>

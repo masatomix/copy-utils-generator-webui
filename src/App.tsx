@@ -26,7 +26,7 @@ function App() {
             EVM
           </Button>
           <Button color="inherit" component={Link} to="/gamen4">
-            EVM(時系列(めっちゃα版))
+            EVM(時系列(超alpha版))
           </Button>
         </Toolbar>
       </AppBar>
