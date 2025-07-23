@@ -13,14 +13,12 @@ import {
   CircularProgress,
   Snackbar,
 } from "@mui/material";
-import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   Project,
   type AssigneeStatistics,
   type ProjectStatistics,
 } from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
-import { InMemoryRepository } from "../repository/InMemoryRepository";
 
 import UploadIcon from "@mui/icons-material/Upload";
 import { AssigneeView } from "../components/AssigneeView";
@@ -32,9 +30,9 @@ import { createLongDataByProjectTableWithProject } from "../components/LongDataB
 import TaskRowsSection from "../components/task/TaskRowsSection";
 import { HelpPopover } from "../components/HelpPopover";
 import { StatisticsByProjectPaper } from "../components/project/StatisticsByProjectPaper";
-import { getFilenameWithoutExtension } from "../utils/format";
 import { StatisticsByAssigneePaper } from "../components/assignee/StatisticsByAssigneePaper";
 import { handleFileChange } from "../utils/handleFileChange";
+import { handlePrevFileChange } from "../utils/handlePrevFileChange";
 
 type State = {
   fileName: string;
@@ -103,36 +101,21 @@ function Evm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const arrayBuffer = reader.result;
-      if (!(arrayBuffer instanceof ArrayBuffer)) return;
-
-      setState((s) => ({ ...s, loading: true }));
-
-      try {
-        const projectName = getFilenameWithoutExtension(file.name);
-        const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
-        const prevProject = await creator.createProject();
-
-        setState((s) => {
-          return {
-            ...s,
-            prevProject,
-            loading: false,
-          };
-        });
-        setSnackbar(`${file.name} :前回データの読み込み完了しました`);
-      } catch (error) {
-        console.error("prev読み込み失敗", error);
-        setState((s) => ({ ...s, loading: false }));
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    handlePrevFileChange({
+      file,
+      resetFileInput: () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      },
+      setLoading: (loading) => setState((s) => ({ ...s, loading })),
+      setPrevProject: (prevProject) =>
+        setState((s) => ({
+          ...s,
+          prevProject,
+        })),
+      setSnackbar,
+    });
   };
 
   const FileSelectButton = ({
