@@ -17,8 +17,8 @@ import {
 type Props = {
   data: LongData[];
   limitDate?: Date;
-  bufferRate?: number;
-  viewRegression?: boolean;
+  bufferRate: number;
+  viewRegression: boolean;
 };
 
 type Point = { x: number; y: number };
@@ -149,8 +149,8 @@ function mergeChartData(
 export const AssigneeLineChart = ({
   data,
   limitDate,
-  bufferRate = 1.0,
-  viewRegression = false,
+  bufferRate,
+  viewRegression,
 }: Props) => {
   // console.table(data)
 

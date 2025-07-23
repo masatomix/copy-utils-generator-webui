@@ -311,10 +311,7 @@ function Evm() {
             <Typography variant="h6">直近情報</Typography>
             <Typography variant="body2">(前回ファイルとの差分)</Typography>
           </Box>
-          <TaskDiffTabs
-            current={state.project!}
-            prev={state.prevProject!}
-          />
+          <TaskDiffTabs current={state.project!} prev={state.prevProject!} />
         </Paper>
       )}
 
@@ -379,9 +376,9 @@ function Evm() {
             label="日々のPV"
             tableData2={state.project.pvsByProjectLong}
             label2="PV累積"
-            // bufferRate={1.2}
-            // limitDate={new Date("2025/09/11")}
-            // viewRegression={true}
+            DEFAULT_LIMIT_DATE={new Date("2025-09-11")}
+            // DEFAULT_BUFFER_RATE={1.2}
+            DEFAULT_VIEW_REGRESSION={true}
           />
         </Paper>
       )}

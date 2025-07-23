@@ -29,11 +29,10 @@ type Props = {
     data2?: LongData[];
     label2?: string;
   }>;
+  DEFAULT_LIMIT_DATE?: Date;
+  DEFAULT_BUFFER_RATE?: number;
+  DEFAULT_VIEW_REGRESSION?: boolean;
 };
-
-const DEFAULT_LIMIT_DATE = new Date("2025-09-11");
-const DEFAULT_BUFFER_RATE = 1.2;
-const DEFAULT_VIEW_REGRESSION = true;
 
 export const AssigneeView = ({
   tableData,
@@ -43,6 +42,9 @@ export const AssigneeView = ({
   tableData2,
   label2,
   TableComponent,
+  DEFAULT_LIMIT_DATE,
+  DEFAULT_BUFFER_RATE = 1.2,
+  DEFAULT_VIEW_REGRESSION = false,
 }: Props) => {
   const [tabIndex, setTabIndex] = useState(initialTab);
   const [limitDate, setLimitDate] = useState<Date | undefined>(
@@ -60,7 +62,7 @@ export const AssigneeView = ({
   };
 
   const isInitialState =
-    limitDate?.toISOString() === DEFAULT_LIMIT_DATE.toISOString() &&
+    limitDate?.toISOString() === DEFAULT_LIMIT_DATE?.toISOString() &&
     bufferRate === DEFAULT_BUFFER_RATE &&
     viewRegression === DEFAULT_VIEW_REGRESSION;
 
