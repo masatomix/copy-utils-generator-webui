@@ -37,9 +37,9 @@ import { StatisticsByProjectPaper } from "../components/project/StatisticsByProj
 import { getFilenameWithoutExtension } from "../utils/format";
 import { StatisticsByAssigneePaper } from "../components/assignee/StatisticsByAssigneePaper";
 
-export type ProjectInfoCallbacks = {
-  updateState: (updater: (prev: State) => State) => void;
-};
+// export type ProjectInfoCallbacks = {
+//   updateState: (updater: (prev: State) => State) => void;
+// };
 
 type State = {
   fileName: string;
@@ -165,32 +165,16 @@ function Evm() {
         const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
         const prevProject = await creator.createProject();
 
-        function calculateDiffs(
-          project: Project | undefined,
-          prev: Project | undefined,
-          service: ProjectService
-        ) {
-          if (!project || !prev) return { taskDiffs: [] };
-
-          return {
-            taskDiffs: service.calculateTaskDiffs(project, prev),
-            // projectDiffs: service.calculateProjectDiffs(project, prev),
-            // assigneeDiffs: service.calculateAssigneeDiffs(project, prev),
-          };
-        }
+        const projectSevice = new ProjectService();
+        const taskDiffs = state.project
+          ? projectSevice.calculateTaskDiffs(state.project, prevProject)
+          : [];
 
         setState((s) => {
-          const projectSevice = new ProjectService();
-          const {
-            taskDiffs, //
-            // projectDiffs, //
-            // assigneeDiffs, //
-          } = calculateDiffs(s.project, prevProject, projectSevice);
-
           return {
             ...s,
             prevProject,
-            taskDiffs /*projectDiffs, assigneeDiffs*/,
+            taskDiffs,
             loading: false,
           };
         });
@@ -339,7 +323,7 @@ function Evm() {
         )}
       </Paper>
 
-      {state.taskDiffs.length > 0 && (
+      {state.project && state.prevProject && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Box display="flex" alignItems="baseline" gap={1}>
             <Typography variant="h6">直近情報</Typography>
