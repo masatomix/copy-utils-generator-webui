@@ -108,12 +108,32 @@ function Evm() {
 
         const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
         const repository = new InMemoryRepository({
-          updateState: setState,
+          onGenerated: ({
+            workbook,
+            path,
+            statisticsByName,
+            statisticsByProject,
+          }: {
+            workbook: Workbook;
+            path: string;
+            statisticsByName: AssigneeStatistics[];
+            statisticsByProject: ProjectStatistics[];
+          }) => {
+            // 先方で作成が終わったら、教えてもらえる
+            setState((s) => ({
+              ...s,
+              workbook,
+              path,
+              statisticsByName,
+              statisticsByProject,
+            }));
+          },
         });
 
         const project = await creator.createProject();
-        repository.save(project);
         setState((s) => ({ ...s, project, loading: false }));
+
+        repository.save(project);
         setSnackbar(`${file.name} :読み込み完了しました`);
 
         console.log("読み込み成功", project.length, " 件");

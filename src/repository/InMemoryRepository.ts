@@ -6,15 +6,21 @@ import type {
   AssigneeStatistics,
 } from "evmtools-node/domain";
 import { createWorkbook, json2workbook } from "excel-csv-read-write";
-import type { ProjectInfoCallbacks } from "../pages/Evm";
 import { getLogger } from "evmtools-node/logger";
+import type { Workbook } from "xlsx-populate";
 
+type Props = {
+  workbook: Workbook;
+  path: string;
+  statisticsByName: AssigneeStatistics[];
+  statisticsByProject: ProjectStatistics[];
+};
 export class InMemoryRepository implements ProjectRepository {
   private logger = getLogger("repository/InMemoryRepository");
-  private callbacks: ProjectInfoCallbacks;
+  private onGenerated?: (props: Props) => void;
 
-  constructor(callbacks: ProjectInfoCallbacks) {
-    this.callbacks = callbacks;
+  constructor({ onGenerated }: { onGenerated?: (props: Props) => void }) {
+    this.onGenerated = onGenerated;
   }
 
   async save(project: Project): Promise<void> {
@@ -67,6 +73,13 @@ export class InMemoryRepository implements ProjectRepository {
     path,
   }) => {
     const workbook = await createWorkbook();
+
+    this.onGenerated?.({
+      workbook,
+      path,
+      statisticsByName,
+      statisticsByProject,
+    });
 
     const dateStrHyphen = dateStr(baseDate).replace(/\//g, "-");
 
@@ -135,14 +148,5 @@ export class InMemoryRepository implements ProjectRepository {
     }
     workbook.deleteSheet("Sheet1");
     // await toFileAsync(workbook, path);
-
-    // ココに更新内容保存処理。
-    this.callbacks.updateState((prev) => ({
-      ...prev,
-      workbook,
-      path,
-      statisticsByName,
-      statisticsByProject,
-    }));
   };
 }
