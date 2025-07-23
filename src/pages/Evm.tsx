@@ -69,49 +69,32 @@ function Evm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const resetFileInput = () => {
-      // 同じファイル再選択に対応するため value をリセット
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    };
-
-    const setLoading = (loading: boolean) => {
-      setState((s) => ({ ...s, loading }));
-    };
-
-    const setStateAfterGeneration = ({
-      workbook,
-      path,
-      statisticsByName,
-      statisticsByProject,
-    }: {
-      workbook: Workbook;
-      path: string;
-      statisticsByName: AssigneeStatistics[];
-      statisticsByProject: ProjectStatistics[];
-    }) => {
-      setState((s) => ({
-        ...s,
+    handleFileChange({
+      file,
+      resetFileInput: () => {
+        // 同じファイル再選択に対応するため value をリセット
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      },
+      setLoading: (loading) => setState((s) => ({ ...s, loading })),
+      setStateAfterGeneration: ({
         workbook,
         path,
         statisticsByName,
         statisticsByProject,
-        fileName: file.name,
-        prevProject: undefined, // ← 前回プロジェクトを削除
-      }));
-    };
-
-    const setProject = (project: Project) => {
-      setState((s) => ({ ...s, project }));
-    };
-
-    handleFileChange({
-      file,
-      resetFileInput,
-      setLoading,
-      setStateAfterGeneration,
-      setProject,
+      }) => {
+        setState((s) => ({
+          ...s,
+          workbook,
+          path,
+          statisticsByName,
+          statisticsByProject,
+          fileName: file.name,
+          prevProject: undefined, // ← 前回プロジェクトを削除
+        }));
+      },
+      setProject: (project: Project) => setState((s) => ({ ...s, project })),
       setSnackbar,
     });
   };
