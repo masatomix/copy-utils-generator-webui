@@ -203,14 +203,3 @@ const EvmSeries: React.FC = () => {
 };
 
 export default EvmSeries;
-
-function handleDiffs(projects: ProjectEntry[]) {
-  // ① baseDate が新しい順に並べる
-  const sorted = [...projects].sort(
-    (a, b) => b.project.baseDate.getTime() - a.project.baseDate.getTime()
-  );
-
-  const stats = sorted.map((entry) => entry.project.statisticsByProject[0]);
-  console.table(stats);
-  return stats;
-}

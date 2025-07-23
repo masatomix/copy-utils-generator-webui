@@ -340,9 +340,10 @@ function Evm() {
 
       {state.taskDiffs.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            タスクの差分
-          </Typography>
+          <Box display="flex" alignItems="baseline" gap={1}>
+            <Typography variant="h6">直近情報</Typography>
+            <Typography variant="body2">(前回ファイルとの差分)</Typography>
+          </Box>
           <TaskDiffTabs
             data={state.taskDiffs}
             current={state.project!}
@@ -355,7 +356,12 @@ function Evm() {
       {state.statisticsByProject.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">プロジェクト情報</Typography>
+            <Box display="flex" alignItems="baseline" gap={1}>
+              <Typography variant="h6">プロジェクト統計</Typography>
+              <Typography variant="body2">
+                (プロジェクト開始からの累積データ)
+              </Typography>
+            </Box>
             <HelpPopover
               title="このセクションについて"
               content={`このセクションでは、プロジェクト全体の統計情報を表示します。
@@ -375,7 +381,7 @@ Excelファイル内のファイル名から取得したプロジェクトの名
 プロジェクト内に登録されているタスクの総数です。
 
 工数合計
-すべてのタスクに割り当てられた工数（予定工数）の合計です。人日単位です。タスクごとに日ごとのPVを算出し、それらを全部足し合わせます。
+すべてのタスクの工数（予定工数）の合計値です。人日単位です。タスクごとに日ごとのPVを算出し、それらを全部足し合わせています。
 開始日/終了日が未入力のタスクは1日あたりの工数が計算できないため除外しているなど、Excelファイル上の「予定工数」の総和とは異なる場合があります。
 
 工数平均
@@ -385,13 +391,16 @@ Excelファイル内のファイル名から取得したプロジェクトの名
 Excelファイルから取得した基準日です。
 
 PV（Planned Value）
-基準日終了時点での予定工数の合計(1日あたりの工数 x 経過した日数)です。
+基準日終了時点での累積PVの合計値です。タスクごとの累積PVを算出し、それらを全部足し合わせています。
+(累積PV = 1日あたりの工数 x 経過した日数)
 「1日あたりの工数」は、タスクごとにExcelの「稼働予定日数」と「予定工数」から算出。
 「基準日時点の経過日数」は、Excelファイル上のプロットをみながら、プロットの日付<=基準日 の個数で算出。
-(親タスクの工数は二重計上となるため除外)
+
+(Excel上は親タスクにも工数が書いてあるけど、二重計上となるためもちろん除外しています)
 
 EV（Earned Value）
-基準日終了時点のExcel上のEVの合計です。
+基準日終了時点の累積EVの合計値です。
+Excel上のEVを足し合わせています。
 
 EV-PV
 EVとPVの差（＝EV − PV）です。プラスなら予定より進捗が早く、マイナスなら遅れています。
@@ -420,10 +429,16 @@ SPI（Schedule Performance Index）
       {state.statisticsByName.length > 0 && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">要員ごと統計</Typography>
+            <Box display="flex" alignItems="baseline" gap={1}>
+              <Typography variant="h6">要員ごと統計</Typography>
+              <Typography variant="body2">
+                (プロジェクト開始からの累積データ)
+              </Typography>
+            </Box>
             <HelpPopover
               title="要員ごと統計"
               content={`このセクションでは、担当者ごとの統計情報を表示します。
+                プロジェクト開始からの累積データです。
 
                 項目説明:
 
@@ -434,7 +449,7 @@ SPI（Schedule Performance Index）
                 プロジェクト全体で、担当者に割り当てられているタスクの総数です。
                 
                 工数合計、工数平均、PV、EV、EV-PV、SPI
-                計算方法は、プロジェクト情報の定義とおなじ。ひとごとで計算。
+                計算方法は、プロジェクト情報の定義とおなじ。ひとごとで足し合わせた結果です。
               `}
             />
           </Stack>
@@ -446,10 +461,17 @@ SPI（Schedule Performance Index）
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6" gutterBottom>
-              プロジェクト素データ
-            </Typography>
-            <HelpPopover title="" content="プロジェクトの素データを表示" />
+            <Box display="flex" alignItems="baseline" gap={1}>
+              <Typography variant="h6">個別データ</Typography>
+              <Typography variant="body2">(指定した基準日のタスク)</Typography>
+            </Box>
+            <Typography variant="h6" gutterBottom></Typography>
+            <HelpPopover
+              title="個別データ"
+              content={`タスクごとの素データを表示しています。
+                デフォルトは基準日で絞ってあるので「指定した基準日のタスク」を一覧できます。
+            `}
+            />
           </Stack>
 
           <Divider sx={{ mb: 2 }} />
