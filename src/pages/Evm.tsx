@@ -34,6 +34,7 @@ import { HelpPopover } from "../components/HelpPopover";
 import { StatisticsByProjectPaper } from "../components/project/StatisticsByProjectPaper";
 import { getFilenameWithoutExtension } from "../utils/format";
 import { StatisticsByAssigneePaper } from "../components/assignee/StatisticsByAssigneePaper";
+import { handleFileChange } from "../utils/handleFileChange";
 
 type State = {
   fileName: string;
@@ -68,82 +69,60 @@ function Evm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 同じファイル再選択に対応するため value をリセット
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    // resetFileInput?.();
-    setState((prev) => ({
-      ...prev,
-      fileName: file.name,
-      prevProject: undefined, // ← 前回プロジェクトを削除
-      // taskDiffs: [], // ← 差分もリセット（あれば）
-      // projectDiffs: [], // ← 差分結果
-      // assigneeDiffs: [], // ← 差分結果
-    }));
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const arrayBuffer = reader.result;
-      if (!(arrayBuffer instanceof ArrayBuffer)) {
-        console.error("FileReader result is not an ArrayBuffer");
-        return;
+    const resetFileInput = () => {
+      // 同じファイル再選択に対応するため value をリセット
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
 
-      // setLoading(true)
-      setState((s) => ({ ...s, loading: true }));
-
-      try {
-        const projectName = getFilenameWithoutExtension(file.name);
-
-        const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
-        const repository = new InMemoryRepository({
-          onGenerated: ({
-            workbook,
-            path,
-            statisticsByName,
-            statisticsByProject,
-          }: {
-            workbook: Workbook;
-            path: string;
-            statisticsByName: AssigneeStatistics[];
-            statisticsByProject: ProjectStatistics[];
-          }) => {
-            // 先方で作成が終わったら、教えてもらえる
-            // setStateAfterGeneratoin({              workbook,
-            //   path,
-            //   statisticsByName,
-            //   statisticsByProject,})
-            setState((s) => ({
-              ...s,
-              workbook,
-              path,
-              statisticsByName,
-              statisticsByProject,
-            }));
-          },
-        });
-
-        const project = await creator.createProject();
-
-        // setProject(project)
-        // setLoading(false)
-        setState((s) => ({ ...s, project, loading: false }));
-
-        repository.save(project);
-
-        // setSnackbar?(`${file.name} :読み込み完了しました`)
-        setSnackbar(`${file.name} :読み込み完了しました`);
-
-        console.log("読み込み成功", project.length, " 件");
-      } catch (error) {
-        console.error("読み込み失敗", error);
-        // setLoading(false)
-        setState((s) => ({ ...s, loading: false }));
-      }
+      // setState((prev) => ({
+      //   ...prev,
+      //   fileName: file.name,
+      //   prevProject: undefined, // ← 前回プロジェクトを削除
+      //   // taskDiffs: [], // ← 差分もリセット（あれば）
+      //   // projectDiffs: [], // ← 差分結果
+      //   // assigneeDiffs: [], // ← 差分結果g
+      // }));
     };
-    reader.readAsArrayBuffer(file);
+
+    const setLoading = (loading: boolean) => {
+      setState((s) => ({ ...s, loading }));
+    };
+
+    const setStateAfterGeneration = ({
+      workbook,
+      path,
+      statisticsByName,
+      statisticsByProject,
+    }: {
+      workbook: Workbook;
+      path: string;
+      statisticsByName: AssigneeStatistics[];
+      statisticsByProject: ProjectStatistics[];
+    }) => {
+      setState((s) => ({
+        ...s,
+        workbook,
+        path,
+        statisticsByName,
+        statisticsByProject,
+        fileName: file.name,
+        prevProject: undefined, // ← 前回プロジェクトを削除
+      }));
+    };
+
+    const setProject = (project: Project) => {
+      setState((s) => ({ ...s, project }));
+    };
+
+    handleFileChange({
+      file,
+      resetFileInput,
+      setLoading,
+      setStateAfterGeneration,
+      setProject,
+      setSnackbar,
+    });
   };
 
   const onPrevFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
