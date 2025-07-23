@@ -35,14 +35,6 @@ export const handleFileChange = ({
   if (!file) return;
 
   resetFileInput?.();
-  //   setState((prev) => ({
-  //     ...prev,
-  //     fileName: file.name,
-  //     prevProject: undefined, // ← 前回プロジェクトを削除
-  //     // taskDiffs: [], // ← 差分もリセット（あれば）
-  //     // projectDiffs: [], // ← 差分結果
-  //     // assigneeDiffs: [], // ← 差分結果
-  //   }));
 
   const reader = new FileReader();
   reader.onload = async () => {
@@ -53,13 +45,11 @@ export const handleFileChange = ({
     }
 
     setLoading(true);
-    // setState((s) => ({ ...s, loading: true }));
-
     try {
       const projectName = getFilenameWithoutExtension(file.name);
-
       const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
       const repository = new InMemoryRepository({
+        // saveが終わったら下記で登録したメソッドがcallbackされる
         onGenerated: ({
           workbook,
           path,
@@ -71,39 +61,26 @@ export const handleFileChange = ({
           statisticsByName: AssigneeStatistics[];
           statisticsByProject: ProjectStatistics[];
         }) => {
-          // 先方で作成が終わったら、教えてもらえる
           setStateAfterGeneration({
             workbook,
             path,
             statisticsByName,
             statisticsByProject,
           });
-          //   setState((s) => ({
-          //     ...s,
-          //     workbook,
-          //     path,
-          //     statisticsByName,
-          //     statisticsByProject,
-          //   }));
         },
       });
 
       const project = await creator.createProject();
 
       setProject(project);
-      setLoading(false);
-      //   setState((s) => ({ ...s, project, loading: false }));
-
       repository.save(project);
-
+      setLoading(false);
       setSnackbar?.(`${file.name} :読み込み完了しました`);
-      //   setSnackbar(`${file.name} :読み込み完了しました`);
 
       console.log("読み込み成功", project.length, " 件");
     } catch (error) {
       console.error("読み込み失敗", error);
       onError?.(error);
-      //   setState((s) => ({ ...s, loading: false }));
     } finally {
       setLoading(false);
     }

@@ -74,15 +74,6 @@ function Evm() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-
-      // setState((prev) => ({
-      //   ...prev,
-      //   fileName: file.name,
-      //   prevProject: undefined, // ← 前回プロジェクトを削除
-      //   // taskDiffs: [], // ← 差分もリセット（あれば）
-      //   // projectDiffs: [], // ← 差分結果
-      //   // assigneeDiffs: [], // ← 差分結果g
-      // }));
     };
 
     const setLoading = (loading: boolean) => {
