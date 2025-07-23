@@ -73,6 +73,7 @@ function Evm() {
       fileInputRef.current.value = "";
     }
 
+    // resetFileInput?.();
     setState((prev) => ({
       ...prev,
       fileName: file.name,
@@ -89,6 +90,8 @@ function Evm() {
         console.error("FileReader result is not an ArrayBuffer");
         return;
       }
+
+      // setLoading(true)
       setState((s) => ({ ...s, loading: true }));
 
       try {
@@ -108,6 +111,10 @@ function Evm() {
             statisticsByProject: ProjectStatistics[];
           }) => {
             // 先方で作成が終わったら、教えてもらえる
+            // setStateAfterGeneratoin({              workbook,
+            //   path,
+            //   statisticsByName,
+            //   statisticsByProject,})
             setState((s) => ({
               ...s,
               workbook,
@@ -119,14 +126,20 @@ function Evm() {
         });
 
         const project = await creator.createProject();
+
+        // setProject(project)
+        // setLoading(false)
         setState((s) => ({ ...s, project, loading: false }));
 
         repository.save(project);
+
+        // setSnackbar?(`${file.name} :読み込み完了しました`)
         setSnackbar(`${file.name} :読み込み完了しました`);
 
         console.log("読み込み成功", project.length, " 件");
       } catch (error) {
         console.error("読み込み失敗", error);
+        // setLoading(false)
         setState((s) => ({ ...s, loading: false }));
       }
     };
