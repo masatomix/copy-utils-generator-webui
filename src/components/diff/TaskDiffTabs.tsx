@@ -8,7 +8,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Project, type TaskDiff } from "evmtools-node/domain";
+import { Project, ProjectService } from "evmtools-node/domain";
 import { TaskDiffTable } from "./TaskDiffTable";
 import { AssigneeDiffTable } from "./AssigneeDiffTable";
 import { ProjectDiffSummary } from "./ProjectDiffSummary";
@@ -16,7 +16,6 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { formatDiffType, formatFinished } from "../../utils/format";
 
 type Props = {
-  data: TaskDiff[];
   current: Project;
   prev: Project;
 };
@@ -28,7 +27,7 @@ export type TaskDiffTableSetting = {
   alwaysShowOverdue: boolean;
 };
 
-export const TaskDiffTabs = ({ data, current, prev }: Props) => {
+export const TaskDiffTabs = ({ current, prev }: Props) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [taskDiffSetting, setTaskDiffSetting] = useState<TaskDiffTableSetting>({
     showFullName: true,
@@ -39,6 +38,8 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
 
   const [filterText, setFilterText] = useState<string>("");
 
+  const projectSevice = new ProjectService();
+  const data = projectSevice.calculateTaskDiffs(current, prev);
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
 
   const filtered = useMemo(() => {

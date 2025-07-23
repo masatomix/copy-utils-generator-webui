@@ -16,10 +16,8 @@ import {
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   Project,
-  ProjectService,
   type AssigneeStatistics,
   type ProjectStatistics,
-  type TaskDiff,
 } from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
 import { InMemoryRepository } from "../repository/InMemoryRepository";
@@ -37,10 +35,6 @@ import { StatisticsByProjectPaper } from "../components/project/StatisticsByProj
 import { getFilenameWithoutExtension } from "../utils/format";
 import { StatisticsByAssigneePaper } from "../components/assignee/StatisticsByAssigneePaper";
 
-// export type ProjectInfoCallbacks = {
-//   updateState: (updater: (prev: State) => State) => void;
-// };
-
 type State = {
   fileName: string;
   project?: Project;
@@ -49,9 +43,6 @@ type State = {
   statisticsByName: AssigneeStatistics[];
   statisticsByProject: ProjectStatistics[];
   prevProject?: Project; // ← 前回のデータ
-  taskDiffs: TaskDiff[]; // ← 差分結果
-  // projectDiffs: ProjectDiff[]; //
-  // assigneeDiffs: AssigneeDiff[]; //
   loading: boolean; // ← 追加
 };
 
@@ -64,9 +55,6 @@ function Evm() {
     statisticsByName: [],
     statisticsByProject: [],
     prevProject: undefined, // ← 前回のデータ
-    taskDiffs: [], // ← 差分結果
-    // projectDiffs: [], // ← 差分結果
-    // assigneeDiffs: [], // ← 差分結果
     loading: false, // ← 追加
   });
 
@@ -89,7 +77,7 @@ function Evm() {
       ...prev,
       fileName: file.name,
       prevProject: undefined, // ← 前回プロジェクトを削除
-      taskDiffs: [], // ← 差分もリセット（あれば）
+      // taskDiffs: [], // ← 差分もリセット（あれば）
       // projectDiffs: [], // ← 差分結果
       // assigneeDiffs: [], // ← 差分結果
     }));
@@ -165,16 +153,10 @@ function Evm() {
         const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
         const prevProject = await creator.createProject();
 
-        const projectSevice = new ProjectService();
-        const taskDiffs = state.project
-          ? projectSevice.calculateTaskDiffs(state.project, prevProject)
-          : [];
-
         setState((s) => {
           return {
             ...s,
             prevProject,
-            taskDiffs,
             loading: false,
           };
         });
@@ -330,7 +312,6 @@ function Evm() {
             <Typography variant="body2">(前回ファイルとの差分)</Typography>
           </Box>
           <TaskDiffTabs
-            data={state.taskDiffs}
             current={state.project!}
             prev={state.prevProject!}
           />
