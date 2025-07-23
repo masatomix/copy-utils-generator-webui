@@ -9,10 +9,17 @@ import {
   TableRow,
   Paper,
   TableContainer,
+  Box,
+  Tooltip,
 } from "@mui/material";
-import { type TaskDiff, Project, ProjectService } from "evmtools-node/domain";
+import {
+  type ProjectDiff,
+  type TaskDiff,
+  Project,
+  ProjectService,
+} from "evmtools-node/domain";
 import { formatNumberIntl } from "../../utils/format";
-import { dateStr } from "evmtools-node/common";
+import { dateStr, subtract } from "evmtools-node/common";
 import { ShowDiffTag } from "./ShowDiffTag";
 
 export const ProjectDiffSummary = ({
@@ -26,6 +33,38 @@ export const ProjectDiffSummary = ({
 }) => {
   const filtered = data.filter((d) => d.hasDiff);
   const grouped = new ProjectService().calculateProjectDiffs(filtered);
+
+  const ProjectDiffSummaryRow = ({ diff }: { diff: ProjectDiff }) => {
+    const sv = subtract(diff.deltaEV, diff.deltaPV);
+    const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
+    return (
+      <TableRow>
+        <TableCell>
+          {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+          <ShowDiffTag
+            current={diff.currentPV}
+            prev={diff.prevPV}
+            show={true}
+          />
+        </TableCell>
+        <Tooltip title="PVよりEVが小さい場合赤字" placement="top">
+          <TableCell>
+            <Box component="span" sx={{ color: svColor }}>
+              {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
+            </Box>
+            <ShowDiffTag
+              current={diff.currentEV}
+              prev={diff.prevEV}
+              show={true}
+            />
+          </TableCell>
+        </Tooltip>
+        <TableCell>{diff.modifiedCount}</TableCell>
+        <TableCell>{diff.addedCount}</TableCell>
+        <TableCell>{diff.removedCount}</TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -70,27 +109,7 @@ export const ProjectDiffSummary = ({
           </TableHead>
           <TableBody>
             {grouped.map((diff) => (
-              <TableRow>
-                <TableCell>
-                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentPV}
-                    prev={diff.prevPV}
-                    show={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentEV}
-                    prev={diff.prevEV}
-                    show={true}
-                  />
-                </TableCell>
-                <TableCell>{diff.modifiedCount}</TableCell>
-                <TableCell>{diff.addedCount}</TableCell>
-                <TableCell>{diff.removedCount}</TableCell>
-              </TableRow>
+              <ProjectDiffSummaryRow diff={diff}></ProjectDiffSummaryRow>
             ))}
           </TableBody>
         </Table>
