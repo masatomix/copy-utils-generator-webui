@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from "react";
-import { saveAs } from "file-saver";
 import {
   Button,
   Typography,
@@ -36,6 +35,7 @@ import { createLongDataByProjectTableWithProject } from "../components/LongDataB
 import TaskRowsSection from "../components/task/TaskRowsSection";
 import { HelpPopover } from "../components/HelpPopover";
 import { StatisticsByProjectPaper } from "../components/project/StatisticsByProjectPaper";
+import { getFilenameWithoutExtension } from "../utils/format";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -181,22 +181,6 @@ function Evm() {
       }
     };
     reader.readAsArrayBuffer(file);
-  };
-
-  const getFilenameWithoutExtension = (fullPath: string): string => {
-    const filename = fullPath.split(/[/\\]/).pop() ?? "";
-    return filename.replace(/\.[^/.]+$/, ""); // 最後の .xxx を除去
-  };
-
-  const downloadAll = async () => {
-    if (state.workbook) {
-      const arrayBuffer = await state.workbook.outputAsync();
-      const blob = new Blob([arrayBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      }); // Blob に変換
-
-      saveAs(blob, state.path);
-    }
   };
 
   const FileSelectButton = ({
@@ -353,7 +337,8 @@ function Evm() {
       {state.statisticsByProject.length > 0 && (
         <StatisticsByProjectPaper
           statisticsByProject={state.statisticsByProject}
-          downloadAll={downloadAll}
+          workbook={state.workbook}
+          path={state.path}
         ></StatisticsByProjectPaper>
       )}
 

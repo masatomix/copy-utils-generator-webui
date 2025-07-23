@@ -4,13 +4,28 @@ import DownloadIcon from "@mui/icons-material/Download";
 import type { ProjectStatistics } from "evmtools-node/domain";
 import { HelpPopover } from "../HelpPopover";
 import { ProjectStatsView } from "./ProjectStatsView";
+import type { Workbook } from "xlsx-populate";
+import saveAs from "file-saver";
 export const StatisticsByProjectPaper = ({
   statisticsByProject,
-  downloadAll,
+  workbook,
+  path,
 }: {
   statisticsByProject: ProjectStatistics[];
-  downloadAll: () => Promise<void>;
+  workbook?: Workbook;
+  path: string;
 }) => {
+  const downloadAll = async () => {
+    if (workbook) {
+      const arrayBuffer = await workbook.outputAsync();
+      const blob = new Blob([arrayBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }); // Blob に変換
+
+      saveAs(blob, path);
+    }
+  };
+
   return (
     <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
       <Stack direction="row" spacing={1} alignItems="center">
