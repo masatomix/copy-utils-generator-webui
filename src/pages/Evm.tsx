@@ -10,8 +10,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  IconButton,
-  Popover,
   Backdrop,
   CircularProgress,
   Snackbar,
@@ -28,17 +26,16 @@ import type { Workbook } from "xlsx-populate";
 import { InMemoryRepository } from "../repository/InMemoryRepository";
 
 import UploadIcon from "@mui/icons-material/Upload";
-import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
-import { ProjectStatsView } from "../components/ProjectStatsView";
-import { AssigneeStatsView } from "../components/AssigneeStatsView";
+import { AssigneeStatsView } from "../components/assignee/AssigneeStatsView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
-import { TaskDiffTabs } from "../components/TaskDiffTabs";
+import { TaskDiffTabs } from "../components/diff/TaskDiffTabs";
 import { createLongDataByNameTableWithProject } from "../components/LongDataByNameTableWrapper";
 import { createLongDataByProjectTableWithProject } from "../components/LongDataByProjectTableWrapper";
-import TaskRowsSection from "../components/TaskRowsSection";
+import TaskRowsSection from "../components/task/TaskRowsSection";
+import { HelpPopover } from "../components/HelpPopover";
+import { StatisticsByProjectPaper } from "../components/project/StatisticsByProjectPaper";
 
 export type ProjectInfoCallbacks = {
   updateState: (updater: (prev: State) => State) => void;
@@ -354,75 +351,10 @@ function Evm() {
 
       {/* プロジェクト情報 */}
       {state.statisticsByProject.length > 0 && (
-        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Box display="flex" alignItems="baseline" gap={1}>
-              <Typography variant="h6">プロジェクト統計</Typography>
-              <Typography variant="body2">
-                (プロジェクト開始からの累積データ)
-              </Typography>
-            </Box>
-            <HelpPopover
-              title="このセクションについて"
-              content={`このセクションでは、プロジェクト全体の統計情報を表示します。
-
-項目説明:
-
-プロジェクト名
-Excelファイル内のファイル名から取得したプロジェクトの名前です。
-
-開始予定日
-最も早いタスクの「開始予定日」です。
-
-終了予定日
-最も遅いタスクの「終了予定日」です。
-
-タスク数
-プロジェクト内に登録されているタスクの総数です。
-
-工数合計
-すべてのタスクの工数（予定工数）の合計値です。人日単位です。タスクごとに日ごとのPVを算出し、それらを全部足し合わせています。
-開始日/終了日が未入力のタスクは1日あたりの工数が計算できないため除外しているなど、Excelファイル上の「予定工数」の総和とは異なる場合があります。
-
-工数平均
-タスク1件あたりの平均工数です（＝工数合計 ÷ タスク数）。
-
-基準日
-Excelファイルから取得した基準日です。
-
-PV（Planned Value）
-基準日終了時点での累積PVの合計値です。タスクごとの累積PVを算出し、それらを全部足し合わせています。
-(累積PV = 1日あたりの工数 x 経過した日数)
-「1日あたりの工数」は、タスクごとにExcelの「稼働予定日数」と「予定工数」から算出。
-「基準日時点の経過日数」は、Excelファイル上のプロットをみながら、プロットの日付<=基準日 の個数で算出。
-
-(Excel上は親タスクにも工数が書いてあるけど、二重計上となるためもちろん除外しています)
-
-EV（Earned Value）
-基準日終了時点の累積EVの合計値です。
-Excel上のEVを足し合わせています。
-
-EV-PV
-EVとPVの差（＝EV − PV）です。プラスなら予定より進捗が早く、マイナスなら遅れています。
-
-SPI（Schedule Performance Index）
-スケジュール効率指数。EV ÷ PV で算出されます。
-1.0以上なら順調、1.0未満なら遅れを示します。
-                `}
-            />
-          </Stack>
-
-          <Divider sx={{ mb: 2 }} />
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={downloadAll}
-            sx={{ mt: 2 }}
-          >
-            データをダウンロード
-          </Button>
-          <ProjectStatsView data={state.statisticsByProject} />
-        </Paper>
+        <StatisticsByProjectPaper
+          statisticsByProject={state.statisticsByProject}
+          downloadAll={downloadAll}
+        ></StatisticsByProjectPaper>
       )}
 
       {/* 要員統計 */}
@@ -554,60 +486,5 @@ SPI（Schedule Performance Index）
     </Box>
   );
 }
-
-// const HelpIcon = ({ message }: { message: string }) => (
-//   <Tooltip title={message} arrow>
-//     <IconButton size="small">
-//       <HelpOutlineIcon fontSize="small" />
-//     </IconButton>
-//   </Tooltip>
-// );
-
-export const HelpPopover = ({
-  title,
-  content,
-}: {
-  title: string;
-  content: string;
-}) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  return (
-    <>
-      <IconButton size="small" onClick={handleClick}>
-        <HelpOutlineIcon fontSize="small" />
-      </IconButton>
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-      >
-        <Typography
-          sx={{
-            p: 2,
-            maxWidth: 500,
-            whiteSpace: "pre-line", // 改行を反映させる
-          }}
-        >
-          <strong>{title}</strong>
-          <br />
-          {content}
-        </Typography>
-      </Popover>
-    </>
-  );
-};
 
 export default Evm;

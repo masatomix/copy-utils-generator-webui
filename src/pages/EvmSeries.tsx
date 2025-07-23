@@ -18,7 +18,7 @@ import UploadIcon from "@mui/icons-material/Upload";
 
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import { Project, type ProjectStatistics } from "evmtools-node/domain";
-import { ShowProjectStatistics } from "../components/ShowProjectStatistics";
+import { ShowProjectStatistics } from "../components/project/ShowProjectStatistics";
 
 type ProjectEntry = {
   fileName: string;

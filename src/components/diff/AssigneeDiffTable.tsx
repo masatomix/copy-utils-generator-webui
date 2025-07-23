@@ -11,7 +11,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import { type TaskDiff, Project, ProjectService } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 import { dateStr } from "evmtools-node/common";
 import { ShowDiffTag } from "./ShowDiffTag";
 

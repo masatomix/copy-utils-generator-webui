@@ -25,7 +25,7 @@ import {
   formatDiffType,
   formatFinished,
   formatNumberIntl,
-} from "../utils/format";
+} from "../../utils/format";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";

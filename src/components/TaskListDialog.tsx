@@ -26,9 +26,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import ClearIcon from "@mui/icons-material/Clear";
-import { DaysStrOverdueAt } from "./DaysStrOverdueAt";
-import { TaskRowsFooter } from "./TaskRowsFooter";
-import { PVEVSPI } from "./PVEVSPI";
+import { DaysStrOverdueAt } from "./task/DaysStrOverdueAt";
+import { TaskRowsFooter } from "./task/TaskRowsFooter";
+import { PVEVSPI } from "./task/PVEVSPI";
 
 type Props = {
   open: boolean;

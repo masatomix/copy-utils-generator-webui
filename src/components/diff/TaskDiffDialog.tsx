@@ -15,7 +15,7 @@ import {
   formatFinished,
   formatIsOverdueAt,
   formatNumberIntl,
-} from "../utils/format";
+} from "../../utils/format";
 import { dateStr, formatRelativeDays } from "evmtools-node/common";
 
 export const TaskDiffDialog = ({

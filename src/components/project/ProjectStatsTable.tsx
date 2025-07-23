@@ -8,8 +8,8 @@ import {
   Paper,
 } from "@mui/material";
 import type { ProjectStatistics } from "evmtools-node/domain";
-import { HelpPopover } from "../pages/Evm";
 import { ShowProjectStatistics } from "./ShowProjectStatistics";
+import { HelpPopover } from "../HelpPopover";
 
 type Props = {
   data: ProjectStatistics[];

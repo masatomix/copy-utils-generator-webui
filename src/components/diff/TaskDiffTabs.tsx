@@ -13,7 +13,7 @@ import { TaskDiffTable } from "./TaskDiffTable";
 import { AssigneeDiffTable } from "./AssigneeDiffTable";
 import { ProjectDiffSummary } from "./ProjectDiffSummary";
 import ClearIcon from "@mui/icons-material/Clear";
-import { formatDiffType, formatFinished } from "../utils/format";
+import { formatDiffType, formatFinished } from "../../utils/format";
 
 type Props = {
   data: TaskDiff[];

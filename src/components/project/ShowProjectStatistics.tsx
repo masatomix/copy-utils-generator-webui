@@ -1,7 +1,7 @@
 import { TableCell, TableRow } from "@mui/material";
 import { subtract } from "evmtools-node/common";
 import type { ProjectStatistics } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 
 export const ShowProjectStatistics = ({
   row,
