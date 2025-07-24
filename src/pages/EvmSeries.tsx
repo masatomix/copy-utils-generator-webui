@@ -187,7 +187,22 @@ const EvmSeries: React.FC = () => {
   return (
     <Box p={4}>
       <Typography variant="h5" gutterBottom>
-        複数Excelファイルからプロジェクト読込
+        複数Excelファイルから時系列データを作成
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        複数のWBSファイルを読み込み、基準日ごとの時系列データを作成します。
+        <br />
+        各WBSファイルを解析するので、イチから作成するのはそれなりに時間がかかります。
+      </Typography>
+      <Typography variant="body2" gutterBottom>
+        作成した時系列データはダウンロードでローカルに保存したり、下記の読み込みボタンから復元することができますので、毎回再作成しないよう工夫して使ってください。
+        <br />
+        (どちらのボタンから作成しても、同じ基準日のデータはあと勝ちで上書きします。)
+      </Typography>
+
+      
+      <Typography variant="body2" gutterBottom>
+        ココで作成した時系列データは、EVMを描画するときに使用します！
       </Typography>
 
       <input
@@ -224,7 +239,7 @@ const EvmSeries: React.FC = () => {
             component="span"
             startIcon={<UploadIcon />}
           >
-            作成済み時系列データの取り込み
+            作成済み「時系列データ」の読み込み
           </Button>
         </label>
 
@@ -296,7 +311,7 @@ const EvmSeries: React.FC = () => {
               onClick={downloadAll}
               sx={{ mt: 2 }}
             >
-              データをダウンロード
+              「時系列データ」をダウンロード
             </Button>
           </Box>
 
