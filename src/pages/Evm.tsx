@@ -325,6 +325,7 @@ function Evm() {
             label="日々のPV"
             tableData2={state.project.pvsByProjectLong}
             label2="PV累積"
+            seriesUpload={true}
             DEFAULT_LIMIT_DATE={new Date("2025-09-11")}
             // DEFAULT_BUFFER_RATE={1.2}
             DEFAULT_VIEW_REGRESSION={true}

@@ -13,12 +13,14 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import type { EvData } from "./AssigneeView";
 
 type Props = {
   data: LongData[];
   limitDate?: Date;
   bufferRate: number;
   viewRegression: boolean;
+  evData?: EvData[];
 };
 
 type Point = { x: number; y: number };
@@ -128,16 +130,19 @@ function createRegressionDataMap(
 // マージ処理
 function mergeChartData(
   actualMap: Map<string, Record<string, any>>,
-  regressionMap: Map<string, Record<string, any>>
+  regressionMap: Map<string, Record<string, any>>,
+  evData?: EvData[]
 ): ChartRow[] {
   const allDates = Array.from(
     new Set([...actualMap.keys(), ...regressionMap.keys()])
   ).sort();
   // console.table(allDates);
+  const evDataMap = new Map(evData?.map((entry) => [entry.baseDate, entry]));
   return allDates
     .map((date) => ({
       ...(actualMap.get(date) || {}),
       ...(regressionMap.get(date) || {}),
+      ...(evDataMap.get(date) || {}),
       baseDate: date,
     }))
     .sort(
@@ -151,6 +156,7 @@ export const AssigneeLineChart = ({
   limitDate,
   bufferRate,
   viewRegression,
+  evData,
 }: Props) => {
   // console.table(data)
 
@@ -166,7 +172,7 @@ export const AssigneeLineChart = ({
     bufferRate,
     viewRegression
   );
-  const chartData = mergeChartData(actualMap, regressionMap);
+  const chartData = mergeChartData(actualMap, regressionMap, evData);
 
   return (
     <ResponsiveContainer width="100%" height={400}>
@@ -201,6 +207,15 @@ export const AssigneeLineChart = ({
               stroke="#FFA500"
               dot={false}
               name={assignee}
+            />
+            {/* 実データ線：黄色実線 */}
+            <Line
+              type="monotone"
+              dataKey="ev"
+              stroke="#FFD700"
+              // strokeWidth={2}   // ← 少し太めに
+              dot={false}
+              name={`${assignee}_ev`}
             />
             {/* 回帰線：オレンジ破線 */}
             {viewRegression && (
