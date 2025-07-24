@@ -16,9 +16,14 @@ import {
 } from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
 
+import DownloadIcon from "@mui/icons-material/Download";
+
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import { Project, type ProjectStatistics } from "evmtools-node/domain";
 import { ShowProjectStatistics } from "../components/project/ShowProjectStatistics";
+import saveAs from "file-saver";
+import { createWorkbook, json2workbook } from "excel-csv-read-write";
+import { createStyles } from "evmtools-node/common";
 
 type ProjectEntry = {
   fileName: string;
@@ -44,6 +49,9 @@ const EvmSeries: React.FC = () => {
 
     const fileArray = Array.from(files);
     setIsLoading(true); // ローディング開始
+    setProjects([]);
+    setProjectStatisticsArray([]);
+
     console.log(
       "📂 選択されたファイル:",
       fileArray.map((f) => f.name)
@@ -75,6 +83,34 @@ const EvmSeries: React.FC = () => {
     } finally {
       setIsLoading(false); // ローディング開始
     }
+  };
+
+  const downloadAll = async () => {
+    if (projectStatisticsArray.length === 0) {
+      console.warn("⚠️ 書き出し対象が空です");
+      return;
+    }
+
+    const path = `${projectStatisticsArray[0].projectName}-summary.xlsx`;
+    // const path = `series.xlsx`;
+    const workbook = await createWorkbook();
+
+    console.table(projectStatisticsArray);
+    json2workbook({
+      instances: projectStatisticsArray,
+      workbook,
+      sheetName: `プロジェクト時系列情報`,
+      applyStyles: createStyles(),
+    });
+    // }
+
+    workbook.deleteSheet("Sheet1");
+    const arrayBuffer = await workbook.outputAsync();
+    const blob = new Blob([arrayBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }); // Blob に変換
+
+    saveAs(blob, path);
   };
 
   return (
@@ -145,6 +181,14 @@ const EvmSeries: React.FC = () => {
           <Typography variant="h6" gutterBottom>
             時系列データ
           </Typography>
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            onClick={downloadAll}
+            sx={{ mt: 2 }}
+          >
+            データをダウンロード
+          </Button>
 
           <TableContainer>
             <Table size="small">
