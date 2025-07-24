@@ -202,7 +202,7 @@ const EvmSeries: React.FC = () => {
 
       
       <Typography variant="body2" gutterBottom>
-        ココで作成した時系列データは、EVMを描画するときに使用します！
+        ココで作成した時系列データは、EVMグラフを描画するときに使用します！
       </Typography>
 
       <input
