@@ -17,12 +17,17 @@ import {
 import UploadIcon from "@mui/icons-material/Upload";
 
 import DownloadIcon from "@mui/icons-material/Download";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import { Project, type ProjectStatistics } from "evmtools-node/domain";
 import { ShowProjectStatistics } from "../components/project/ShowProjectStatistics";
 import saveAs from "file-saver";
-import { createWorkbook, json2workbook } from "excel-csv-read-write";
+import {
+  createWorkbook,
+  excelBuffer2json,
+  json2workbook,
+} from "excel-csv-read-write";
 import { createStyles } from "evmtools-node/common";
 
 type ProjectEntry = {
@@ -49,8 +54,8 @@ const EvmSeries: React.FC = () => {
 
     const fileArray = Array.from(files);
     setIsLoading(true); // ローディング開始
-    setProjects([]);
-    setProjectStatisticsArray([]);
+    // setProjects([]);
+    // setProjectStatisticsArray([]);
 
     console.log(
       "📂 選択されたファイル:",
@@ -66,23 +71,83 @@ const EvmSeries: React.FC = () => {
         return { fileName: file.name, project };
       });
 
-      const projects = await Promise.all(promises);
-      setProjects(projects);
+      const newProjects = await Promise.all(promises);
+      const mergedProjects = mergeProjects(projects, newProjects);
+      setProjects(mergedProjects);
+
       console.log("✅ 全ファイル読み込み成功:", projects);
 
       // ① baseDate が新しい順に並べる
-      const sorted = [...projects].sort(
+      const sorted = [...mergedProjects].sort(
         (a, b) => b.project.baseDate.getTime() - a.project.baseDate.getTime()
       );
       const results = sorted.map(
         (entry) => entry.project.statisticsByProject[0]
       );
-      setProjectStatisticsArray(results);
+      const mergedStats = mergeStatistics(projectStatisticsArray, results);
+      setProjectStatisticsArray(mergedStats);
     } catch (error) {
       console.error("❌ 読み込み失敗:", error);
     } finally {
       setIsLoading(false); // ローディング開始
     }
+  };
+
+  const mergeProjects = (
+    existing: ProjectEntry[],
+    incoming: ProjectEntry[]
+  ): ProjectEntry[] => {
+    const map = new Map<string, ProjectEntry>();
+    for (const entry of existing) {
+      map.set(entry.project.name!, entry);
+    }
+    for (const entry of incoming) {
+      map.set(entry.project.name!, entry); // 上書き or 新規
+    }
+    return Array.from(map.values());
+  };
+
+  const handleImportSeries = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const data = (await excelBuffer2json(
+        arrayBuffer,
+        "プロジェクト時系列情報"
+      )) as ProjectStatistics[];
+      console.table(data);
+
+      const mergedStats = mergeStatistics(projectStatisticsArray, data);
+      setProjectStatisticsArray(mergedStats);
+
+      // console.log("✅ JSON から読み込み成功:", mergedStats);
+    } catch (err) {
+      console.error("❌ JSON 読み込みエラー:", err);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const mergeStatistics = (
+    existing: ProjectStatistics[],
+    incoming: ProjectStatistics[]
+  ): ProjectStatistics[] => {
+    const map = new Map<string, ProjectStatistics>();
+    for (const stat of existing) {
+      map.set(stat.projectName!, stat);
+    }
+    for (const stat of incoming) {
+      map.set(stat.projectName!, stat); // ← 上書き or 新規追加
+    }
+    // return Array.from(map.values());
+    // 基準日で降順ソート（新しい順）
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.baseDate).getTime() - new Date(a.baseDate).getTime()
+    );
   };
 
   const downloadAll = async () => {
@@ -91,8 +156,7 @@ const EvmSeries: React.FC = () => {
       return;
     }
 
-    const path = `${projectStatisticsArray[0].projectName}-summary.xlsx`;
-    // const path = `series.xlsx`;
+    const path = `${projectStatisticsArray[0].projectName}-series.xlsx`;
     const workbook = await createWorkbook();
 
     console.table(projectStatisticsArray);
@@ -102,7 +166,6 @@ const EvmSeries: React.FC = () => {
       sheetName: `プロジェクト時系列情報`,
       applyStyles: createStyles(),
     });
-    // }
 
     workbook.deleteSheet("Sheet1");
     const arrayBuffer = await workbook.outputAsync();
@@ -111,6 +174,11 @@ const EvmSeries: React.FC = () => {
     }); // Blob に変換
 
     saveAs(blob, path);
+  };
+
+  const handleResetStatistics = () => {
+    setProjectStatisticsArray([]);
+    setProjects([]);
   };
 
   return (
@@ -127,16 +195,48 @@ const EvmSeries: React.FC = () => {
         style={{ display: "none" }}
         onChange={handleFileChange}
       />
-      <label htmlFor="file-upload">
+      <input
+        type="file"
+        id="file-upload1"
+        accept=".xlsm,.xlsx"
+        style={{ display: "none" }}
+        onChange={handleImportSeries}
+      />
+      <Box display="flex" alignItems="center" gap={2} mb={2}>
+        {/* Excelファイル選択 */}
+        <label htmlFor="file-upload">
+          <Button
+            variant="contained"
+            component="span"
+            startIcon={<UploadIcon />}
+          >
+            Excelファイルを選択
+          </Button>
+        </label>
+
+        {/* 作成済みデータ取り込み */}
+        <label htmlFor="file-upload1">
+          <Button
+            variant="outlined"
+            component="span"
+            startIcon={<UploadIcon />}
+          >
+            作成済み時系列データの取り込み
+          </Button>
+        </label>
+
+        {/* リセット */}
         <Button
-          variant="contained"
-          component="span"
-          startIcon={<UploadIcon />}
-          sx={{ mb: 2 }}
+          variant="text"
+          color="inherit"
+          size="small"
+          startIcon={<RefreshIcon />}
+          onClick={handleResetStatistics}
+          sx={{ minWidth: "auto" }}
         >
-          Excelファイルを選択
+          リセット
         </Button>
-      </label>
+      </Box>
 
       {isLoading && (
         <Box display="flex" alignItems="center" gap={2} mt={2}>
@@ -178,17 +278,24 @@ const EvmSeries: React.FC = () => {
 
       {projectStatisticsArray.length > 0 && (
         <Paper variant="outlined" sx={{ p: 2, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            時系列データ
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={downloadAll}
-            sx={{ mt: 2 }}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
           >
-            データをダウンロード
-          </Button>
+            <Typography variant="h6" gutterBottom>
+              時系列データ({projectStatisticsArray.length}件)
+            </Typography>
+
+            <Button
+              variant="contained"
+              startIcon={<DownloadIcon />}
+              onClick={downloadAll}
+              sx={{ mt: 2 }}
+            >
+              データをダウンロード
+            </Button>
+          </Box>
 
           <TableContainer>
             <Table size="small">
