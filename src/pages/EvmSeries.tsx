@@ -161,7 +161,10 @@ const EvmSeries: React.FC = () => {
 
     console.table(projectStatisticsArray);
     json2workbook({
-      instances: projectStatisticsArray,
+      instances: projectStatisticsArray.sort(
+        (a, b) =>
+          new Date(a.baseDate).getTime() - new Date(b.baseDate).getTime()
+      ),
       workbook,
       sheetName: `プロジェクト時系列情報`,
       applyStyles: createStyles(),
