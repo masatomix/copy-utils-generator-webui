@@ -7,12 +7,14 @@ import {
   Box,
   Toolbar,
   Link,
+  Typography,
 } from "@mui/material";
 import Gamen1 from "./pages/Gamen1";
 import Gamen2 from "./pages/Gamen2";
 import Gamen3 from "./pages/Evm";
 import Gamen4 from "./pages/EvmSeries";
 import Home from "./pages/Home";
+import { VERSION } from "./utils/version";
 
 const tabNames = ["home", "gamen1", "gamen2", "gamen3", "gamen4"];
 
@@ -48,18 +50,37 @@ function App() {
             px: 1,
           }}
         >
-          <Link
-            href="#/"
-            underline="none"
+          {/* ← 左側：ロゴ + バージョン */}
+          <Box
             sx={{
-              color: "#fff",
-              fontSize: "1rem",
-              fontWeight: "bold",
+              display: "flex",
+              alignItems: "flex-end", // 👈 下端揃え
             }}
-            onClick={() => setTabIndex(0)}
           >
-            COPY UTILS GENERATOR
-          </Link>
+            <Link
+              href="#/"
+              underline="none"
+              sx={{
+                color: "#fff",
+                fontSize: "1rem",
+                fontWeight: "bold",
+              }}
+              onClick={() => setTabIndex(0)}
+            >
+              COPY UTILS GENERATOR
+            </Link>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#eee",
+                fontSize: "0.75rem",
+                fontFamily: "monospace",
+                userSelect: "all",
+              }}
+            >
+              (version: {VERSION})
+            </Typography>
+          </Box>
 
           <Tabs
             value={tabIndex}
