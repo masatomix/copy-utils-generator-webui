@@ -70,9 +70,9 @@ export const AssigneeView = ({
     bufferRate === DEFAULT_BUFFER_RATE &&
     viewRegression === DEFAULT_VIEW_REGRESSION;
 
-  const [uploadedEvData, setUploadedEvData] = useState<EvData[] | undefined>(
-    undefined
-  );
+  const [uploadedEvData, setUploadedEvData] = useState<
+    SeriesData[] | undefined
+  >(undefined);
 
   // input参照用
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -92,8 +92,8 @@ export const AssigneeView = ({
       )) as ProjectStatistics[];
       console.table(data);
 
-      const evData: EvData[] = data.map((d) => {
-        return { baseDate: d.baseDate, ev: d.totalEv };
+      const evData: SeriesData[] = data.map((d) => {
+        return { baseDate: d.baseDate, ev: d.totalEv, spi: d.spi };
       });
 
       setUploadedEvData(evData);
@@ -229,7 +229,8 @@ export const AssigneeView = ({
   );
 };
 
-export type EvData = {
+export type SeriesData = {
   baseDate: string;
   ev?: number;
+  spi?: number;
 };
