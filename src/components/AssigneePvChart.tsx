@@ -20,7 +20,7 @@ type Props = {
   limitDate?: Date;
   bufferRate: number;
   viewRegression: boolean;
-  evData?: SeriesData[];
+  seriesData?: SeriesData[];
 };
 
 type Point = { x: number; y: number };
@@ -131,18 +131,18 @@ function createRegressionDataMap(
 function mergeChartData(
   actualMap: Map<string, Record<string, string | number | undefined>>,
   regressionMap: Map<string, Record<string, string | number | undefined>>,
-  evData?: SeriesData[]
+  seriesData?: SeriesData[]
 ): ChartRow[] {
   const allDates = Array.from(
     new Set([...actualMap.keys(), ...regressionMap.keys()])
   ).sort();
   // console.table(allDates);
-  const evDataMap = new Map(evData?.map((entry) => [entry.baseDate, entry]));
+  const seriesDataMap = new Map(seriesData?.map((entry) => [entry.baseDate, entry]));
   return allDates
     .map((date) => ({
       ...(actualMap.get(date) || {}),
       ...(regressionMap.get(date) || {}),
-      ...(evDataMap.get(date) || {}),
+      ...(seriesDataMap.get(date) || {}),
       baseDate: date,
     }))
     .sort(
@@ -156,7 +156,7 @@ export const AssigneeLineChart = ({
   limitDate,
   bufferRate,
   viewRegression,
-  evData,
+  seriesData,
 }: Props) => {
   // console.table(data)
 
@@ -172,10 +172,10 @@ export const AssigneeLineChart = ({
     bufferRate,
     viewRegression
   );
-  const chartData = mergeChartData(actualMap, regressionMap, evData);
-  console.table(chartData);
+  const chartData = mergeChartData(actualMap, regressionMap, seriesData);
+  // console.table(chartData);
 
-  const height = evData ? "80%" : "100%";
+  const height = seriesData ? "80%" : "100%";
 
   return (
     <div style={{ width: "100%", height: 800 }}>
@@ -258,7 +258,7 @@ export const AssigneeLineChart = ({
         </LineChart>
       </ResponsiveContainer>
       {/* 下段チャート（SPIなど） */}
-      {evData && (
+      {seriesData && (
         <ResponsiveContainer width="100%" height="20%">
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />

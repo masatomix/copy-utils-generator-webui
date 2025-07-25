@@ -211,7 +211,7 @@ export const AssigneeView = ({
               bufferRate={bufferRate}
               limitDate={limitDate}
               viewRegression={viewRegression}
-              evData={uploadedEvData}
+              seriesData={uploadedEvData}
             />
           </>
         )}
