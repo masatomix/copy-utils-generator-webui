@@ -28,7 +28,7 @@ import {
   excelBuffer2json,
   json2workbook,
 } from "excel-csv-read-write";
-import { createStyles } from "evmtools-node/common";
+import { createStyles, dateStr } from "evmtools-node/common";
 
 type ProjectEntry = {
   fileName: string;
@@ -184,6 +184,45 @@ const EvmSeries: React.FC = () => {
     setProjects([]);
   };
 
+  const fillMissingDates = () => {
+    if (projectStatisticsArray.length === 0) return;
+
+    const sorted = [...projectStatisticsArray].sort(
+      (a, b) => new Date(a.baseDate).getTime() - new Date(b.baseDate).getTime()
+    );
+
+    const filledStats: ProjectStatistics[] = [];
+
+    let prev = sorted[0];
+    filledStats.push(prev);
+
+    for (let i = 1; i < sorted.length; i++) {
+      const current = sorted[i];
+      const date = new Date(prev.baseDate);
+      const targetDate = new Date(current.baseDate);
+
+      date.setDate(date.getDate() + 1);
+
+      while (date < targetDate) {
+        const clone: ProjectStatistics = {
+          ...prev,
+          baseDate: dateStr(date)
+        };
+        filledStats.push(clone);
+        date.setDate(date.getDate() + 1);
+      }
+
+      filledStats.push(current);
+      prev = current;
+    }
+
+    const final = filledStats.sort(
+      (a, b) => new Date(b.baseDate).getTime() - new Date(a.baseDate).getTime()
+    );
+
+    setProjectStatisticsArray(final);
+  };
+
   return (
     <Box p={4}>
       <Typography variant="h5" gutterBottom>
@@ -200,7 +239,6 @@ const EvmSeries: React.FC = () => {
         (どちらのボタンから作成しても、同じ基準日のデータはあと勝ちで上書きします。)
       </Typography>
 
-      
       <Typography variant="body2" gutterBottom>
         ココで作成した時系列データは、EVMグラフを描画するときに使用します！
       </Typography>
@@ -304,15 +342,28 @@ const EvmSeries: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               時系列データ({projectStatisticsArray.length}件)
             </Typography>
-
-            <Button
-              variant="contained"
-              startIcon={<DownloadIcon />}
-              onClick={downloadAll}
-              sx={{ mt: 2 }}
+            <Box
+              display="flex"
+              justifyContent="flex-end"
+              alignItems="center"
+              gap={2}
+              mb={2}
             >
-              「時系列データ」をダウンロード
-            </Button>
+              <Button
+                variant="outlined"
+                onClick={fillMissingDates}
+                startIcon={<RefreshIcon />}
+              >
+                隙間を補間
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<DownloadIcon />}
+                onClick={downloadAll}
+              >
+                「時系列データ」をダウンロード
+              </Button>
+            </Box>
           </Box>
 
           <TableContainer>
