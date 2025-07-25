@@ -17,7 +17,7 @@ export const ShowProjectStatistics = ({
 
   return (
     <TableRow
-      key={idx}
+      // key={idx}
       sx={{
         backgroundColor: idx % 2 === 0 ? "#fafafa" : "white",
       }}

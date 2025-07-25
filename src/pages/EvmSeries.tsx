@@ -117,10 +117,17 @@ const EvmSeries: React.FC = () => {
         arrayBuffer,
         "プロジェクト時系列情報"
       )) as ProjectStatistics[];
-      console.table(data);
+      // console.log("from file");
+      // console.table(data);
+
+      // console.log("existing");
+      // console.table(projectStatisticsArray);
 
       const mergedStats = mergeStatistics(projectStatisticsArray, data);
       setProjectStatisticsArray(mergedStats);
+
+      // console.log("merge");
+      // console.table(mergedStats);
 
       // console.log("✅ JSON から読み込み成功:", mergedStats);
     } catch (err) {
@@ -138,10 +145,13 @@ const EvmSeries: React.FC = () => {
   ): ProjectStatistics[] => {
     const map = new Map<string, ProjectStatistics>();
     for (const stat of existing) {
-      map.set(stat.projectName!, stat);
+      const key = `${stat.projectName}_${stat.baseDate}`;
+      map.set(key, stat);
     }
+
     for (const stat of incoming) {
-      map.set(stat.projectName!, stat); // ← 上書き or 新規追加
+      const key = `${stat.projectName}_${stat.baseDate}`;
+      map.set(key, stat); // 同じprojectNameでも日付が違えば別物として扱う
     }
     // return Array.from(map.values());
     // 基準日で降順ソート（新しい順）
@@ -206,7 +216,7 @@ const EvmSeries: React.FC = () => {
       while (date < targetDate) {
         const clone: ProjectStatistics = {
           ...prev,
-          baseDate: dateStr(date)
+          baseDate: dateStr(date),
         };
         filledStats.push(clone);
         date.setDate(date.getDate() + 1);
@@ -409,6 +419,7 @@ const EvmSeries: React.FC = () => {
               <TableBody>
                 {projectStatisticsArray.map((row, idx) => (
                   <ShowProjectStatistics
+                    key={row.projectName + row.baseDate}
                     row={row}
                     idx={idx}
                   ></ShowProjectStatistics>
