@@ -46,14 +46,19 @@ export const TaskDiffTabs = ({ current, prev }: Props) => {
     if (!filterText) return data;
     const keyword = filterText.toLowerCase();
     return data.filter((d) => {
-      return (
+      const idMatch = String(d.id).includes(keyword);
+      const nameMatch =
         d.name?.toLowerCase().includes(keyword) ||
         d.fullName?.toLowerCase().includes(keyword) ||
-        d.assignee?.toLowerCase().includes(keyword) ||
-        // (!isNaN(Number(filterText)) && d.id === Number(filterText))
-        String(d.id).includes(keyword) ||
-        formatDiffType(d.diffType).toLowerCase() === keyword ||
-        formatFinished(d.finished).toLowerCase() === keyword
+        d.assignee?.toLowerCase().includes(keyword);
+      const typeMatch = formatDiffType(d.diffType).toLowerCase() === keyword;
+      const finishedMatch =
+        formatFinished(d.finished).toLowerCase() === keyword;
+      const isRescheduleKeyword = keyword === "リスケ";
+      const rescheduleMatch = isRescheduleKeyword && d.deltaPV! < 0;
+
+      return (
+        nameMatch || idMatch || typeMatch || finishedMatch || rescheduleMatch
       );
     });
   }, [data, filterText]);
