@@ -16,6 +16,8 @@ import {
   ListItemText,
   TableContainer,
   Paper,
+  Box,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -196,10 +198,15 @@ export const TaskDiffTable = ({
               ≤ 基準日)は変更がなくても赤背景で常に表示します。
             </Typography>
             <Typography variant="body2" mt={1}>
-              行をクリックすると、新旧のデータの詳細が確認できます。
+              右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
             </Typography>
             <Typography variant="body2" mt={1}>
-              右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
+              ・ID、タスク名、担当者名、の部分一致でフィルタできます。<br />
+              ・完了区分(完了/未完了)、変更種別（例: 変更、追加）などもつかえます。<br />
+              ・テキストボックスに「リスケ」と入力すると、PVにマイナス変動があったタスク(=リスケタスク)でフィルタされます。
+            </Typography>
+            <Typography variant="body2" mt={1}>
+              行をクリックすると、新旧のデータの詳細が確認できます。
             </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
@@ -302,19 +309,39 @@ export const TaskDiffTable = ({
                     maximumFractionDigits={1}
                   />
                 </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: diff.hasPvDiff ? "bold" : "normal",
-                    color: diff.hasPvDiff ? "inherit" : "text.secondary",
-                  }}
+                <Tooltip
+                  title={
+                    <>
+                      マイナス値は太字の赤で表示
+                      <br />
+                      (リスケタスクの可能性があるため)
+                    </>
+                  }
+                  placement="top"
                 >
-                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentPV}
-                    prev={diff.prevPV}
-                    show={showActualValues}
-                  />
-                </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: diff.hasPvDiff ? "bold" : "normal",
+                      color: diff.hasPvDiff ? "inherit" : "text.secondary",
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        color: diff.deltaPV! < 0 ? "error.main" : "inherit",
+                      }}
+                    >
+                      {formatNumberIntl(diff.deltaPV, {
+                        maximumFractionDigits: 3,
+                      })}
+                    </Box>
+                    <ShowDiffTag
+                      current={diff.currentPV}
+                      prev={diff.prevPV}
+                      show={showActualValues}
+                    />
+                  </TableCell>
+                </Tooltip>
                 <TableCell
                   sx={{
                     fontWeight: diff.hasEvDiff ? "bold" : "normal",
