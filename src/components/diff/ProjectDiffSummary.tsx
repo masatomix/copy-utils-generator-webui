@@ -37,16 +37,37 @@ export const ProjectDiffSummary = ({
   const ProjectDiffSummaryRow = ({ diff }: { diff: ProjectDiff }) => {
     const sv = subtract(diff.deltaEV, diff.deltaPV);
     const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
+    const pvColor = diff.deltaPV! < 0 ? "error.main" : "inherit"; // pvがマイナス値は、リスケと判断
+
     return (
       <TableRow>
-        <TableCell>
-          {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-          <ShowDiffTag
-            current={diff.currentPV}
-            prev={diff.prevPV}
-            show={true}
-          />
-        </TableCell>
+        <Tooltip
+          title={
+            <>
+              マイナス値は太字の赤で表示
+              <br />
+              (リスケタスクの可能性があるため)
+            </>
+          }
+          placement="top"
+        >
+          <TableCell>
+            <Box
+              component="span"
+              sx={{
+                color: pvColor,
+                fontWeight: pvColor === "error.main" ? "bold" : "normal",
+              }}
+            >
+              {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+            </Box>
+            <ShowDiffTag
+              current={diff.currentPV}
+              prev={diff.prevPV}
+              show={true}
+            />
+          </TableCell>
+        </Tooltip>
         <Tooltip title="PVよりEVが小さい場合赤字" placement="top">
           <TableCell>
             <Box component="span" sx={{ color: svColor }}>
