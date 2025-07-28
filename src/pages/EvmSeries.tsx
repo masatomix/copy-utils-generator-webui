@@ -171,10 +171,12 @@ const EvmSeries: React.FC = () => {
 
     console.table(projectStatisticsArray);
     json2workbook({
-      instances: projectStatisticsArray.sort(
+      instances: [...projectStatisticsArray].sort(
         (a, b) =>
           new Date(a.baseDate).getTime() - new Date(b.baseDate).getTime()
       ),
+      // Spread構文でコピーしているのは、sortはポインタ先を直接操作しちゃって
+      // かつstate変数をsetState以外で書き換えちゃうことになるため(想定外のタイミングで反映される)
       workbook,
       sheetName: `プロジェクト時系列情報`,
       applyStyles: createStyles(),
