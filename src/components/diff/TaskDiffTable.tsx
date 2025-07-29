@@ -201,8 +201,11 @@ export const TaskDiffTable = ({
               右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
             </Typography>
             <Typography variant="body2" mt={1}>
-              ・ID、タスク名、担当者名、の部分一致でフィルタできます。<br />
-              ・完了区分(完了/未完了)、変更種別（例: 変更、追加）などもつかえます。<br />
+              ・ID、タスク名、担当者名、の部分一致でフィルタできます。
+              <br />
+              ・完了区分(完了/未完了)、変更種別（例:
+              変更、追加）などもつかえます。
+              <br />
               ・テキストボックスに「リスケ」と入力すると、PVにマイナス変動があったタスク(=リスケタスク)でフィルタされます。
             </Typography>
             <Typography variant="body2" mt={1}>
@@ -289,9 +292,48 @@ export const TaskDiffTable = ({
                     whiteSpace: "normal",
                   }}
                 >
-                  {showFullName ? diff.fullName : diff.name}
+                  {!showFullName ? (
+                    <Tooltip
+                      title={diff.fullName}
+                      arrow
+                      placement="top"
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            // fontSize: "1rem", // 通常よりやや大きめ（例: 16px）
+                            maxWidth: 400, // 長い文字が折り返されすぎないように
+                          },
+                        },
+                      }}
+                    >
+                      <Box component="span">{diff.name}</Box>
+                    </Tooltip>
+                  ) : (
+                    diff.fullName
+                  )}
                 </TableCell>
-                <TableCell>{diff.assignee}</TableCell>
+
+                <Tooltip
+                  title={`工数: ${
+                    diff.currentTask
+                      ? diff.currentTask.workload
+                      : diff.prevTask
+                      ? diff.prevTask.workload
+                      : "-"
+                  }`}
+                  arrow
+                  placement="top"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        // fontSize: "1rem", // 通常よりやや大きめ（例: 16px）
+                        maxWidth: 400, // 長い文字が折り返されすぎないように
+                      },
+                    },
+                  }}
+                >
+                  <TableCell>{diff.assignee}</TableCell>
+                </Tooltip>
                 <TableCell
                   sx={{
                     fontWeight: diff.hasProgressRateDiff ? "bold" : "normal",
