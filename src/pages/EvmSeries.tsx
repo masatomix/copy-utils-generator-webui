@@ -20,15 +20,16 @@ import DownloadIcon from "@mui/icons-material/Download";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
-import { Project, type ProjectStatistics } from "evmtools-node/domain";
+import {
+  ExcelBufferProjectStatisticsCreator,
+  Project,
+  ProjectService,
+  type ProjectStatistics,
+} from "evmtools-node/domain";
 import { ShowProjectStatistics } from "../components/project/ShowProjectStatistics";
 import saveAs from "file-saver";
-import {
-  createWorkbook,
-  excelBuffer2json,
-  json2workbook,
-} from "excel-csv-read-write";
-import { createStyles, dateStr } from "evmtools-node/common";
+import { createWorkbook, json2workbook } from "excel-csv-read-write";
+import { createStyles } from "evmtools-node/common";
 
 type ProjectEntry = {
   fileName: string;
@@ -84,7 +85,12 @@ const EvmSeries: React.FC = () => {
       const results = sorted.map(
         (entry) => entry.project.statisticsByProject[0]
       );
-      const mergedStats = mergeStatistics(projectStatisticsArray, results);
+
+      const service = new ProjectService();
+      const mergedStats = service.mergeProjectStatistics(
+        projectStatisticsArray,
+        results
+      );
       setProjectStatisticsArray(mergedStats);
     } catch (error) {
       console.error("❌ 読み込み失敗:", error);
@@ -113,17 +119,19 @@ const EvmSeries: React.FC = () => {
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const data = (await excelBuffer2json(
-        arrayBuffer,
-        "プロジェクト時系列情報"
-      )) as ProjectStatistics[];
+      const creator = new ExcelBufferProjectStatisticsCreator(arrayBuffer);
+      const data = await creator.createProjectStatistics();
       // console.log("from file");
       // console.table(data);
 
       // console.log("existing");
       // console.table(projectStatisticsArray);
 
-      const mergedStats = mergeStatistics(projectStatisticsArray, data);
+      const service = new ProjectService();
+      const mergedStats = service.mergeProjectStatistics(
+        projectStatisticsArray,
+        data
+      );
       setProjectStatisticsArray(mergedStats);
 
       // console.log("merge");
@@ -137,27 +145,6 @@ const EvmSeries: React.FC = () => {
         fileInputRef.current.value = "";
       }
     }
-  };
-
-  const mergeStatistics = (
-    existing: ProjectStatistics[],
-    incoming: ProjectStatistics[]
-  ): ProjectStatistics[] => {
-    const map = new Map<string, ProjectStatistics>();
-    for (const stat of existing) {
-      const key = `${stat.projectName}_${stat.baseDate}`;
-      map.set(key, stat);
-    }
-
-    for (const stat of incoming) {
-      const key = `${stat.projectName}_${stat.baseDate}`;
-      map.set(key, stat); // 同じprojectNameでも日付が違えば別物として扱う
-    }
-    // return Array.from(map.values());
-    // 基準日で降順ソート（新しい順）
-    return Array.from(map.values()).sort(
-      (a, b) => new Date(b.baseDate).getTime() - new Date(a.baseDate).getTime()
-    );
   };
 
   const downloadAll = async () => {
@@ -197,42 +184,9 @@ const EvmSeries: React.FC = () => {
   };
 
   const fillMissingDates = () => {
-    if (projectStatisticsArray.length === 0) return;
-
-    const sorted = [...projectStatisticsArray].sort(
-      (a, b) => new Date(a.baseDate).getTime() - new Date(b.baseDate).getTime()
-    );
-
-    const filledStats: ProjectStatistics[] = [];
-
-    let prev = sorted[0];
-    filledStats.push(prev);
-
-    for (let i = 1; i < sorted.length; i++) {
-      const current = sorted[i];
-      const date = new Date(prev.baseDate);
-      const targetDate = new Date(current.baseDate);
-
-      date.setDate(date.getDate() + 1);
-
-      while (date < targetDate) {
-        const clone: ProjectStatistics = {
-          ...prev,
-          baseDate: dateStr(date),
-        };
-        filledStats.push(clone);
-        date.setDate(date.getDate() + 1);
-      }
-
-      filledStats.push(current);
-      prev = current;
-    }
-
-    const final = filledStats.sort(
-      (a, b) => new Date(b.baseDate).getTime() - new Date(a.baseDate).getTime()
-    );
-
-    setProjectStatisticsArray(final);
+    const service = new ProjectService();
+    const filledStats = service.fillMissingDates(projectStatisticsArray);
+    setProjectStatisticsArray(filledStats);
   };
 
   return (
