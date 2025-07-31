@@ -314,13 +314,7 @@ export const TaskDiffTable = ({
                 </TableCell>
 
                 <Tooltip
-                  title={`工数: ${
-                    diff.currentTask
-                      ? diff.currentTask.workload
-                      : diff.prevTask
-                      ? diff.prevTask.workload
-                      : "-"
-                  }`}
+                  title={`工数: ${diff.workload ?? "-"}`}
                   arrow
                   placement="top"
                   componentsProps={{

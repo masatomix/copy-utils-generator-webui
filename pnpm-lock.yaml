@@ -24,8 +24,8 @@ importers:
         specifier: ^0.0.16
         version: 0.0.16
       evmtools-node:
-        specifier: ^0.0.12
-        version: 0.0.12(@types/node@24.1.0)(typescript@5.8.3)
+        specifier: ^0.0.13
+        version: 0.0.13(@types/node@24.1.0)(typescript@5.8.3)
       excel-csv-read-write:
         specifier: ^0.2.6
         version: 0.2.6
@@ -1216,8 +1216,8 @@ packages:
   ecc-jsbn@0.1.2:
     resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
 
-  electron-to-chromium@1.5.192:
-    resolution: {integrity: sha512-rP8Ez0w7UNw/9j5eSXCe10o1g/8B1P5SM90PCCMVkIRQn2R0LEHWz4Eh9RnxkniuDe1W0cTSOB3MLlkTGDcuCg==}
+  electron-to-chromium@1.5.193:
+    resolution: {integrity: sha512-eePuBZXM9OVCwfYUhd2OzESeNGnWmLyeu0XAEjf7xjijNjHFdeJSzuRUGN4ueT2tEYo5YqjHramKEFxz67p3XA==}
 
   email-addresses@5.0.0:
     resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
@@ -1326,8 +1326,8 @@ packages:
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
-  evmtools-node@0.0.12:
-    resolution: {integrity: sha512-IHmNJ4TMjY7UkXT6eKXZxmxp/HYuhwAwMpfz6ngFoHWAaH8Lz7aMkCByBQid3vCuH9O+ZSeGn5KK5RC0/CtI3w==}
+  evmtools-node@0.0.13:
+    resolution: {integrity: sha512-v6yhhtXGsUTNbKnsUap44+MNS1vigERbYZ0Re+04oK0WJAweGfMUeDJARhuZ+nGCi0IpsdYNdq/prO/i9iRwfA==}
     hasBin: true
 
   excel-csv-read-write@0.2.6:
@@ -3273,7 +3273,7 @@ snapshots:
   browserslist@4.25.1:
     dependencies:
       caniuse-lite: 1.0.30001731
-      electron-to-chromium: 1.5.192
+      electron-to-chromium: 1.5.193
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.25.1)
 
@@ -3463,7 +3463,7 @@ snapshots:
       jsbn: 0.1.1
       safer-buffer: 2.1.2
 
-  electron-to-chromium@1.5.192: {}
+  electron-to-chromium@1.5.193: {}
 
   email-addresses@5.0.0: {}
 
@@ -3606,7 +3606,7 @@ snapshots:
 
   eventemitter3@5.0.1: {}
 
-  evmtools-node@0.0.12(@types/node@24.1.0)(typescript@5.8.3):
+  evmtools-node@0.0.13(@types/node@24.1.0)(typescript@5.8.3):
     dependencies:
       '@tidyjs/tidy': 2.5.2
       config: 4.1.0
