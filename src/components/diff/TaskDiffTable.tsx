@@ -32,6 +32,7 @@ import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
 import type { TaskDiffTableSetting } from "./TaskDiffTabs";
+import { TaskDiffFooter } from "./TaskDiffFooter";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -399,6 +400,10 @@ export const TaskDiffTable = ({
               </TableRow>
             ))}
           </TableBody>
+          <TaskDiffFooter
+            filtered={filtered}
+            showActualValues={showActualValues}
+          ></TaskDiffFooter>
         </Table>
       </TableContainer>
 
