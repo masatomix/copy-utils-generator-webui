@@ -63,4 +63,10 @@ export const formatFinished = (finished: boolean | undefined | null): string =>
 export const formatIsOverdueAt = (
   isOverdueAt: boolean,
   taskIsFinished: boolean
-): string => (taskIsFinished ? "完了" : isOverdueAt ? "期限切れ" : "まだ期限前");
+): string =>
+  taskIsFinished ? "完了" : isOverdueAt ? "期限切れ" : "まだ期限前";
+
+export const getFilenameWithoutExtension = (fullPath: string): string => {
+  const filename = fullPath.split(/[/\\]/).pop() ?? "";
+  return filename.replace(/\.[^/.]+$/, ""); // 最後の .xxx を除去
+};

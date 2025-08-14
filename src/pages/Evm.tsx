@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from "react";
-import { saveAs } from "file-saver";
 import {
   Button,
   Typography,
@@ -10,36 +9,30 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  IconButton,
-  Popover,
+  Backdrop,
+  CircularProgress,
+  Snackbar,
 } from "@mui/material";
-import { ExcelBufferProjectCreator } from "evmtools-node/infrastructure";
 import {
   Project,
-  ProjectService,
   type AssigneeStatistics,
   type ProjectStatistics,
-  type TaskDiff,
 } from "evmtools-node/domain";
 import type { Workbook } from "xlsx-populate";
-import { InMemoryRepository } from "../repository/InMemoryRepository";
 
 import UploadIcon from "@mui/icons-material/Upload";
-import DownloadIcon from "@mui/icons-material/Download";
 import { AssigneeView } from "../components/AssigneeView";
-import { ProjectStatsView } from "../components/ProjectStatsView";
-import { AssigneeStatsView } from "../components/AssigneeStatsView";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import React from "react";
-import { TaskDiffTabs } from "../components/TaskDiffTabs";
+import { TaskDiffTabs } from "../components/diff/TaskDiffTabs";
 import { createLongDataByNameTableWithProject } from "../components/LongDataByNameTableWrapper";
 import { createLongDataByProjectTableWithProject } from "../components/LongDataByProjectTableWrapper";
-import TaskRowsSection from "../components/TaskRowsSection";
-
-export type ProjectInfoCallbacks = {
-  updateState: (updater: (prev: State) => State) => void;
-};
+import TaskRowsSection from "../components/task/TaskRowsSection";
+import { HelpPopover } from "../components/HelpPopover";
+import { StatisticsByProjectPaper } from "../components/project/StatisticsByProjectPaper";
+import { StatisticsByAssigneePaper } from "../components/assignee/StatisticsByAssigneePaper";
+import { handleFileChange } from "../utils/handleFileChange";
+import { handlePrevFileChange } from "../utils/handlePrevFileChange";
 
 type State = {
   fileName: string;
@@ -49,9 +42,7 @@ type State = {
   statisticsByName: AssigneeStatistics[];
   statisticsByProject: ProjectStatistics[];
   prevProject?: Project; // ← 前回のデータ
-  taskDiffs: TaskDiff[]; // ← 差分結果
-  // projectDiffs: ProjectDiff[]; //
-  // assigneeDiffs: AssigneeDiff[]; //
+  loading: boolean; // ← 追加
 };
 
 function Evm() {
@@ -63,10 +54,10 @@ function Evm() {
     statisticsByName: [],
     statisticsByProject: [],
     prevProject: undefined, // ← 前回のデータ
-    taskDiffs: [], // ← 差分結果
-    // projectDiffs: [], // ← 差分結果
-    // assigneeDiffs: [], // ← 差分結果
+    loading: false, // ← 追加
   });
+
+  const [snackbar, setSnackbar] = useState<string | null>(null);
 
   // ref を定義
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,114 +67,55 @@ function Evm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 同じファイル再選択に対応するため value をリセット
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    setState((prev) => ({
-      ...prev,
-      fileName: file.name,
-      prevProject: undefined, // ← 前回プロジェクトを削除
-      taskDiffs: [], // ← 差分もリセット（あれば）
-      // projectDiffs: [], // ← 差分結果
-      // assigneeDiffs: [], // ← 差分結果
-    }));
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const arrayBuffer = reader.result;
-      if (!(arrayBuffer instanceof ArrayBuffer)) {
-        console.error("FileReader result is not an ArrayBuffer");
-        return;
-      }
-      try {
-        const projectName = getFilenameWithoutExtension(file.name);
-
-        const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
-        const repository = new InMemoryRepository({
-          updateState: setState,
-        });
-
-        const project = await creator.createProject();
-        repository.save(project);
-        setState((s) => ({ ...s, project }));
-
-        console.log("読み込み成功", project.length, " 件");
-      } catch (error) {
-        console.error("読み込み失敗", error);
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    handleFileChange({
+      file,
+      resetFileInput: () => {
+        // 同じファイル再選択に対応するため value をリセット
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      },
+      setLoading: (loading) => setState((s) => ({ ...s, loading })),
+      setStateAfterGeneration: ({
+        workbook,
+        path,
+        statisticsByName,
+        statisticsByProject,
+      }) => {
+        setState((s) => ({
+          ...s,
+          workbook,
+          path,
+          statisticsByName,
+          statisticsByProject,
+          fileName: file.name,
+          prevProject: undefined, // ← 前回プロジェクトを削除
+        }));
+      },
+      setProject: (project: Project) => setState((s) => ({ ...s, project })),
+      setSnackbar,
+    });
   };
 
   const onPrevFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const arrayBuffer = reader.result;
-      if (!(arrayBuffer instanceof ArrayBuffer)) return;
-
-      try {
-        const projectName = getFilenameWithoutExtension(file.name);
-        const creator = new ExcelBufferProjectCreator(arrayBuffer, projectName);
-        const prevProject = await creator.createProject();
-
-        function calculateDiffs(
-          project: Project | undefined,
-          prev: Project | undefined,
-          service: ProjectService
-        ) {
-          if (!project || !prev) return { taskDiffs: [] };
-
-          return {
-            taskDiffs: service.calculateTaskDiffs(project, prev),
-            // projectDiffs: service.calculateProjectDiffs(project, prev),
-            // assigneeDiffs: service.calculateAssigneeDiffs(project, prev),
-          };
+    handlePrevFileChange({
+      file,
+      resetFileInput: () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
         }
-
-        setState((s) => {
-          const projectSevice = new ProjectService();
-          const {
-            taskDiffs, //
-            // projectDiffs, //
-            // assigneeDiffs, //
-          } = calculateDiffs(s.project, prevProject, projectSevice);
-
-          return {
-            ...s,
-            prevProject,
-            taskDiffs /*projectDiffs, assigneeDiffs*/,
-          };
-        });
-      } catch (error) {
-        console.error("prev読み込み失敗", error);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  };
-
-  const getFilenameWithoutExtension = (fullPath: string): string => {
-    const filename = fullPath.split(/[/\\]/).pop() ?? "";
-    return filename.replace(/\.[^/.]+$/, ""); // 最後の .xxx を除去
-  };
-
-  const downloadAll = async () => {
-    if (state.workbook) {
-      const arrayBuffer = await state.workbook.outputAsync();
-      const blob = new Blob([arrayBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      }); // Blob に変換
-
-      saveAs(blob, state.path);
-    }
+      },
+      setLoading: (loading) => setState((s) => ({ ...s, loading })),
+      setPrevProject: (prevProject) =>
+        setState((s) => ({
+          ...s,
+          prevProject,
+        })),
+      setSnackbar,
+    });
   };
 
   const FileSelectButton = ({
@@ -322,118 +254,46 @@ function Evm() {
         )}
       </Paper>
 
-      {state.taskDiffs.length > 0 && (
+      {state.project && state.prevProject && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            タスクの差分
-          </Typography>
-          <TaskDiffTabs
-            data={state.taskDiffs}
-            current={state.project!}
-            prev={state.prevProject!}
-          />
+          <Box display="flex" alignItems="baseline" gap={1}>
+            <Typography variant="h6">直近情報</Typography>
+            <Typography variant="body2">(前回ファイルとの差分)</Typography>
+          </Box>
+          <TaskDiffTabs current={state.project!} prev={state.prevProject!} />
         </Paper>
       )}
 
       {/* プロジェクト情報 */}
       {state.statisticsByProject.length > 0 && (
-        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">プロジェクト情報</Typography>
-            <HelpPopover
-              title="このセクションについて"
-              content={`このセクションでは、プロジェクト全体の統計情報を表示します。
-
-項目説明:
-
-プロジェクト名
-Excelファイル内のファイル名から取得したプロジェクトの名前です。
-
-開始予定日
-最も早いタスクの「開始予定日」です。
-
-終了予定日
-最も遅いタスクの「終了予定日」です。
-
-タスク数
-プロジェクト内に登録されているタスクの総数です。
-
-工数合計
-すべてのタスクに割り当てられた工数（予定工数）の合計です。人日単位です。タスクごとに日ごとのPVを算出し、それらを全部足し合わせます。
-開始日/終了日が未入力のタスクは1日あたりの工数が計算できないため除外しているなど、Excelファイル上の「予定工数」の総和とは異なる場合があります。
-
-工数平均
-タスク1件あたりの平均工数です（＝工数合計 ÷ タスク数）。
-
-基準日
-Excelファイルから取得した基準日です。
-
-PV（Planned Value）
-基準日終了時点での予定工数の合計(1日あたりの工数 x 経過した日数)です。
-「1日あたりの工数」は、タスクごとにExcelの「稼働予定日数」と「予定工数」から算出。
-「基準日時点の経過日数」は、Excelファイル上のプロットをみながら、プロットの日付<=基準日 の個数で算出。
-(親タスクの工数は二重計上となるため除外)
-
-EV（Earned Value）
-基準日終了時点のExcel上のEVの合計です。
-
-EV-PV
-EVとPVの差（＝EV − PV）です。プラスなら予定より進捗が早く、マイナスなら遅れています。
-
-SPI（Schedule Performance Index）
-スケジュール効率指数。EV ÷ PV で算出されます。
-1.0以上なら順調、1.0未満なら遅れを示します。
-                `}
-            />
-          </Stack>
-
-          <Divider sx={{ mb: 2 }} />
-          <Button
-            variant="contained"
-            startIcon={<DownloadIcon />}
-            onClick={downloadAll}
-            sx={{ mt: 2 }}
-          >
-            データをダウンロード
-          </Button>
-          <ProjectStatsView data={state.statisticsByProject} />
-        </Paper>
+        <StatisticsByProjectPaper
+          statisticsByProject={state.statisticsByProject}
+          workbook={state.workbook}
+          path={state.path}
+        ></StatisticsByProjectPaper>
       )}
 
       {/* 要員統計 */}
       {state.statisticsByName.length > 0 && (
-        <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6">要員ごと統計</Typography>
-            <HelpPopover
-              title="要員ごと統計"
-              content={`このセクションでは、担当者ごとの統計情報を表示します。
-
-                項目説明:
-
-                担当者
-                タスクの担当者名です。
-                
-                タスク数
-                プロジェクト全体で、担当者に割り当てられているタスクの総数です。
-                
-                工数合計、工数平均、PV、EV、EV-PV、SPI
-                計算方法は、プロジェクト情報の定義とおなじ。ひとごとで計算。
-              `}
-            />
-          </Stack>
-          <Divider sx={{ mb: 2 }} />
-          <AssigneeStatsView data={state.statisticsByName} />
-        </Paper>
+        <StatisticsByAssigneePaper
+          statisticsByName={state.statisticsByName}
+        ></StatisticsByAssigneePaper>
       )}
 
       {state.project && (
         <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography variant="h6" gutterBottom>
-              プロジェクト素データ
-            </Typography>
-            <HelpPopover title="" content="プロジェクトの素データを表示" />
+            <Box display="flex" alignItems="baseline" gap={1}>
+              <Typography variant="h6">個別データ</Typography>
+              <Typography variant="body2">(指定した基準日のタスク)</Typography>
+            </Box>
+            <Typography variant="h6" gutterBottom></Typography>
+            <HelpPopover
+              title="個別データ"
+              content={`タスクごとの素データを表示しています。
+                デフォルトは基準日で絞ってあるので「指定した基準日のタスク」を一覧できます。
+            `}
+            />
           </Stack>
 
           <Divider sx={{ mb: 2 }} />
@@ -465,9 +325,10 @@ SPI（Schedule Performance Index）
             label="日々のPV"
             tableData2={state.project.pvsByProjectLong}
             label2="PV累積"
-            // bufferRate={1.2}
-            // limitDate={new Date("2025/09/11")}
-            // viewRegression={true}
+            seriesUpload={true}
+            DEFAULT_LIMIT_DATE={new Date("2025-09-11")}
+            // DEFAULT_BUFFER_RATE={1.2}
+            DEFAULT_VIEW_REGRESSION={true}
           />
         </Paper>
       )}
@@ -494,63 +355,27 @@ SPI（Schedule Performance Index）
           />
         </Paper>
       )}
+
+      {state.loading && (
+        <Backdrop
+          open={true}
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+
+      {/* スナックバー通知 */}
+      {snackbar && (
+        <Snackbar
+          open={true}
+          message={snackbar}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar(null)}
+        />
+      )}
     </Box>
   );
 }
-
-// const HelpIcon = ({ message }: { message: string }) => (
-//   <Tooltip title={message} arrow>
-//     <IconButton size="small">
-//       <HelpOutlineIcon fontSize="small" />
-//     </IconButton>
-//   </Tooltip>
-// );
-
-export const HelpPopover = ({
-  title,
-  content,
-}: {
-  title: string;
-  content: string;
-}) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  return (
-    <>
-      <IconButton size="small" onClick={handleClick}>
-        <HelpOutlineIcon fontSize="small" />
-      </IconButton>
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-      >
-        <Typography
-          sx={{
-            p: 2,
-            maxWidth: 500,
-            whiteSpace: "pre-line", // 改行を反映させる
-          }}
-        >
-          <strong>{title}</strong>
-          <br />
-          {content}
-        </Typography>
-      </Popover>
-    </>
-  );
-};
 
 export default Evm;

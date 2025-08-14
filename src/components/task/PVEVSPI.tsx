@@ -1,5 +1,5 @@
 import { Box, TableCell } from "@mui/material";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 import type { TaskRow } from "evmtools-node/domain";
 
 export const PVEVSPI = ({

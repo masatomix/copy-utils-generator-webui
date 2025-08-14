@@ -9,10 +9,17 @@ import {
   TableRow,
   Paper,
   TableContainer,
+  Box,
+  Tooltip,
 } from "@mui/material";
-import { type TaskDiff, Project, ProjectService } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
-import { dateStr } from "evmtools-node/common";
+import {
+  type AssigneeDiff,
+  type TaskDiff,
+  Project,
+  ProjectService,
+} from "evmtools-node/domain";
+import { formatNumberIntl } from "../../utils/format";
+import { dateStr, subtract } from "evmtools-node/common";
 import { ShowDiffTag } from "./ShowDiffTag";
 
 export const AssigneeDiffTable = ({
@@ -27,6 +34,61 @@ export const AssigneeDiffTable = ({
   const filtered = data.filter((d) => d.hasDiff);
   const grouped = new ProjectService().calculateAssigneeDiffs(filtered);
 
+  const AssigneeDiffRow = ({ diff }: { diff: AssigneeDiff }) => {
+    const sv = subtract(diff.deltaEV, diff.deltaPV);
+    const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
+    const pvColor = diff.deltaPV! < 0 ? "error.main" : "inherit"; // pvがマイナス値は、リスケと判断
+
+    return (
+      <TableRow key={diff.assignee}>
+        <TableCell>{diff.assignee}</TableCell>
+        <Tooltip
+          title={
+            <>
+              マイナス値は太字の赤で表示
+              <br />
+              (リスケタスクの可能性があるため)
+            </>
+          }
+          placement="top"
+        >
+          <TableCell>
+            <Box
+              component="span"
+              sx={{
+                color: pvColor,
+                fontWeight: pvColor === "error.main" ? "bold" : "normal",
+              }}
+            >
+              {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
+            </Box>
+            <ShowDiffTag
+              current={diff.currentPV}
+              prev={diff.prevPV}
+              show={true}
+            />
+          </TableCell>
+        </Tooltip>
+        <Tooltip title="PVよりEVが小さい場合赤字" placement="top">
+          <TableCell>
+            <Box component="span" sx={{ color: svColor }}>
+              {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
+            </Box>
+            <ShowDiffTag
+              current={diff.currentEV}
+              prev={diff.prevEV}
+              show={true}
+            />
+          </TableCell>
+        </Tooltip>
+
+        <TableCell>{diff.modifiedCount}</TableCell>
+        <TableCell>{diff.addedCount}</TableCell>
+        <TableCell>{diff.removedCount}</TableCell>
+      </TableRow>
+    );
+  };
+
   return (
     <Paper sx={{ p: 2 }}>
       <Stack spacing={1} mb={2}>
@@ -36,7 +98,7 @@ export const AssigneeDiffTable = ({
           alignItems="center"
         >
           <Stack>
-          <Typography variant="body2" mt={1}>
+            <Typography variant="body2" mt={1}>
               進捗率、PV、EVに変更があったタスクの担当単位での集計値です。
             </Typography>
             <Typography variant="body2" mt={1}>
@@ -71,28 +133,7 @@ export const AssigneeDiffTable = ({
           </TableHead>
           <TableBody>
             {grouped.map((diff) => (
-              <TableRow key={diff.assignee}>
-                <TableCell>{diff.assignee}</TableCell>
-                <TableCell>
-                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentPV}
-                    prev={diff.prevPV}
-                    show={true}
-                  />
-                </TableCell>
-                <TableCell>
-                  {formatNumberIntl(diff.deltaEV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentEV}
-                    prev={diff.prevEV}
-                    show={true}
-                  />
-                </TableCell>
-                <TableCell>{diff.modifiedCount}</TableCell>
-                <TableCell>{diff.addedCount}</TableCell>
-                <TableCell>{diff.removedCount}</TableCell>
-              </TableRow>
+              <AssigneeDiffRow diff={diff}></AssigneeDiffRow>
             ))}
           </TableBody>
         </Table>

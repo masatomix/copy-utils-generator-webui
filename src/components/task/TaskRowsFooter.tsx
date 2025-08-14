@@ -1,7 +1,7 @@
 import { TableFooter, TableRow, TableCell } from "@mui/material";
 import type { TaskRow } from "evmtools-node/domain";
 import { useMemo } from "react";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 
 export const TaskRowsFooter = ({
   taskRows,

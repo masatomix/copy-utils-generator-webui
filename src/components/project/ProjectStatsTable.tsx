@@ -8,8 +8,8 @@ import {
   Paper,
 } from "@mui/material";
 import type { ProjectStatistics } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
-import { HelpPopover } from "../pages/Evm";
+import { ShowProjectStatistics } from "./ShowProjectStatistics";
+import { HelpPopover } from "../HelpPopover";
 
 type Props = {
   data: ProjectStatistics[];
@@ -17,72 +17,6 @@ type Props = {
 };
 
 export const ProjectStatsTable = ({ data, detail = false }: Props) => {
-
-  const ShowRowData = ({
-    row,
-    idx,
-  }: {
-    row: ProjectStatistics;
-    idx: number;
-  }) => {
-
-    const sv = subtract(row.totalEv, row.totalPvCalculated);
-    const svColor = sv! < 0 ? "error.main" : "inherit"; // svでも、spiで判定してもほぼ同じ
-
-    return (
-      <TableRow
-        key={idx}
-        sx={{
-          backgroundColor: idx % 2 === 0 ? "#fafafa" : "white",
-        }}
-      >
-        <TableCell>{row.projectName ?? "-"}</TableCell>
-        <TableCell align="right">{row.startDate}</TableCell>
-        <TableCell align="right">{row.endDate}</TableCell>
-        <TableCell align="right">{row.totalTasksCount ?? "-"}</TableCell>
-        {detail && (
-          <TableCell align="right">{row.totalWorkloadExcel ?? "-"}</TableCell>
-        )}
-        <TableCell align="right">
-          {row.totalWorkloadCalculated ?? "-"}
-        </TableCell>
-        <TableCell align="right">
-          {formatNumberIntl(row.averageWorkload, {
-            maximumFractionDigits: 3,
-          })}
-        </TableCell>
-        <TableCell align="right">{row.baseDate}</TableCell>
-        {detail && (
-          <TableCell align="right">
-            {formatNumberIntl(row.totalPvExcel, {
-              maximumFractionDigits: 3,
-            })}
-          </TableCell>
-        )}
-        <TableCell align="right">
-          {formatNumberIntl(row.totalPvCalculated, {
-            maximumFractionDigits: 3,
-          })}
-        </TableCell>
-        <TableCell align="right">
-          {formatNumberIntl(row.totalEv, {
-            maximumFractionDigits: 3,
-          })}
-        </TableCell>
-        <TableCell align="right" component="span" sx={{ color: svColor }}>
-          {formatNumberIntl(sv, {
-            maximumFractionDigits: 3,
-          })}
-        </TableCell>
-        <TableCell align="right" component="span" sx={{ color: svColor }}>
-          {formatNumberIntl(row.spi, {
-            maximumFractionDigits: 3,
-          })}
-        </TableCell>
-      </TableRow>
-    );
-  };
-
   return (
     <TableContainer
       component={Paper}
@@ -158,20 +92,14 @@ export const ProjectStatsTable = ({ data, detail = false }: Props) => {
         </TableHead>
         <TableBody>
           {data.map((row, idx) => (
-            <ShowRowData row={row} idx={idx}></ShowRowData>
+            <ShowProjectStatistics
+              row={row}
+              idx={idx}
+              detail={detail}
+            ></ShowProjectStatistics>
           ))}
         </TableBody>
       </Table>
     </TableContainer>
   );
 };
-
-function subtract(
-  a: number | undefined,
-  b: number | undefined
-): number | undefined {
-  if (typeof a !== "number" || typeof b !== "number") {
-    return undefined;
-  }
-  return a - b;
-}

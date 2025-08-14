@@ -1,5 +1,5 @@
 import React from "react";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 
 type Props = {
   show: boolean;

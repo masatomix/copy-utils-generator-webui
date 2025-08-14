@@ -1,39 +1,135 @@
-import { Routes, Route, Link } from "react-router-dom";
-import { AppBar, Toolbar, Button, Typography, Container } from "@mui/material";
-import Home from "./pages/Home";
+import { useEffect, useState } from "react";
+import {
+  AppBar,
+  Tabs,
+  Tab,
+  Container,
+  Box,
+  Toolbar,
+  Link,
+  Typography,
+} from "@mui/material";
 import Gamen1 from "./pages/Gamen1";
 import Gamen2 from "./pages/Gamen2";
-import Evm from "./pages/Evm";
+import Gamen3 from "./pages/Evm";
+import Gamen4 from "./pages/EvmSeries";
+import Home from "./pages/Home";
+import { VERSION } from "./utils/version";
+
+const tabNames = ["home", "gamen1", "gamen2", "gamen3", "gamen4"];
 
 function App() {
+  const getTabIndexFromHash = () => {
+    const hash = window.location.hash.replace(/^#\/?/, ""); // ← スラッシュあり・なし両対応
+    const index = tabNames.indexOf(hash);
+    return index >= 0 ? index : 0;
+  };
+  const [tabIndex, setTabIndex] = useState(getTabIndexFromHash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setTabIndex(getTabIndexFromHash());
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  const handleTabChange = (_: React.SyntheticEvent, newIndex: number) => {
+    setTabIndex(newIndex);
+    window.location.hash = `/${tabNames[newIndex]}`; // ← スラッシュを付ける
+  };
+
   return (
     <>
       <AppBar position="fixed">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            <Button color="inherit" component={Link} to="/">
-              Copy Utils Generator
-            </Button>
-          </Typography>
-          <Button color="inherit" component={Link} to="/gamen1">
-            クラス生成
-          </Button>
-          <Button color="inherit" component={Link} to="/gamen2">
-            マッピング生成
-          </Button>
-          <Button color="inherit" component={Link} to="/gamen3">
-            EVM
-          </Button>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            minHeight: 48, // 高さ調整（デフォルトより小さめ）
+            px: 1,
+          }}
+        >
+          {/* ← 左側：ロゴ + バージョン */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "flex-end", // 👈 下端揃え
+            }}
+          >
+            <Link
+              href="#/"
+              underline="none"
+              sx={{
+                color: "#fff",
+                fontSize: "1rem",
+                fontWeight: "bold",
+              }}
+              onClick={() => setTabIndex(0)}
+            >
+              COPY UTILS GENERATOR
+            </Link>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#eee",
+                fontSize: "0.75rem",
+                fontFamily: "monospace",
+                userSelect: "all",
+              }}
+            >
+              (version: {VERSION})
+            </Typography>
+          </Box>
+
+          <Tabs
+            value={tabIndex}
+            onChange={handleTabChange}
+            variant="scrollable"
+            textColor="inherit"
+            indicatorColor="secondary"
+            sx={{
+              minHeight: 40,
+              "& .MuiTab-root": {
+                minHeight: 40,
+                fontSize: "1.1rem", // ← 小さめ
+                px: 1.0,
+              },
+            }}
+          >
+            <Tab label="ホーム" />
+            <Tab label="クラス生成" />
+            <Tab label="マッピング生成" />
+            <Tab label="EVM" />
+            <Tab label="EVM（時系列）" />
+          </Tabs>
         </Toolbar>
       </AppBar>
 
-      <Container sx={{ marginTop: 4 }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/gamen1" element={<Gamen1 />} />
-          <Route path="/gamen2" element={<Gamen2 />} />
-          <Route path="/gamen3" element={<Evm />} />
-        </Routes>
+      {/* AppBarの高さ分の空白を挿入 */}
+      <Toolbar sx={{ minHeight: 48 }} />
+
+      <Container sx={{ mt: 4 }}>
+        {/* Home */}
+        {tabIndex === 0 && <Home />}
+
+        {/* Gamen1 */}
+        {tabIndex === 1 && <Gamen1 />}
+
+        {/* Gamen2 */}
+        {tabIndex === 2 && <Gamen2 />}
+
+        {/* EVM + EVM（時系列）: どちらかが選択されているときだけマウントを保持 */}
+        {(tabIndex === 3 || tabIndex === 4) && (
+          <>
+            <Box hidden={tabIndex !== 3}>
+              <Gamen3 />
+            </Box>
+            <Box hidden={tabIndex !== 4}>
+              <Gamen4 />
+            </Box>
+          </>
+        )}
       </Container>
     </>
   );

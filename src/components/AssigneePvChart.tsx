@@ -13,12 +13,14 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import type { SeriesData } from "./AssigneeView";
 
 type Props = {
   data: LongData[];
   limitDate?: Date;
-  bufferRate?: number;
-  viewRegression?: boolean;
+  bufferRate: number;
+  viewRegression: boolean;
+  seriesData?: SeriesData[];
 };
 
 type Point = { x: number; y: number };
@@ -56,8 +58,8 @@ function linearRegression(points: Point[]): { a: number } {
 // }
 function createActualDataMap(
   data: LongData[]
-): Map<string, Record<string, any>> {
-  const map = new Map<string, Record<string, any>>();
+): Map<string, Record<string, string | number | undefined>> {
+  const map = new Map<string, Record<string, string | number | undefined>>();
   for (const { assignee, baseDate, value } of data) {
     const date = formatDateToISO(baseDate);
     if (!map.has(date)) map.set(date, { baseDate: date });
@@ -73,9 +75,9 @@ function createRegressionDataMap(
   bufferRate: number,
   viewRegression: boolean
 ): {
-  regressionMap: Map<string, Record<string, any>>;
+  regressionMap: Map<string, Record<string, string | number | undefined>>;
 } {
-  const map = new Map<string, Record<string, any>>();
+  const map = new Map<string, Record<string, string | number | undefined>>();
   for (const assignee of assignees) {
     const filtered = data.filter(
       (d) => d.assignee === assignee && typeof d.value === "number"
@@ -127,17 +129,20 @@ function createRegressionDataMap(
 
 // マージ処理
 function mergeChartData(
-  actualMap: Map<string, Record<string, any>>,
-  regressionMap: Map<string, Record<string, any>>
+  actualMap: Map<string, Record<string, string | number | undefined>>,
+  regressionMap: Map<string, Record<string, string | number | undefined>>,
+  seriesData?: SeriesData[]
 ): ChartRow[] {
   const allDates = Array.from(
     new Set([...actualMap.keys(), ...regressionMap.keys()])
   ).sort();
   // console.table(allDates);
+  const seriesDataMap = new Map(seriesData?.map((entry) => [entry.baseDate, entry]));
   return allDates
     .map((date) => ({
       ...(actualMap.get(date) || {}),
       ...(regressionMap.get(date) || {}),
+      ...(seriesDataMap.get(date) || {}),
       baseDate: date,
     }))
     .sort(
@@ -149,8 +154,9 @@ function mergeChartData(
 export const AssigneeLineChart = ({
   data,
   limitDate,
-  bufferRate = 1.0,
-  viewRegression = false,
+  bufferRate,
+  viewRegression,
+  seriesData,
 }: Props) => {
   // console.table(data)
 
@@ -166,76 +172,133 @@ export const AssigneeLineChart = ({
     bufferRate,
     viewRegression
   );
-  const chartData = mergeChartData(actualMap, regressionMap);
+  const chartData = mergeChartData(actualMap, regressionMap, seriesData);
+  // console.table(chartData);
+
+  const height = seriesData ? "80%" : "100%";
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="baseDate" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
+    <div style={{ width: "100%", height: 800 }}>
+      <ResponsiveContainer width="100%" height={height}>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="baseDate" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
 
-        {/* 〆切線（実線・茶色） */}
-        {limitDate && (
-          <ReferenceLine
-            x={dateStr(limitDate)}
-            stroke="brown"
-            strokeDasharray=""
-            label={{
-              value: "〆切",
-              position: "top",
-              fill: "brown",
-              fontSize: 12,
-            }}
-          />
-        )}
-
-        {assignees.map((assignee) => (
-          <React.Fragment key={assignee}>
-            {/* 実データ線：オレンジ実線 */}
-            <Line
-              type="monotone"
-              dataKey={assignee}
-              stroke="#FFA500"
-              dot={false}
-              name={assignee}
+          {/* 〆切線（実線・茶色） */}
+          {limitDate && (
+            <ReferenceLine
+              x={dateStr(limitDate)}
+              stroke="brown"
+              strokeDasharray=""
+              label={{
+                value: "〆切",
+                position: "top",
+                fill: "brown",
+                fontSize: 12,
+              }}
             />
-            {/* 回帰線：オレンジ破線 */}
-            {viewRegression && (
+          )}
+
+          {assignees.map((assignee) => (
+            <React.Fragment key={assignee}>
+              {/* 実データ線：オレンジ実線 */}
               <Line
                 type="monotone"
-                dataKey={`${assignee}_regression`}
+                dataKey={assignee}
                 stroke="#FFA500"
-                strokeDasharray="5 5"
+                strokeWidth={3} // ← 少し太めに
                 dot={false}
-                name={`${assignee}(回帰)`}
+                name={assignee}
               />
-            )}
-            {/* 実データ最終y横線：濃い緑実線 */}
-            {viewRegression && (
+              {/* 実データ線：黄色実線 */}
               <Line
-                type="linear"
-                dataKey={`${assignee}_flat`}
-                stroke="#006400"
+                type="monotone"
+                dataKey="ev"
+                stroke="#FFD700"
+                strokeWidth={3} // ← 少し太めに
                 dot={false}
-                name={`終了予定(楽観)`}
+                name={`${assignee}_ev`}
               />
-            )}
-            {/* 回帰線拡張最終y横線：濃い青実線 */}
-            {viewRegression && (
-              <Line
-                type="linear"
-                dataKey={`${assignee}_extended_flat`}
-                stroke="#00008B"
-                dot={false}
-                name={`終了予定(悲観)`}
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
+              {/* 回帰線：オレンジ破線 */}
+              {viewRegression && (
+                <Line
+                  type="monotone"
+                  dataKey={`${assignee}_regression`}
+                  stroke="#FFA500"
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name={`${assignee}(回帰)`}
+                />
+              )}
+              {/* 実データ最終y横線：濃い緑実線 */}
+              {viewRegression && (
+                <Line
+                  type="linear"
+                  dataKey={`${assignee}_flat`}
+                  stroke="#006400"
+                  dot={false}
+                  name={`終了予定(楽観)`}
+                />
+              )}
+              {/* 回帰線拡張最終y横線：濃い青実線 */}
+              {viewRegression && (
+                <Line
+                  type="linear"
+                  dataKey={`${assignee}_extended_flat`}
+                  stroke="#00008B"
+                  dot={false}
+                  name={`終了予定(悲観)`}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+      {/* 下段チャート（SPIなど） */}
+      {seriesData && (
+        <ResponsiveContainer width="100%" height="20%">
+          <LineChart data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="baseDate" />
+            <YAxis domain={[0.7, 1.3]} />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="spi"
+              strokeWidth={2}
+              dot={false}
+              name="SPI"
+            />
+            {/* 基準線（1.0） */}
+            <ReferenceLine
+              y={1.0}
+              stroke="gray"
+              strokeDasharray="3 3"
+              label={{
+                value: "基準1.0",
+                position: "top",
+                fill: "gray",
+                fontSize: 15,
+              }}
+            />
+            <ReferenceLine
+              y={0.9}
+              stroke="gray"
+              strokeDasharray="3 3"
+              label={{
+                value: "危険ライン0.9",
+                position: "bottom",
+                fill: "gray",
+                fontSize: 15,
+              }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   );
 };

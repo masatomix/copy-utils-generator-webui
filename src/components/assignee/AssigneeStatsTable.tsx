@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import type { AssigneeStatistics } from "evmtools-node/domain";
-import { formatNumberIntl } from "../utils/format";
+import { formatNumberIntl } from "../../utils/format";
 import { subtract } from "evmtools-node/common";
 
 type Order = "asc" | "desc";

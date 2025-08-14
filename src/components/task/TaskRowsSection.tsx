@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import type { Project, TaskRow } from "evmtools-node/domain";
 import { dateStr, isHoliday } from "evmtools-node/common";
-import { formatFinished, formatNumberIntl } from "../utils/format";
+import { formatFinished, formatNumberIntl } from "../../utils/format";
 
 import ClearIcon from "@mui/icons-material/Clear";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";

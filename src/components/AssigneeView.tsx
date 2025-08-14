@@ -10,11 +10,13 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
-import { useState } from "react";
-import type { LongData } from "evmtools-node/domain";
+import { useRef, useState } from "react";
+import type { LongData, ProjectStatistics } from "evmtools-node/domain";
 import { AssigneeLineChart } from "./AssigneePvChart";
 
 import ReplayIcon from "@mui/icons-material/Replay";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import { excelBuffer2json } from "excel-csv-read-write";
 
 type Props = {
   tableData: LongData[];
@@ -29,11 +31,11 @@ type Props = {
     data2?: LongData[];
     label2?: string;
   }>;
+  DEFAULT_LIMIT_DATE?: Date;
+  DEFAULT_BUFFER_RATE?: number;
+  DEFAULT_VIEW_REGRESSION?: boolean;
+  seriesUpload?: boolean;
 };
-
-const DEFAULT_LIMIT_DATE = new Date("2025-09-11");
-const DEFAULT_BUFFER_RATE = 1.2;
-const DEFAULT_VIEW_REGRESSION = true;
 
 export const AssigneeView = ({
   tableData,
@@ -43,6 +45,10 @@ export const AssigneeView = ({
   tableData2,
   label2,
   TableComponent,
+  DEFAULT_LIMIT_DATE,
+  DEFAULT_BUFFER_RATE = 1.2,
+  DEFAULT_VIEW_REGRESSION = false,
+  seriesUpload = false,
 }: Props) => {
   const [tabIndex, setTabIndex] = useState(initialTab);
   const [limitDate, setLimitDate] = useState<Date | undefined>(
@@ -60,9 +66,47 @@ export const AssigneeView = ({
   };
 
   const isInitialState =
-    limitDate?.toISOString() === DEFAULT_LIMIT_DATE.toISOString() &&
+    limitDate?.toISOString() === DEFAULT_LIMIT_DATE?.toISOString() &&
     bufferRate === DEFAULT_BUFFER_RATE &&
     viewRegression === DEFAULT_VIEW_REGRESSION;
+
+  const [uploadedEvData, setUploadedEvData] = useState<
+    SeriesData[] | undefined
+  >(undefined);
+
+  // input参照用
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // ファイル選択時の処理
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadedEvData([]);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const data = (await excelBuffer2json(
+        arrayBuffer,
+        "プロジェクト時系列情報"
+      )) as ProjectStatistics[];
+      console.table(data);
+
+      const evData: SeriesData[] = data.map((d) => {
+        return { baseDate: d.baseDate, ev: d.totalEv, spi: d.spi };
+      });
+
+      setUploadedEvData(evData);
+
+      // console.log("✅ JSON から読み込み成功:", mergedStats);
+    } catch (err) {
+      console.error("❌ JSON 読み込みエラー:", err);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   return (
     <Box>
@@ -70,7 +114,13 @@ export const AssigneeView = ({
         <Tab label="グラフ" />
         <Tab label="数値データ" />
       </Tabs>
-
+      <input
+        type="file"
+        accept=".xlsm,.xlsx"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={handleFileUpload}
+      />
       <Box mt={2}>
         {tabIndex === 0 && (
           <>
@@ -85,16 +135,12 @@ export const AssigneeView = ({
                 </Box>
 
                 {/* コントロール群（右） */}
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
                   <Tooltip title="初期値に戻す">
                     <IconButton
                       onClick={handleReset}
                       disabled={isInitialState}
-                      sx={{
-                        "&:hover": {
-                          backgroundColor: "#fff3e0",
-                        },
-                      }}
+                      sx={{ "&:hover": { backgroundColor: "#fff3e0" } }}
                     >
                       <ReplayIcon fontSize="small" />
                     </IconButton>
@@ -135,6 +181,27 @@ export const AssigneeView = ({
                       sx={{ width: 100 }}
                     />
                   </Tooltip>
+
+                  {/* 🔽 ここに移動 🔽 */}
+                  {seriesUpload && (
+                    <>
+                      <input
+                        type="file"
+                        accept=".xlsm,.xlsx"
+                        ref={fileInputRef}
+                        style={{ display: "none" }}
+                        onChange={handleFileUpload}
+                      />
+                      <Tooltip title="時系列EVデータをアップロード">
+                        <IconButton
+                          onClick={() => fileInputRef.current?.click()}
+                          sx={{ "&:hover": { backgroundColor: "#e8f5e9" } }}
+                        >
+                          <UploadFileIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  )}
                 </Box>
               </Box>
             </Paper>
@@ -144,6 +211,7 @@ export const AssigneeView = ({
               bufferRate={bufferRate}
               limitDate={limitDate}
               viewRegression={viewRegression}
+              seriesData={uploadedEvData}
             />
           </>
         )}
@@ -159,4 +227,10 @@ export const AssigneeView = ({
       </Box>
     </Box>
   );
+};
+
+export type SeriesData = {
+  baseDate: string;
+  ev?: number;
+  spi?: number;
 };

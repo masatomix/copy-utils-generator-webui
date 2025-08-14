@@ -8,15 +8,14 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Project, type TaskDiff } from "evmtools-node/domain";
+import { Project, ProjectService } from "evmtools-node/domain";
 import { TaskDiffTable } from "./TaskDiffTable";
 import { AssigneeDiffTable } from "./AssigneeDiffTable";
 import { ProjectDiffSummary } from "./ProjectDiffSummary";
 import ClearIcon from "@mui/icons-material/Clear";
-import { formatDiffType, formatFinished } from "../utils/format";
+import { formatDiffType, formatFinished } from "../../utils/format";
 
 type Props = {
-  data: TaskDiff[];
   current: Project;
   prev: Project;
 };
@@ -28,7 +27,7 @@ export type TaskDiffTableSetting = {
   alwaysShowOverdue: boolean;
 };
 
-export const TaskDiffTabs = ({ data, current, prev }: Props) => {
+export const TaskDiffTabs = ({ current, prev }: Props) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [taskDiffSetting, setTaskDiffSetting] = useState<TaskDiffTableSetting>({
     showFullName: true,
@@ -39,20 +38,27 @@ export const TaskDiffTabs = ({ data, current, prev }: Props) => {
 
   const [filterText, setFilterText] = useState<string>("");
 
+  const projectSevice = new ProjectService();
+  const data = projectSevice.calculateTaskDiffs(current, prev);
   // const filtered = filterOnlyDiff ? data.filter((d) => d.hasDiff) : data;
 
   const filtered = useMemo(() => {
     if (!filterText) return data;
     const keyword = filterText.toLowerCase();
     return data.filter((d) => {
-      return (
+      const idMatch = String(d.id).includes(keyword);
+      const nameMatch =
         d.name?.toLowerCase().includes(keyword) ||
         d.fullName?.toLowerCase().includes(keyword) ||
-        d.assignee?.toLowerCase().includes(keyword) ||
-        // (!isNaN(Number(filterText)) && d.id === Number(filterText))
-        String(d.id).includes(keyword) ||
-        formatDiffType(d.diffType).toLowerCase() === keyword ||
-        formatFinished(d.finished).toLowerCase() === keyword
+        d.assignee?.toLowerCase().includes(keyword);
+      const typeMatch = formatDiffType(d.diffType).toLowerCase() === keyword;
+      const finishedMatch =
+        formatFinished(d.finished).toLowerCase() === keyword;
+      const isRescheduleKeyword = keyword === "リスケ";
+      const rescheduleMatch = isRescheduleKeyword && d.deltaPV! < 0;
+
+      return (
+        nameMatch || idMatch || typeMatch || finishedMatch || rescheduleMatch
       );
     });
   }, [data, filterText]);

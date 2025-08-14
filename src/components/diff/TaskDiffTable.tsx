@@ -16,6 +16,8 @@ import {
   ListItemText,
   TableContainer,
   Paper,
+  Box,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 
@@ -25,11 +27,12 @@ import {
   formatDiffType,
   formatFinished,
   formatNumberIntl,
-} from "../utils/format";
+} from "../../utils/format";
 import { ShowDiffTag } from "./ShowDiffTag";
 import { dateStr } from "evmtools-node/common";
 import { TaskDiffDialog } from "./TaskDiffDialog";
 import type { TaskDiffTableSetting } from "./TaskDiffTabs";
+import { TaskDiffFooter } from "./TaskDiffFooter";
 
 type Order = "asc" | "desc";
 type SortKey = keyof Pick<
@@ -196,10 +199,18 @@ export const TaskDiffTable = ({
               ≤ 基準日)は変更がなくても赤背景で常に表示します。
             </Typography>
             <Typography variant="body2" mt={1}>
-              行をクリックすると、新旧のデータの詳細が確認できます。
+              右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
             </Typography>
             <Typography variant="body2" mt={1}>
-              右上の歯車で表示内容を制御したり、テキストフィルタリングも可能です。
+              ・ID、タスク名、担当者名、の部分一致でフィルタできます。
+              <br />
+              ・完了区分(完了/未完了)、変更種別（例:
+              変更、追加）などもつかえます。
+              <br />
+              ・テキストボックスに「リスケ」と入力すると、PVにマイナス変動があったタスク(=リスケタスク)でフィルタされます。
+            </Typography>
+            <Typography variant="body2" mt={1}>
+              行をクリックすると、新旧のデータの詳細が確認できます。
             </Typography>
             <Typography variant="body2" mt={1}>
               <strong>基準日:</strong> {dateStr(current.baseDate)} ／{" "}
@@ -282,9 +293,42 @@ export const TaskDiffTable = ({
                     whiteSpace: "normal",
                   }}
                 >
-                  {showFullName ? diff.fullName : diff.name}
+                  {!showFullName ? (
+                    <Tooltip
+                      title={diff.fullName}
+                      arrow
+                      placement="top"
+                      componentsProps={{
+                        tooltip: {
+                          sx: {
+                            // fontSize: "1rem", // 通常よりやや大きめ（例: 16px）
+                            maxWidth: 400, // 長い文字が折り返されすぎないように
+                          },
+                        },
+                      }}
+                    >
+                      <Box component="span">{diff.name}</Box>
+                    </Tooltip>
+                  ) : (
+                    diff.fullName
+                  )}
                 </TableCell>
-                <TableCell>{diff.assignee}</TableCell>
+
+                <Tooltip
+                  title={`工数: ${diff.workload ?? "-"}`}
+                  arrow
+                  placement="top"
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        // fontSize: "1rem", // 通常よりやや大きめ（例: 16px）
+                        maxWidth: 400, // 長い文字が折り返されすぎないように
+                      },
+                    },
+                  }}
+                >
+                  <TableCell>{diff.assignee}</TableCell>
+                </Tooltip>
                 <TableCell
                   sx={{
                     fontWeight: diff.hasProgressRateDiff ? "bold" : "normal",
@@ -302,19 +346,39 @@ export const TaskDiffTable = ({
                     maximumFractionDigits={1}
                   />
                 </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: diff.hasPvDiff ? "bold" : "normal",
-                    color: diff.hasPvDiff ? "inherit" : "text.secondary",
-                  }}
+                <Tooltip
+                  title={
+                    <>
+                      マイナス値は太字の赤で表示
+                      <br />
+                      (リスケタスクの可能性があるため)
+                    </>
+                  }
+                  placement="top"
                 >
-                  {formatNumberIntl(diff.deltaPV, { maximumFractionDigits: 3 })}
-                  <ShowDiffTag
-                    current={diff.currentPV}
-                    prev={diff.prevPV}
-                    show={showActualValues}
-                  />
-                </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: diff.hasPvDiff ? "bold" : "normal",
+                      color: diff.hasPvDiff ? "inherit" : "text.secondary",
+                    }}
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        color: diff.deltaPV! < 0 ? "error.main" : "inherit",
+                      }}
+                    >
+                      {formatNumberIntl(diff.deltaPV, {
+                        maximumFractionDigits: 3,
+                      })}
+                    </Box>
+                    <ShowDiffTag
+                      current={diff.currentPV}
+                      prev={diff.prevPV}
+                      show={showActualValues}
+                    />
+                  </TableCell>
+                </Tooltip>
                 <TableCell
                   sx={{
                     fontWeight: diff.hasEvDiff ? "bold" : "normal",
@@ -336,6 +400,10 @@ export const TaskDiffTable = ({
               </TableRow>
             ))}
           </TableBody>
+          <TaskDiffFooter
+            filtered={filtered}
+            showActualValues={showActualValues}
+          ></TaskDiffFooter>
         </Table>
       </TableContainer>
 
